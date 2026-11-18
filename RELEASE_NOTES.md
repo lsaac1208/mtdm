@@ -1,10 +1,10 @@
-# 道行者 Taoist Wanderer — Vertical Slice v0.1.1
+# 道行者 Taoist Wanderer — Vertical Slice v0.1.2
 
 一人、一剑、一道，行于废土。 A 2D side-scrolling action demo: a lone Taoist wanders a post-apocalyptic wasteland and fights the Undead Tainted with sword, talismans, a yin-yang gourd and prayer beads.
 
 ## Play
-- **Linux:** unzip `TaoistWanderer-v0.1.1-linux-x86_64.zip`, run `./TaoistWanderer.x86_64`.
-- **Windows:** unzip `TaoistWanderer-v0.1.1-windows-x86_64.zip`, run `TaoistWanderer.exe`. (The Windows build has been exported but not yet run on Windows.)
+- **Linux:** unzip `TaoistWanderer-v0.1.2-linux-x86_64.zip`, run `./TaoistWanderer.x86_64`.
+- **Windows:** unzip `TaoistWanderer-v0.1.2-windows-x86_64.zip`, run `TaoistWanderer.exe`. (The Windows build has been exported but not yet run on Windows.)
 - Needs an OpenGL 3.3 capable GPU (or Mesa software rendering).
 
 ## Controls

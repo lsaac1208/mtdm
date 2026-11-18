@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS — 道行者 / Taoist Wanderer
 
-_Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` · engine Godot 4.7.2 · version 0.1.1_
+_Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` · engine Godot 4.7.2 · version 0.1.2_
 
 ## Where things are
 | Path | What |
@@ -38,9 +38,10 @@ _Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` ·
 - Audio integration verified by recording the mixed output with Godot's movie writer during a bot run (music + SFX present; peaks now limited by a master compressor/limiter). Not yet listened to by a human.
 - Difficulty proxy: `--bot_skill=human` (≈180 ms reaction cadence, 25 % missed defensive reads) cleared 6/6 runs with 0–7 deaths (mean ≈2.8); most deaths are at the elite, the rest at Groups A/C. A real first-time player will likely die more (the bot reads enemy state perfectly).
 - Performance: 55–65 FPS at 1280×720 on CPU software GL (llvmpipe) during the burial-mound wave.
+- v0.1.2 exported Linux binary: 38/38 checks and full bot clear run *inside the exported build*.
 - Re-verified after the latest polish commit: 33/33 checks, bot clears on source and on the re-exported Linux binary.
 - Rendered captures under Xvfb (software GL): title, all five zones, every enemy's telegraph/attack, VFX, ending screen were inspected.
-- Packages: `python3 tools/build/package.py 0.1.1` → `build/TaoistWanderer-v0.1.1-{linux,windows}-x86_64.zip` (41 / 50 MB).
+- Packages: `python3 tools/build/package.py 0.1.2` → `build/TaoistWanderer-v0.1.2-{linux,windows}-x86_64.zip` (41 / 50 MB).
 - Exports: `build/linux/TaoistWanderer.x86_64` (verified: runs, renders, bot completes) and `build/windows/TaoistWanderer.exe` (**built but not run** — no Windows here; installing Wine was not permitted in this environment).
 
 ## Not verified / known limitations
@@ -53,6 +54,9 @@ _Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` ·
 - Some enemy cut-outs keep small parchment specks between rags; the crawler/husk sheets' pose rows are lower-resolution than the hero's.
 - Gamepad: every binding verified by injecting joypad events in-engine (`gamepad_actions_fire`); not tried on a physical pad.
 - Windows export unrun; macOS not built.
+
+## Session-2 changes (for reviewers)
+Leg rig + torso twist + knee-tuck jumps; enemy cut-out cleanup; hit jitter/splats/zoom-punch/smears; topple/kneel deaths; elite chop two-beat wind-up; ground strata + debris; parallax seam fix; ambient particles; zone ambience beds with crossfades; master limiter; Road's Edge campfire; dash i-frames 0.24 s; spawn-on-surface fix (Group C soft-lock); opening epigraph; F11 fullscreen; package.py; RELEASE_NOTES.md.
 
 ## Next concrete tasks
 See `ROADMAP.md` (M6 onward). Top three: human playtest + tuning pass; real locomotion animation (hero run cycle, grunt shamble) via Skeleton2D cut-outs or painted frames; audio audition/mix pass.

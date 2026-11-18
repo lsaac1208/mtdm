@@ -11,6 +11,11 @@ Priorities follow the project directive: launchable → core combat → distinct
 - **M5 Level & flow** — 5-zone route, Group A–D encounters + burial wave, arena barriers, campfires, death/respawn, boss bar, ending, title, pause.
 - **M5.5 Verification** — 33 engine checks, input-only bot clears the route (source + exported Linux build), rendered capture modes, Linux/Windows exports.
 
+## Done in session 2 (v0.1.1–v0.1.2)
+- Shader leg rig (walk/run/jump), torso twist, motion smears, hit jitter/splats/zoom punch, death motions, elite chop readability.
+- Ground/debris/parallax seam fixes, ambient particles, zone ambience beds + crossfades, master limiter.
+- Human-like bot difficulty proxy, Road's Edge campfire, dash i-frame tuning, spawn soft-lock fix, gamepad mapping test, flow tests, package.py.
+
 ## Next
 ### M6 · Playtest & tuning (highest value)
 - Human playtest of the full route; record time-to-clear, deaths per encounter, confusing moments.
@@ -18,7 +23,7 @@ Priorities follow the project directive: launchable → core combat → distinct
 - Add an options menu (volume sliders, screen shake toggle, key rebinding).
 
 ### M7 · Animation quality
-- Hero locomotion: cut the ready pose into Skeleton2D parts (torso, arms, legs, robe panels, ribbons) or paint 6–8 run frames; same for grunt shamble and crawler crawl (sheet 08 already defines the 10-part split).
+- (Legs/torso now rigged in-shader.) Remaining: arm swing, attack in-betweens. Hero locomotion: cut the ready pose into Skeleton2D parts (torso, arms, legs, robe panels, ribbons) or paint 6–8 run frames; same for grunt shamble and crawler crawl (sheet 08 already defines the 10-part split).
 - Add in-between frames for combo transitions; hair-ribbon/sword-tassel secondary motion as separate bones.
 - Produce the elite V1.1 sheet (docs/04 prompt) and cut its poses (raise, chop, sweep, kneel, collapse).
 
