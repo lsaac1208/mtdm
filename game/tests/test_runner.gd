@@ -185,7 +185,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "bot"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "bot"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot"):
 			continue
@@ -839,6 +839,20 @@ func _bot_step_inner(p: Player, dt: float) -> void:
 				_bot_cd = 0.15
 	p.input_override = d
 
+
+
+func t_spawn_surface() -> void:
+	# every encounter enemy must stand on a surface, never inside a platform
+	var p := await _fresh_level(600.0)
+	await _wait(0.3)
+	var bad := []
+	for enc in Game.level.encounters:
+		for e in enc.data.enemies:
+			var y: float = enc._surface_y(e[1])
+			for pl in LevelData.PLATFORMS:
+				if e[1] > pl[0] and e[1] < pl[1] and y > pl[2] + 2.0:
+					bad.append("%s@%.0f" % [e[0], e[1]])
+	_log("spawns_on_surfaces", bad.is_empty(), str(bad))
 
 
 func t_flow() -> void:

@@ -102,6 +102,7 @@ void fragment() {
 	uv.y += breathe * up * sin(t * 2.2);
 	vec2 px = 1.0 / TEXTURE_PIXEL_SIZE;
 	vec4 c = rig_sample(uv, px);
+	float figure_a = c.a;
 	// thick ink contour: max alpha of 8 neighbours, drawn behind the sprite
 	if (outline_px > 0.0) {
 		vec2 o = TEXTURE_PIXEL_SIZE * outline_px;
@@ -133,7 +134,7 @@ void fragment() {
 		c.rgb = mix(under, c.rgb, c.a);
 		c.a = max(c.a, ua);
 	}
-	c.rgb = mix(c.rgb, flash_color.rgb, flash * c.a);
+	c.rgb = mix(c.rgb, flash_color.rgb, flash * figure_a);
 	c *= tint;
 	if (dissolve > 0.0) {
 		float n = noise(UV * 18.0) * 0.7 + noise(UV * 55.0) * 0.3;

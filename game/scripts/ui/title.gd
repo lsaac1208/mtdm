@@ -70,7 +70,7 @@ func _ready() -> void:
 	help.visible = false
 	add_child(help)
 	var foot := Label.new()
-	foot.text = "第一章 · 序　垂直切片试玩版 v0.1　|　Vertical-slice demo"
+	foot.text = "第一章 · 序　垂直切片试玩版 v0.1.1　|　Vertical-slice demo"
 	foot.add_theme_font_size_override("font_size", 14)
 	foot.add_theme_color_override("font_color", Color(0.25, 0.2, 0.16))
 	foot.position = Vector2(130, 680)

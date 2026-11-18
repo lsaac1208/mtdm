@@ -56,7 +56,7 @@ func reset() -> void:
 func _spawn(type: String, x: float, rise: float) -> Node:
 	var en: Enemy = TYPES[type].new()
 	en.spawn_rise = rise
-	en.position = Vector2(x, Game.GROUND_Y - 2)
+	en.position = Vector2(x, _surface_y(x) - 2)
 	if state == "active":
 		en.aggro = true
 		_leash(en)
@@ -70,6 +70,14 @@ func _spawn(type: String, x: float, rise: float) -> Node:
 		Sfx.play("spawn_rise", -6.0)
 		Fx.particles(en.position, 16, Color(0.18, 0.16, 0.14, 0.8), 120.0, 60.0, Vector2.UP, -40.0, 1.0, 8.0)
 	return en
+
+
+## Top surface at x (ground or platform), so nothing spawns inside a ledge.
+func _surface_y(x: float) -> float:
+	var space := get_world_2d().direct_space_state
+	var q := PhysicsRayQueryParameters2D.create(Vector2(x, Game.GROUND_Y - 400.0), Vector2(x, Game.GROUND_Y + 50.0), 1)
+	var res := space.intersect_ray(q)
+	return res.position.y if res else Game.GROUND_Y
 
 
 func _leash(en: Node) -> void:

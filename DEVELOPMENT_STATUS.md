@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS — 道行者 / Taoist Wanderer
 
-_Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` · engine Godot 4.7.2 · version 0.1.0_
+_Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` · engine Godot 4.7.2 · version 0.1.1_
 
 ## Where things are
 | Path | What |
@@ -32,14 +32,16 @@ _Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` ·
 **Presentation:** 50 concept-art pose sprites with ink contour + pale paper halo (figure/ground separation), shader two-bone leg rig (thighs rotate at hip pivots, knees bend, feet stay planted, hanging props stay rigid) for every character's walk/run, knee-tuck airborne pose, hit jitter + ground ink splats + camera zoom-punch, cross-fades, lean/squash, stride/sway/breath shader, hit flash, ink-burn deaths; sword-qi brush arcs, telegraph glints, danger bands, rings, particles, hit-stop, screen shake; parallax ink-wash wasteland with per-zone tint + fog + vignette/grain; brush-font zone cards, boss intro card, tutorial hint strip from roadside steles; generated SFX + 4 pentatonic music loops + wind ambience; title and ending screens.
 
 ### Verified results (this session)
-- `--test=all`: **36/36 checks pass** (incl. flow: pause-restart keeps progress, ending→title→new run resets state, no stale actors) (movement, jump, dash, crawler band whiff/hit with slash vs down/dash slash, grunt stagger + combo kill, timed parry, husk seal burst + punishment + talisman no-pressure, spitter glob → puddle, talisman interrupts spitter wind-up, elite wind-up 0.80 s and armour vs light hits, death → respawn at campfire, encounter lock/barrier/clear, scripted clear of every encounter → ending scene). No script errors.
+- `--test=all`: **37/37 checks pass** (incl. spawns-on-surfaces guard, flow: pause-restart keeps progress, ending→title→new run resets state, no stale actors) (movement, jump, dash, crawler band whiff/hit with slash vs down/dash slash, grunt stagger + combo kill, timed parry, husk seal burst + punishment + talisman no-pressure, spitter glob → puddle, talisman interrupts spitter wind-up, elite wind-up 0.80 s and armour vs light hits, death → respawn at campfire, encounter lock/barrier/clear, scripted clear of every encounter → ending scene). No script errors.
 - `--test=bot` (input-only scripted player, full route from the title flow): completes the current route in 3 of 3 runs (0–1 deaths, 24–27 kills, ≈2:15–3:00 game time for the bot). Also passes **on the exported Linux binary**.
+- Full-length rendered playthrough recorded (movie writer, 161 s) and reviewed as a contact sheet; found & fixed: enemy hit-flash whiting out the whole silhouette, spitter spawning inside a rock ledge (could soft-lock Group C).
 - Audio integration verified by recording the mixed output with Godot's movie writer during a bot run (music + SFX present; peaks now limited by a master compressor/limiter). Not yet listened to by a human.
 - Difficulty proxy: `--bot_skill=human` (≈180 ms reaction cadence, 25 % missed defensive reads) cleared 6/6 runs with 0–7 deaths (mean ≈2.8); most deaths are at the elite, the rest at Groups A/C. A real first-time player will likely die more (the bot reads enemy state perfectly).
 - Performance: 55–65 FPS at 1280×720 on CPU software GL (llvmpipe) during the burial-mound wave.
 - Re-verified after the latest polish commit: 33/33 checks, bot clears on source and on the re-exported Linux binary.
 - Rendered captures under Xvfb (software GL): title, all five zones, every enemy's telegraph/attack, VFX, ending screen were inspected.
-- Exports: `build/linux/TaoistWanderer.x86_64` (verified: runs, renders, bot completes) and `build/windows/TaoistWanderer.exe` (**built but not run** — no Windows/Wine here).
+- Packages: `python3 tools/build/package.py 0.1.1` → `build/TaoistWanderer-v0.1.1-{linux,windows}-x86_64.zip` (41 / 50 MB).
+- Exports: `build/linux/TaoistWanderer.x86_64` (verified: runs, renders, bot completes) and `build/windows/TaoistWanderer.exe` (**built but not run** — no Windows here; installing Wine was not permitted in this environment).
 
 ## Not verified / known limitations
 - **No human playtest yet.** Feel (timing windows, difficulty, readability at speed) is tuned from specs and bot runs only. Bot clear time (~2 min) means a first-time human run is probably ~8–15 min.

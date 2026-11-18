@@ -132,7 +132,7 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 	if dead:
 		return {}
 	hp -= atk.damage
-	vis.flash = 1.0
+	vis.flash = 0.55
 	var dir: int = atk.dir
 	if atk.kind == "aoe" and atk.has("centre"):
 		dir = 1 if global_position.x >= atk.centre.x else -1
