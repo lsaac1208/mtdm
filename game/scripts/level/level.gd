@@ -384,6 +384,7 @@ func _on_player_died() -> void:
 		return
 	_respawning = true
 	Game.deaths += 1
+	print("DEATH x=%.0f zone=%s cp=%d" % [player.global_position.x, LevelData.ZONES[maxi(zone_idx, 0)].en, Game.checkpoint_id])
 	await get_tree().create_timer(1.4).timeout
 	await hud.fade_out(0.6)
 	for enc in encounters:

@@ -619,7 +619,36 @@ func _bot_press(d: Dictionary, action: String) -> void:
 	d[action + "_just"] = true
 
 
+var _human_t := 0.0
+var _human_last := {}
+
+
 func _bot_step(p: Player, dt: float) -> void:
+	if Game.args.get("bot_skill", "") == "human":
+		# reaction cadence ~180 ms; held inputs persist between decisions
+		_human_t -= dt
+		if _human_t > 0.0:
+			var keep := {}
+			for k in _human_last:
+				if not String(k).ends_with("_just"):
+					keep[k] = _human_last[k]
+			p.input_override = keep
+			return
+		_human_t = randf_range(0.15, 0.22)
+		_bot_step_inner(p, dt + 0.18)
+		var d: Dictionary = p.input_override
+		# miss ~25% of defensive reads (block / dodge jump / dash away)
+		if randf() < 0.25 and (d.has("block") or d.has("dash_just") or (d.has("jump_just") and not d.has("move_right"))):
+			d.erase("block")
+			d.erase("dash_just")
+			d.erase("jump_just")
+		_human_last = d.duplicate()
+		p.input_override = d
+		return
+	_bot_step_inner(p, dt)
+
+
+func _bot_step_inner(p: Player, dt: float) -> void:
 	_bot_cd = maxf(0.0, _bot_cd - dt)
 	_bot_retreat = maxf(0.0, _bot_retreat - dt)
 	var d := {}
