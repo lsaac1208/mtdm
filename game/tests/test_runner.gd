@@ -228,6 +228,25 @@ func _run() -> void:
 			await _shot("f%03d_%s" % [f, p.vis.pose])
 		get_tree().quit()
 		return
+	if only == "crawlcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(700.0)
+		p.max_hp = 9999.0
+		p.hp = 9999.0
+		await _wait(0.4)
+		var c := await spawn("crawler", 1150.0)
+		var last := ""
+		var n := 0
+		var tt := 0.0
+		while n < 12 and tt < 6.0:
+			await _frames(3)
+			tt += 0.05
+			if c.state != last or c.state == "pounce":
+				last = c.state
+				await _shot("cr_%s" % c.state)
+				n += 1
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)
@@ -244,7 +263,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "bot"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "bot"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot"):
 			continue
@@ -929,6 +948,60 @@ func t_gamepad_map() -> void:
 		Input.flush_buffered_events()
 	_log("gamepad_actions_fire", bad.is_empty(), str(bad))
 	await _frames(1)
+
+
+## Animation continuity: the hero's visual centre-of-mass (rig.position + pose
+## anchor) must not jump more than a bound between consecutive frames during a
+## full combo, dash, jump and land. Catches pose pops and anchor mistakes.
+func t_anim_continuity() -> void:
+	var p := await _fresh_level(700.0)
+	await _wait(0.5)
+	p.facing = 1
+	var worst := 0.0
+	var worst_at := ""
+	var last := Vector2.INF
+	var script := [["attack", 0], ["attack", 14], ["attack", 28], ["dash", 60], ["attack", 64], ["jump", 100], ["attack", 112], ["block", 160]]
+	var f := 0
+	var si := 0
+	while f < 220:
+		if si < script.size() and f == script[si][1]:
+			var a: String = script[si][0]
+			p.input_override = {a: true, a + "_just": true}
+			si += 1
+		elif f > 160:
+			p.input_override = {"block": true}
+		await _frames(1)
+		f += 1
+		var s: Sprite2D = p.vis.cur
+		var md := PoseSprite.meta(p.vis.pose)
+		var body_c: Vector2 = s.global_transform * Vector2(md.foot_x, md.foot_y - md.body_h * 0.5)
+		var rel := body_c - p.global_position
+		if last != Vector2.INF:
+			var d := rel.distance_to(last)
+			if d > worst:
+				worst = d
+				worst_at = "%s f%d" % [p.vis.pose, f]
+		last = rel
+	_log("hero_anim_no_pops", worst < 40.0, "max body-centre jump %.1f px at %s" % [worst, worst_at])
+
+
+func t_enemy_ledge() -> void:
+	# every enemy type must get over a ledge between it and the player
+	var bad := []
+	for ty in ["grunt", "crawler", "husk", "spitter", "elite"]:
+		var p := await _fresh_level(400.0 if ty == "spitter" else 700.0)
+		p.max_hp = 99999.0
+		p.hp = 99999.0
+		var e := await spawn(ty, 1160.0)
+		if ty == "husk":
+			e._awaken()
+		var tt := 0.0
+		while tt < 7.0 and e.global_position.x > 1000.0:
+			await _frames(6)
+			tt += 0.1
+		if e.global_position.x > 1000.0:
+			bad.append("%s stuck at %.0f" % [ty, e.global_position.x])
+	_log("enemies_cross_ledges", bad.is_empty(), str(bad))
 
 
 func t_spawn_surface() -> void:

@@ -24,6 +24,7 @@ var leash_left := -1e9
 var leash_right := 1e9
 var _hurt_cd := 0.0
 var _bob_t := 0.0
+var _wall_t := 0.0
 var _dissolve_t := 0.0
 var telegraph: Node2D
 
@@ -98,7 +99,19 @@ func _physics_process(delta: float) -> void:
 	if knock_v != 0.0:
 		velocity.x += knock_v
 		knock_v = 0.0
+	var want_vx := velocity.x
 	move_and_slide()
+	# blocked by a ledge while trying to move: hop onto it (prevents soft-locks)
+	if is_on_floor() and is_on_wall() and absf(want_vx) > 20.0 and state in ["chase", "lunge", "retreat", "wander"]:
+		_wall_t += get_physics_process_delta_time()
+		if _wall_t > 0.15:
+			_wall_t = 0.0
+			velocity.y = -680.0
+			velocity.x = want_vx
+			vis.squash = Vector2(0.9, 1.1)
+			Fx.dust(global_position, 5)
+	else:
+		_wall_t = 0.0
 	if global_position.x < leash_left:
 		global_position.x = leash_left
 	elif global_position.x > leash_right:

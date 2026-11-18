@@ -736,7 +736,7 @@ func _animate(delta: float) -> void:
 			vis.bob = 0.0
 			target_lean = clampf(velocity.y / 90.0, -6.0, 8.0) + 4.0
 		"land", "dead":
-			vis.set_pose("hero_13_recovery", 0.04)
+			vis.set_pose("hero_13_recovery", 0.07)
 		"attack":
 			target_lean = cur_atk.get("lean", 0.0) if state_t >= cur_atk.startup else -3.0
 		"hit":
