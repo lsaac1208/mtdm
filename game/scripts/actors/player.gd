@@ -579,7 +579,7 @@ func _take(dmg: float, flash_: bool) -> void:
 	hp = maxf(0.0, hp - dmg)
 	hp_changed.emit(hp, max_hp)
 	if flash_:
-		vis.flash = 0.9
+		vis.flash = 0.45
 	if hp <= 0.0 and not dead:
 		_die()
 
@@ -696,7 +696,7 @@ func _animate(delta: float) -> void:
 	vis.bob = 0.0
 	vis.breathe = 0.0
 	vis.tint = Color(0.82, 1.0, 0.7) if in_taint > 0.0 else Color.WHITE
-	vis.alpha = 0.55 if (invuln > 0.0 and state != "dash" and state != "dash_attack" and int(invuln * 20) % 2 == 0) else 1.0
+	vis.alpha = 0.7 if (invuln > 0.0 and state != "dash" and state != "dash_attack" and int(invuln * 20) % 2 == 0) else 1.0
 	match state:
 		"idle":
 			vis.set_pose("hero_01_ready", 0.08)
