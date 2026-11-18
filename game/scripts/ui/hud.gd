@@ -83,10 +83,48 @@ func _ready() -> void:
 	fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(fade)
 	var tw := create_tween()
-	tw.tween_property(fade, "color:a", 0.0, 0.8)
+	if Game.run_time < 0.5 and Game.checkpoint_id == 0 and Game.deaths == 0 and not Game.args.has("startx"):
+		_opening()
+	else:
+		tw.tween_property(fade, "color:a", 0.0, 0.8)
 	Game.hint.connect(_on_hint)
 	Game.zone_entered.connect(_on_zone)
 	Game.boss_changed.connect(_on_boss)
+
+
+func _opening() -> void:
+	var l1 := _label(BRUSH_FONT, 46, Color(0.92, 0.85, 0.7))
+	l1.text = "末日废土之上，道法不灭，万物异变。"
+	l1.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	l1.offset_left = -500
+	l1.offset_right = 500
+	l1.offset_top = -60
+	l1.offset_bottom = 10
+	var l2 := _label(null, 18, Color(0.75, 0.66, 0.5))
+	l2.text = "In the wasteland, the Tao endures; all things rot and transform."
+	l2.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	l2.offset_left = -500
+	l2.offset_right = 500
+	l2.offset_top = 20
+	l2.offset_bottom = 50
+	move_child(fade, get_child_count() - 1)
+	move_child(l1, get_child_count() - 1)
+	move_child(l2, get_child_count() - 1)
+	if player:
+		player.controls_locked = true
+	var tw := create_tween()
+	tw.tween_property(l1, "modulate:a", 1.0, 0.9)
+	tw.parallel().tween_property(l2, "modulate:a", 1.0, 0.9).set_delay(0.4)
+	tw.tween_interval(1.8)
+	tw.tween_property(l1, "modulate:a", 0.0, 0.7)
+	tw.parallel().tween_property(l2, "modulate:a", 0.0, 0.7)
+	tw.tween_property(fade, "color:a", 0.0, 1.0)
+	tw.tween_callback(func():
+		if player and is_instance_valid(player):
+			player.controls_locked = false
+		zone_t = 3.2
+		l1.queue_free()
+		l2.queue_free())
 
 
 func _label(font: Font, size: int, col: Color) -> Label:
