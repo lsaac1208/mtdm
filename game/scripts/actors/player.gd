@@ -304,6 +304,7 @@ func _st_attack(delta: float) -> void:
 			Fx.C_CINNABAR, Color(1, 0.97, 0.9), f[4])
 		Sfx.play("swing", -4.0)
 		vis.squash = Vector2(1.06, 0.95)
+		_smear(2, 0.3)
 	if t >= st and t < st + ac:
 		var hits := strike(a.rect, a.dmg, a.poise, a.knock, hit_set, {"tag": cur_atk_name, "low": a.get("low", false)})
 		if hits.size() > 0:
@@ -402,6 +403,7 @@ func _start_jump_attack() -> void:
 	air_attack = false
 	hit_set = {}
 	vis.set_pose("hero_07_jump", 0.03)
+	_smear(1, 0.3)
 	Sfx.play("swing", -4.0, 0.06, 1.08)
 	Fx.slash(global_position + Vector2(26 * facing, -70), facing, -80.0, 95.0, 88.0, 34.0, 0.3)
 
@@ -651,6 +653,23 @@ func on_kill(_enemy) -> void:
 
 
 # ---------------------------------------------------------------- visuals
+## Motion smear: fading copies of the previous and current pose trailing the swing.
+func _smear(n: int, alpha: float) -> void:
+	for i in n:
+		var src: Sprite2D = vis.prev if (i == 0 and vis.prev.visible) else vis.cur
+		var g := Sprite2D.new()
+		g.texture = src.texture
+		g.centered = false
+		g.global_transform = src.global_transform
+		g.position += Vector2(-facing * 14.0 * (i + 1), 0)
+		g.modulate = Color(1.0, 0.85, 0.7, alpha * (1.0 - i * 0.35))
+		g.z_index = 4
+		Fx.layer().add_child(g)
+		var tw := g.create_tween()
+		tw.tween_property(g, "modulate:a", 0.0, 0.14)
+		tw.tween_callback(g.queue_free)
+
+
 func _spawn_ghost() -> void:
 	var g := Sprite2D.new()
 	g.texture = vis.cur.texture
