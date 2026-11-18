@@ -30,19 +30,19 @@ const ATK := {
 	"slash1": {"pre": "hero_02_draw", "pose": "hero_03_hslash", "startup": 0.07, "active": 0.09,
 		"recover": 0.22, "rect": Rect2(0, -145, 118, 90), "dmg": 10.0, "poise": 8.0, "knock": 170.0,
 		"lunge": 170.0, "next": "slash2", "fx": [-70.0, 55.0, 88.0, 34.0, 0.6], "fx_off": Vector2(10, -96),
-		"lean": 6.0},
+		"lean": 6.0, "arm": [-0.55, 0.3, 0.0, 0.0]},
 	"slash2": {"pre": "hero_04_downslash", "pose": "hero_04_downslash", "startup": 0.12, "active": 0.09,
 		"recover": 0.26, "rect": Rect2(4, -160, 104, 160), "dmg": 14.0, "poise": 16.0, "knock": 120.0,
 		"lunge": 120.0, "next": "slash3", "fx": [-120.0, 80.0, 86.0, 38.0, 1.0], "fx_off": Vector2(24, -80),
-		"lean": 10.0, "low": true},
+		"lean": 10.0, "low": true, "arm": [-0.25, 0.85, 0.0, 0.0]},
 	"slash3": {"pre": "hero_02_draw", "pose": "hero_05_thrust", "startup": 0.11, "active": 0.1,
 		"recover": 0.32, "rect": Rect2(10, -132, 160, 62), "dmg": 17.0, "poise": 20.0, "knock": 300.0,
 		"lunge": 360.0, "next": "", "fx": [-80.0, 80.0, 120.0, 22.0, 0.14], "fx_off": Vector2(60, -100),
-		"lean": 4.0},
+		"lean": 4.0, "arm": [0.0, 0.0, -0.09, 0.03]},
 	"down": {"pre": "hero_04_downslash", "pose": "hero_04_downslash", "startup": 0.14, "active": 0.1,
 		"recover": 0.28, "rect": Rect2(4, -160, 106, 160), "dmg": 16.0, "poise": 20.0, "knock": 140.0,
 		"lunge": 90.0, "next": "slash3", "fx": [-120.0, 85.0, 88.0, 40.0, 1.0], "fx_off": Vector2(24, -80),
-		"lean": 12.0, "low": true},
+		"lean": 12.0, "low": true, "arm": [-0.3, 0.9, 0.0, 0.0]},
 }
 
 var qi := 40.0
@@ -66,6 +66,7 @@ var _ghost_t := 0.0
 var _step_t := 0.0
 var _fall_peak := 0.0
 var _hit_stun := 0.35
+var _arm := [0.0, 0.0, 0.0]   # sword-arm rot, back-arm rot, sword-arm offset along x (uv)
 var input_override = null   # test harness: Dictionary of action -> bool
 
 
@@ -274,6 +275,7 @@ func _st_land(delta: float) -> void:
 
 # ---------------------------------------------------------------- melee
 func _start_attack(name_: String) -> void:
+	_arm = [0.0, 0.0, 0.0]
 	cur_atk_name = name_
 	cur_atk = ATK[name_]
 	hit_set = {}
@@ -305,6 +307,14 @@ func _st_attack(delta: float) -> void:
 		Sfx.play("swing", -4.0)
 		vis.squash = Vector2(1.06, 0.95)
 		_smear(2, 0.3)
+	var ac_curve: Array = a.get("arm", [0.0, 0.0, 0.0, 0.0])
+	if t >= st:
+		# active pose: wind-up angle -> strike angle (fast ease-out), then settle in recovery
+		var k := clampf((t - st) / maxf(ac * 1.3, 0.01), 0.0, 1.0)
+		var e := 1.0 - pow(1.0 - k, 3.0)
+		var settle := clampf((t - st - ac) / maxf(a.recover, 0.01), 0.0, 1.0)
+		_arm[0] = lerpf(lerpf(ac_curve[0], ac_curve[1], e), ac_curve[1] * 0.6, settle)
+		_arm[2] = lerpf(lerpf(ac_curve[2], ac_curve[3], e), 0.0, settle)
 	if t >= st and t < st + ac:
 		var hits := strike(a.rect, a.dmg, a.poise, a.knock, hit_set, {"tag": cur_atk_name, "low": a.get("low", false)})
 		if hits.size() > 0:
@@ -399,6 +409,7 @@ func _st_dash_attack(delta: float) -> void:
 
 # ---------------------------------------------------------------- air attack
 func _start_jump_attack() -> void:
+	_arm = [-0.6, 0.0, 0.0]
 	set_state("jump_attack")
 	air_attack = false
 	hit_set = {}
@@ -411,6 +422,7 @@ func _start_jump_attack() -> void:
 func _st_jump_attack(delta: float) -> void:
 	var ax := _axis()
 	velocity.x = move_toward(velocity.x, ax * RUN_SPEED * 0.8, 1200.0 * delta)
+	_arm[0] = lerpf(-0.6, 0.75, 1.0 - pow(1.0 - clampf(state_t / 0.2, 0.0, 1.0), 3.0))
 	if state_t >= 0.04 and state_t < 0.24:
 		var hits := strike(Rect2(-10, -125, 128, 165), 13.0, 12.0, 160.0, hit_set, {"tag": "jump_attack", "low": true})
 		if hits.size() > 0:
@@ -729,5 +741,25 @@ func _animate(delta: float) -> void:
 			target_lean = cur_atk.get("lean", 0.0) if state_t >= cur_atk.startup else -3.0
 		"hit":
 			target_lean = -10.0
+	# arms: attacks drive _arm; locomotion swings arms against the legs
+	var ar0 := 0.0
+	var ar1 := 0.0
+	var aoff := 0.0
+	match state:
+		"attack", "jump_attack":
+			ar0 = _arm[0]
+			aoff = _arm[2]
+		"run":
+			ar0 = 0.2 * sin(_step_t)
+			ar1 = -0.16 * sin(_step_t)
+		"idle":
+			var tt := Time.get_ticks_msec() / 1000.0
+			ar0 = 0.03 * sin(tt * 2.2)
+			ar1 = -0.025 * sin(tt * 2.2 + 0.7)
+		"air":
+			ar0 = -0.18
+			ar1 = 0.12
+	vis.arm_rot = [ar0, ar1]
+	vis.arm_off = [Vector2(aoff, 0.0), Vector2.ZERO]
 	vis.lean = lerpf(vis.lean, target_lean, minf(1.0, delta * 14.0))
 	vis.sway = 0.012 if state in ["run", "dash", "dash_attack", "air", "jump_attack"] else 0.005

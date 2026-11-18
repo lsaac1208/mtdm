@@ -190,6 +190,44 @@ func _run() -> void:
 			await _shot("c%d_%s" % [i, e.state])
 		get_tree().quit()
 		return
+	if only == "armcap":
+		# static check of the arm rig on the ready pose at fixed rotations
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(700.0)
+		p.set_physics_process(false)
+		await _wait(0.5)
+		for r in [0.0, -0.35, 0.35]:
+			p.vis.arm_rot = [r, -r]
+			await _frames(3)
+			await _shot("arm_%+.2f" % r)
+		get_tree().quit()
+		return
+	if only == "combocap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(700.0)
+		await _wait(0.6)
+		p.facing = 1
+		var seq: String = Game.args.get("seq", "attack,attack,attack")
+		var acts := seq.split(",")
+		var f := 0
+		var ai := 0
+		while f < int(Game.args.get("frames", "60")):
+			if ai < acts.size() and f % 14 == 0:
+				var a: String = acts[ai]
+				ai += 1
+				if a == "down":
+					p.input_override = {"attack": true, "attack_just": true, "move_down": true}
+				elif a == "jumpatk":
+					p.input_override = {"jump": true, "jump_just": true}
+				else:
+					p.input_override = {a: true, a + "_just": true}
+			await _frames(2)
+			f += 2
+			if seq.begins_with("jumpatk") and f == 14:
+				p.input_override = {"attack": true, "attack_just": true}
+			await _shot("f%03d_%s" % [f, p.vis.pose])
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)

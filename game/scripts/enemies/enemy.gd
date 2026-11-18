@@ -238,6 +238,12 @@ func _die(dir := 0) -> void:
 	died.emit(self)
 
 
+## Swing the weapon arm from r0 to r1 over `dur` seconds of the current state (ease-out).
+func swing_arm(r0: float, r1: float, dur: float) -> void:
+	var k := clampf(state_t / maxf(dur, 0.01), 0.0, 1.0)
+	vis.arm_rot = [lerpf(r0, r1, 1.0 - pow(1.0 - k, 3.0)), 0.0]
+
+
 ## Melee helper used by subclasses during active frames.
 func melee(r: Rect2, dmg: float, knock: float, extra := {}) -> Array:
 	return strike(r, dmg, 0.0, knock, attack_hits, extra)
@@ -250,12 +256,14 @@ func walk_anim(delta: float, speed_ratio: float, rate := 7.0, amp := 0.04) -> vo
 	vis.legs = 0.3 * speed_ratio * clampf(amp / 0.04, 0.5, 1.5)
 	vis.leg_lift = 0.5 * speed_ratio
 	vis.torso_twist = -0.04 * speed_ratio
+	vis.arm_rot = [0.16 * speed_ratio * sin(_bob_t), -0.12 * speed_ratio * sin(_bob_t)]
 	var L := hurt_size.y * vis.hip_frac
 	vis.bob = -L * (1.0 - cos(vis.legs * sin(_bob_t))) + absf(cos(_bob_t)) * 1.5 * speed_ratio
 
 
 func still_anim() -> void:
 	vis.torso_twist = 0.0
+	vis.arm_rot = [0.0, 0.0]
 	vis.stride = 0.0
 	vis.legs = 0.0
 	vis.leg_lift = 0.0

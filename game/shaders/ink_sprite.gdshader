@@ -23,6 +23,12 @@ uniform float hip_w = 0.05;        // lateral hip pivot offset (uv)
 uniform float foot_v = 0.95;       // uv y of the feet
 uniform float leg_band = 0.13;
 uniform float tuck = 0.0;
+uniform vec4 arm0_sh = vec4(0.0);   // shoulder.xy, hand.xy (uv)
+uniform vec4 arm0_tp = vec4(0.0);   // tip.xy, arm width, tool width (0 = no bone)
+uniform vec3 arm0_x = vec3(0.0);    // rotation (rad), offset.xy (uv)
+uniform vec4 arm1_sh = vec4(0.0);
+uniform vec4 arm1_tp = vec4(0.0);
+uniform vec3 arm1_x = vec3(0.0);
 uniform float torso_twist = 0.0;  // upper-body counter-rotation about the hips (radians)
 uniform float ribbon = 0.0;       // head ribbon / hair flutter (uv units)          // airborne: both thighs forward, knees bent (radians)     // half-width of each leg region (uv)
 uniform float split_x = 0.5;       // uv x between the legs (feet anchor)
@@ -71,7 +77,7 @@ vec4 leg_sample(vec2 uv, vec2 px, float side, float th, float kn) {
 	return c;
 }
 
-vec4 rig_sample(vec2 uv, vec2 px) {
+vec4 leg_rig(vec2 uv, vec2 px) {
 	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return vec4(0.0);
 	if ((legs <= 0.0 && tuck <= 0.0) || uv.y < hip_y - 0.03) {
 		return texture(src_tex, uv);
@@ -89,6 +95,75 @@ vec4 rig_sample(vec2 uv, vec2 px) {
 	o.rgb = (o.rgb * o.a + r.rgb * r.a * (1.0 - o.a)) / max(o.a + r.a * (1.0 - o.a), 0.001);
 	o.a = o.a + r.a * (1.0 - o.a);
 	return o;
+}
+
+float seg_dist(vec2 p, vec2 a, vec2 b) {
+	vec2 ab = b - a;
+	float k = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+	return length(p - a - ab * k);
+}
+
+// 1 inside the bone's capsules (arm segment + optional tool segment), px space
+float in_bone(vec2 p, vec4 sh, vec4 tp, vec2 px) {
+	if (tp.z <= 0.0) return 0.0;
+	vec2 s = sh.xy * px;
+	vec2 h = sh.zw * px;
+	float r = tp.z * px.x;
+	float inside = step(seg_dist(p, s, h), r);
+	if (tp.w > 0.0) {
+		inside = max(inside, step(seg_dist(p, h, tp.xy * px), tp.w * px.x));
+	}
+	return inside;
+}
+
+vec4 bone_layer(vec2 uv, vec2 px, vec4 sh, vec4 tp, vec3 x) {
+	if (tp.z <= 0.0) return vec4(0.0);
+	vec2 P = uv * px;
+	vec2 s = sh.xy * px;
+	vec2 Q = s + rot2(P - s - x.yz * px, -x.x);
+	if (in_bone(Q, sh, tp, px) < 0.5) return vec4(0.0);
+	vec2 qu = Q / px;
+	if (qu.x < 0.0 || qu.x > 1.0 || qu.y < 0.0 || qu.y > 1.0) return vec4(0.0);
+	return texture(src_tex, qu);
+}
+
+// where an arm used to be: probe both sides perpendicular to the bone. If both
+// sides are body, fill with body texture; if either is background, the limb was
+// on the silhouette edge, so leave it empty.
+vec4 inpaint(vec2 uv, vec2 px, vec4 sh, vec4 tp) {
+	vec2 P = uv * px;
+	vec2 a = sh.xy * px;
+	vec2 b = sh.zw * px;
+	float r = tp.z * px.x;
+	if (tp.w > 0.0 && seg_dist(P, b, tp.xy * px) < seg_dist(P, a, b)) {
+		a = b;
+		b = tp.xy * px;
+		r = tp.w * px.x;
+	}
+	vec2 ax = normalize(b - a + vec2(0.0001));
+	vec2 n = vec2(-ax.y, ax.x);
+	float d = r * 1.35 + 2.0;
+	vec4 A = texture(src_tex, (P + n * d) / px);
+	vec4 B = texture(src_tex, (P - n * d) / px);
+	if (A.a < 0.5 || B.a < 0.5) return vec4(0.0);
+	return mix(A, B, 0.5);
+}
+
+vec4 over(vec4 top, vec4 under) {
+	float a = top.a + under.a * (1.0 - top.a);
+	return vec4((top.rgb * top.a + under.rgb * under.a * (1.0 - top.a)) / max(a, 0.001), a);
+}
+
+vec4 rig_sample(vec2 uv, vec2 px) {
+	vec4 body = leg_rig(uv, px);
+	bool any_arm = arm0_tp.z > 0.0 || arm1_tp.z > 0.0;
+	if (!any_arm || (abs(arm0_x.x) + abs(arm1_x.x) + length(arm0_x.yz) + length(arm1_x.yz)) < 0.0005) return body;
+	vec2 P = uv * px;
+	if (in_bone(P, arm1_sh, arm1_tp, px) > 0.5 && abs(arm1_x.x) + length(arm1_x.yz) > 0.0005) body = inpaint(uv, px, arm1_sh, arm1_tp);
+	if (in_bone(P, arm0_sh, arm0_tp, px) > 0.5 && abs(arm0_x.x) + length(arm0_x.yz) > 0.0005) body = inpaint(uv, px, arm0_sh, arm0_tp);
+	body = over(bone_layer(uv, px, arm1_sh, arm1_tp, arm1_x), body);
+	body = over(bone_layer(uv, px, arm0_sh, arm0_tp, arm0_x), body);
+	return body;
 }
 
 void fragment() {
@@ -118,29 +193,24 @@ void fragment() {
 	vec4 c = rig_sample(uv, px);
 	float figure_a = c.a;
 	// thick ink contour: max alpha of 8 neighbours, drawn behind the sprite
-	if (outline_px > 0.0) {
+	if (outline_px > 0.0 && c.a < 0.99) {
 		vec2 o = TEXTURE_PIXEL_SIZE * outline_px;
 		float na = 0.0;
 		na = max(na, rig_sample(uv + vec2(o.x, 0.0), px).a);
 		na = max(na, rig_sample(uv - vec2(o.x, 0.0), px).a);
 		na = max(na, rig_sample(uv + vec2(0.0, o.y), px).a);
 		na = max(na, rig_sample(uv - vec2(0.0, o.y), px).a);
-		na = max(na, rig_sample(uv + o * 0.7, px).a);
-		na = max(na, rig_sample(uv - o * 0.7, px).a);
-		na = max(na, rig_sample(uv + vec2(o.x, -o.y) * 0.7, px).a);
-		na = max(na, rig_sample(uv + vec2(-o.x, o.y) * 0.7, px).a);
 		float oa = clamp(na * 1.4, 0.0, 1.0) * outline_color.a;
 		// pale paper halo just outside the ink line (negative space)
 		float ha = 0.0;
 		if (halo_px > 0.0) {
 			vec2 h = TEXTURE_PIXEL_SIZE * halo_px;
 			float hn = 0.0;
-			hn = max(hn, rig_sample(uv + vec2(h.x, 0.0), px).a);
-			hn = max(hn, rig_sample(uv - vec2(h.x, 0.0), px).a);
-			hn = max(hn, rig_sample(uv + vec2(0.0, h.y), px).a);
-			hn = max(hn, rig_sample(uv - vec2(0.0, h.y), px).a);
 			hn = max(hn, rig_sample(uv + h * 0.7, px).a);
 			hn = max(hn, rig_sample(uv - h * 0.7, px).a);
+			hn = max(hn, rig_sample(uv + vec2(h.x, -h.y) * 0.7, px).a);
+			hn = max(hn, rig_sample(uv + vec2(-h.x, h.y) * 0.7, px).a);
+			hn = max(hn, na);
 			ha = clamp(hn * 1.2, 0.0, 1.0) * halo_color.a;
 		}
 		vec3 under = mix(halo_color.rgb, outline_color.rgb, step(0.001, oa) * clamp(oa / max(outline_color.a, 0.001), 0.0, 1.0));

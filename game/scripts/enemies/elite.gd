@@ -155,12 +155,15 @@ func _ai(delta: float) -> void:
 				_start("windup_chop")
 		"windup_chop":
 			velocity.x = 0.0
+			# raise the cleaver arm back over the wind-up
+			vis.arm_rot = [lerpf(0.0, 0.5, clampf(state_t / 0.6, 0.0, 1.0)), -0.15]
 			vis.lean = lerpf(vis.lean, -12.0, delta * 5.0)
 			vis.squash = vis.squash.lerp(Vector2(0.95, 1.08), delta * 4.0)
 			vis.nudge = Vector2(-10.0 * clampf(state_t / 0.5, 0.0, 1.0), 0.0)
 			if state_t >= 0.8 * spd:
 				_chop()
 		"chop":
+			swing_arm(-0.7, 0.35, 0.1)
 			velocity.x = move_toward(velocity.x, 0.0, 1600.0 * delta)
 			if state_t < 0.12:
 				melee(Rect2(18, -196, 156, 196), 30.0, 380.0, {"heavy": true})
@@ -168,6 +171,7 @@ func _ai(delta: float) -> void:
 				set_state("recover_chop")
 		"recover_chop":
 			velocity.x = 0.0
+			vis.arm_rot = [0.35, 0.0]
 			vis.lean = lerpf(vis.lean, 16.0, delta * 3.0)
 			if state_t >= (1.15 if chain == "" else 0.35):
 				if chain == "sweep":
@@ -179,11 +183,13 @@ func _ai(delta: float) -> void:
 					set_state("chase")
 		"windup_sweep":
 			velocity.x = -facing * 25.0
+			vis.arm_rot = [lerpf(0.0, 0.7, clampf(state_t / 0.5, 0.0, 1.0)), 0.0]
 			vis.lean = lerpf(vis.lean, -10.0, delta * 5.0)
 			vis.rig.skew = lerpf(vis.rig.skew, -0.18, delta * 5.0)
 			if state_t >= 0.65 * spd:
 				_sweep()
 		"sweep":
+			swing_arm(0.7, -0.9, 0.14)
 			velocity.x = move_toward(velocity.x, 0.0, 1400.0 * delta)
 			vis.rig.skew = lerpf(vis.rig.skew, 0.12, delta * 20.0)
 			if state_t < 0.16:
@@ -192,6 +198,7 @@ func _ai(delta: float) -> void:
 				set_state("recover_sweep")
 		"recover_sweep":
 			velocity.x = 0.0
+			vis.arm_rot = [lerpf(-0.9, 0.0, clampf(state_t / 0.6, 0.0, 1.0)), 0.0]
 			vis.rig.skew = lerpf(vis.rig.skew, 0.0, delta * 4.0)
 			vis.lean = lerpf(vis.lean, 6.0, delta * 3.0)
 			if state_t >= 0.8:

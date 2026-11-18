@@ -9,6 +9,9 @@ const META_PATH := "res://assets/sprites/sprites_meta.json"
 const SHADER := preload("res://shaders/ink_sprite.gdshader")
 static var _meta := {}
 static var _tex := {}
+static var _rig := {}
+var arm_rot := [0.0, 0.0]
+var arm_off := [Vector2.ZERO, Vector2.ZERO]
 
 var rig: Node2D
 var cur: Sprite2D
@@ -45,6 +48,13 @@ static func meta(name_: String) -> Dictionary:
 		var f := FileAccess.open(META_PATH, FileAccess.READ)
 		_meta = JSON.parse_string(f.get_as_text())
 	return _meta.get(name_, {})
+
+
+static func rig_data(name_: String) -> Dictionary:
+	if _rig.is_empty():
+		var f := FileAccess.open("res://assets/sprites/rig.json", FileAccess.READ)
+		_rig = JSON.parse_string(f.get_as_text()) if f else {"_": {}}
+	return _rig.get(name_, {})
 
 
 static func tex(name_: String) -> Texture2D:
@@ -132,6 +142,17 @@ func _set_params(s: Sprite2D, a: float) -> void:
 	m.set_shader_parameter("leg_lift", leg_lift)
 	m.set_shader_parameter("tuck", tuck)
 	m.set_shader_parameter("torso_twist", torso_twist)
+	var arms: Array = rig_data(pose).get("arms", [])
+	for i in 2:
+		var pre := "arm%d_" % i
+		if i < arms.size():
+			var b: Dictionary = arms[i]
+			var tip: Array = b.get("t", b.h)
+			m.set_shader_parameter(pre + "sh", Vector4(b.s[0], b.s[1], b.h[0], b.h[1]))
+			m.set_shader_parameter(pre + "tp", Vector4(tip[0], tip[1], b.w, b.get("tw", 0.0)))
+			m.set_shader_parameter(pre + "x", Vector3(arm_rot[i], arm_off[i].x, arm_off[i].y))
+		else:
+			m.set_shader_parameter(pre + "tp", Vector4.ZERO)
 	m.set_shader_parameter("ribbon", ribbon)
 	var md := meta(pose)
 	if not md.is_empty():

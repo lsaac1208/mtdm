@@ -143,6 +143,7 @@ func _ai(delta: float) -> void:
 				Fx.slash(global_position + Vector2(40 * facing, -95), facing, -60.0, 60.0, 70.0, 26.0, 0.25,
 					Color(0.3, 0.26, 0.2), Color(0.7, 0.62, 0.45), 0.8)
 		"attack":
+			swing_arm(-0.6, 0.45, 0.16)
 			velocity.x = move_toward(velocity.x, 0.0, 700.0 * delta)
 			if state_t < 0.16:
 				melee(Rect2(8, -142, 122, 118), 18.0, 320.0)
@@ -152,6 +153,7 @@ func _ai(delta: float) -> void:
 				vis.lean = 0.0
 		"recover":
 			velocity.x = 0.0
+			vis.arm_rot = [0.0, 0.0]
 			if state_t >= 0.75:
 				cd = 0.9
 				set_state("chase")
