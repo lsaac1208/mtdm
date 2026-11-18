@@ -66,7 +66,8 @@ var _ghost_t := 0.0
 var _step_t := 0.0
 var _fall_peak := 0.0
 var _hit_stun := 0.35
-var _arm := [0.0, 0.0, 0.0]   # sword-arm rot, back-arm rot, sword-arm offset along x (uv)
+var _arm := [0.0, 0.0, 0.0]
+var _block_recoil := 0.0   # sword-arm rot, back-arm rot, sword-arm offset along x (uv)
 var input_override = null   # test harness: Dictionary of action -> bool
 
 
@@ -556,6 +557,7 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 		_take(dmg, false)
 		knock_v = -facing * (420.0 if heavy else 200.0)
 		Sfx.play("block", -2.0)
+		_block_recoil = -0.35 if heavy else -0.2
 		Fx.spark(global_position + Vector2(30 * facing, -90), Fx.C_GOLD, 8)
 		_gain_qi(2.0)
 		if heavy:
@@ -749,6 +751,14 @@ func _animate(delta: float) -> void:
 		"attack", "jump_attack":
 			ar0 = _arm[0]
 			aoff = _arm[2]
+		"talisman":
+			# wind back, then snap the throwing arm forward at release (0.1 s)
+			ar0 = lerpf(-0.7, 0.15, 1.0 - pow(1.0 - clampf((state_t - 0.04) / 0.1, 0.0, 1.0), 3.0))
+		"gourd":
+			ar0 = lerpf(0.35, -0.15, clampf((state_t - 0.12) / 0.14, 0.0, 1.0))
+		"block":
+			ar0 = _block_recoil
+			_block_recoil = lerpf(_block_recoil, 0.0, minf(1.0, delta * 10.0))
 		"run":
 			ar0 = 0.2 * sin(_step_t)
 			ar1 = -0.16 * sin(_step_t)

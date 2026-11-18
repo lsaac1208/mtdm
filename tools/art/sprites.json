@@ -168,7 +168,8 @@
     880,
     578
    ],
-   "group": "hero_r2"
+   "group": "hero_r2",
+   "flip": true
   },
   {
    "name": "hero_09_gourd",
