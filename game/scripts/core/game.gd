@@ -63,7 +63,7 @@ func _ready() -> void:
 	_setup_input()
 	if args.has("shots"):
 		_shots.call_deferred()
-	if args.has("test"):
+	if args.has("test") and ResourceLoader.exists("res://tests/test_runner.gd"):
 		var tr = load("res://tests/test_runner.gd").new()
 		add_child(tr)
 	if args.has("quit_after"):

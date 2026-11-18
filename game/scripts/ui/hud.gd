@@ -25,7 +25,7 @@ var icons := {}
 func _ready() -> void:
 	layer = 10
 	draw_root = Control.new()
-	draw_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	draw_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	draw_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	draw_root.draw.connect(_draw_hud)
 	add_child(draw_root)
@@ -55,7 +55,7 @@ func _ready() -> void:
 	hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(hint_panel)
 	hint_label = Label.new()
-	hint_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hint_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -78,7 +78,7 @@ func _ready() -> void:
 	zone_en.offset_top = 198
 	zone_en.offset_bottom = 226
 	fade = ColorRect.new()
-	fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	fade.color = Color(0.03, 0.03, 0.03, 1.0)
 	fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(fade)
@@ -86,7 +86,7 @@ func _ready() -> void:
 	tw.tween_property(fade, "color:a", 0.0, 0.8)
 	Game.hint.connect(_on_hint)
 	Game.zone_entered.connect(_on_zone)
-	Game.boss_changed.connect(func(b): boss = b; boss_lag = 1.0)
+	Game.boss_changed.connect(_on_boss)
 
 
 func _label(font: Font, size: int, col: Color) -> Label:
@@ -106,6 +106,23 @@ func _label(font: Font, size: int, col: Color) -> Label:
 
 func bind(p: Player) -> void:
 	player = p
+	p.died.connect(_on_player_died)
+
+
+func _on_boss(b) -> void:
+	var first := boss == null and b != null
+	boss = b
+	boss_lag = 1.0
+	if first:
+		zone_cn.text = "尸将 · 前期精英"
+		zone_en.text = "残甲不毁，重压前行  ·  UNDEAD WARRIOR ELITE"
+		zone_t = 3.2
+
+
+func _on_player_died() -> void:
+	zone_cn.text = "身 陨"
+	zone_en.text = "道心未灭 —— 篝火处再起"
+	zone_t = 2.6
 
 
 func _on_hint(text: String, dur: float) -> void:
@@ -129,6 +146,9 @@ func _process(delta: float) -> void:
 		var bt: float = maxf(0.0, boss.hp) / boss.max_hp
 		boss_lag = maxf(bt, boss_lag - delta * 0.25)
 	hint_t = maxf(0.0, hint_t - delta)
+	var hy := -200.0 if (boss and is_instance_valid(boss)) else -132.0
+	hint_panel.offset_top = hy
+	hint_panel.offset_bottom = hy + 48.0
 	hint_panel.modulate.a = lerpf(hint_panel.modulate.a, 1.0 if hint_t > 0.0 else 0.0, minf(1.0, delta * 8.0))
 	zone_t = maxf(0.0, zone_t - delta)
 	var za := clampf(minf(zone_t, 3.2 - zone_t) / 0.6, 0.0, 1.0)

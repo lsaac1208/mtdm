@@ -82,6 +82,17 @@ func _run() -> void:
 			await _frames(2)
 		get_tree().quit()
 		return
+	if only == "ending_shot":
+		shot_dir = Game.args.get("shots", "user://shots")
+		Game.run_time = 512.0
+		Game.kills = 27
+		Game.deaths = 2
+		Game.parries = 6
+		Game.finish_demo()
+		await _wait(4.5)
+		await _shot("ending")
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)
@@ -515,6 +526,10 @@ func t_bot() -> void:
 		if p == null or not is_instance_valid(p):
 			continue
 		_bot_step(p, 1.0 / 60.0)
+		if Game.args.has("shots") and fmod(t, float(Game.args.get("shot_every", "5"))) < 1.0 / 60.0:
+			shot_dir = Game.args.shots
+			DirAccess.make_dir_recursive_absolute(shot_dir)
+			await _shot("bot_%04d" % int(t))
 		if t - last_report > 20.0:
 			last_report = t
 			print("BOT t=%.0fs x=%.0f hp=%.0f deaths=%d kills=%d cleared=%s" % [t, p.global_position.x, p.hp, Game.deaths, Game.kills, Game.cleared.keys()])
@@ -601,6 +616,18 @@ func _bot_step(p: Player, dt: float) -> void:
 	if crowd >= 2 and p.qi >= p.BEADS_COST and _bot_cd <= 0.0:
 		_bot_press(d, "beads")
 		_bot_cd = 1.0
+		p.input_override = d
+		return
+	# enemy standing on a ledge above us: jump up toward it
+	if near.global_position.y < p.global_position.y - 30.0 and ad < 260.0:
+		d[dir] = true
+		if p.is_on_floor() and _bot_cd <= 0.0:
+			_bot_press(d, "jump")
+			d["jump"] = true
+			_bot_cd = 0.35
+		elif not p.is_on_floor() and _bot_cd <= 0.1 and ad < 130.0:
+			_bot_press(d, "attack")
+			_bot_cd = 0.3
 		p.input_override = d
 		return
 	var kind := near.enemy_name

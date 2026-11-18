@@ -10,7 +10,7 @@ var _started := false
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var sky := TextureRect.new()
 	if ResourceLoader.exists("res://assets/env/title_bg.png"):
 		sky.texture = load("res://assets/env/title_bg.png")
@@ -18,7 +18,7 @@ func _ready() -> void:
 		sky.texture = load("res://assets/env/sky.png")
 	sky.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	sky.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	sky.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sky.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(sky)
 	var holder := Node2D.new()
 	add_child(holder)

@@ -6,6 +6,10 @@
 > **「一人、一剑、一道，行于废土。以道御剑，以符镇邪，以心守世。」**  
 > *One Man, One Sword, One Tao, Through the Wasteland.*
 
+> ### ▶ 可玩 Demo（垂直切片 v0.1）/ Playable vertical slice
+> Godot 4.7.2 工程位于 [`game/`](./game/)（分支 `dev/vertical-slice-20261118`）。运行：`godot --path game`。
+> 文档：[`BUILD_AND_RUN.md`](./BUILD_AND_RUN.md) · [`DEVELOPMENT_STATUS.md`](./DEVELOPMENT_STATUS.md) · [`ROADMAP.md`](./ROADMAP.md) · [`DECISIONS.md`](./DECISIONS.md)
+
 本仓库是 **2D 横版动作游戏《道行者 / Taoist Wanderer》** 的**第一批核心研发交付物料库（First-Batch Developer Handoff Repository）**。  
 开发人员（策划、程序、2D 原画、骨骼/逐帧动画、关卡设计）可通过本仓库全面了解项目的**核心立意、世界观生态、视觉美术铁律、主角战斗体系、第一批可实装敌人（尸祟·亡秽系 01–05）完整规格**，以及下一阶段的资产量产标准。
 

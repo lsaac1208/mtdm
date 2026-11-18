@@ -8,17 +8,17 @@ var t := 0.0
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new()
 	bg.color = Color(0.9, 0.85, 0.74)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	if ResourceLoader.exists("res://assets/env/ending_bg.png"):
 		var tr := TextureRect.new()
 		tr.texture = load("res://assets/env/ending_bg.png")
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.set_anchors_preset(Control.PRESET_FULL_RECT)
+		tr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		add_child(tr)
 	holder = Node2D.new()
 	holder.position = Vector2(300, 610)

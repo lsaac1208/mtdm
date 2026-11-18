@@ -16,6 +16,8 @@ uniform vec4 tint : source_color = vec4(1.0);
 uniform float dissolve = 0.0;
 uniform vec4 burn_color : source_color = vec4(0.85, 0.35, 0.12, 1.0);
 uniform float alpha_mul = 1.0;
+uniform float outline_px = 3.5;          // texels
+uniform vec4 outline_color : source_color = vec4(0.06, 0.05, 0.04, 0.9);
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -42,6 +44,22 @@ void fragment() {
 	vec4 c = texture(TEXTURE, uv);
 	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
 		c.a = 0.0;
+	}
+	// thick ink contour: max alpha of 8 neighbours, drawn behind the sprite
+	if (outline_px > 0.0) {
+		vec2 o = TEXTURE_PIXEL_SIZE * outline_px;
+		float na = 0.0;
+		na = max(na, texture(TEXTURE, uv + vec2(o.x, 0.0)).a);
+		na = max(na, texture(TEXTURE, uv - vec2(o.x, 0.0)).a);
+		na = max(na, texture(TEXTURE, uv + vec2(0.0, o.y)).a);
+		na = max(na, texture(TEXTURE, uv - vec2(0.0, o.y)).a);
+		na = max(na, texture(TEXTURE, uv + o * 0.7).a);
+		na = max(na, texture(TEXTURE, uv - o * 0.7).a);
+		na = max(na, texture(TEXTURE, uv + vec2(o.x, -o.y) * 0.7).a);
+		na = max(na, texture(TEXTURE, uv + vec2(-o.x, o.y) * 0.7).a);
+		float oa = clamp(na * 1.4, 0.0, 1.0) * outline_color.a;
+		c.rgb = mix(outline_color.rgb, c.rgb, c.a);
+		c.a = max(c.a, oa);
 	}
 	c.rgb = mix(c.rgb, flash_color.rgb, flash * c.a);
 	c *= tint;

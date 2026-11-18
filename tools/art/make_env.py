@@ -585,7 +585,7 @@ def title_bg():
     far = np.asarray(Image.open(os.path.join(OUT, "far.png")))
     mid = np.asarray(Image.open(os.path.join(OUT, "mid.png")))
     over(base, far[:, 300:1580], 0, 230)
-    over(base, mid[:, 900:2180], 0, 260)
+    over(base, mid[:, 700:1980], 0, 260)
 
     def ridge(d, ss):
         pts = [(0, 720), (0, 650)]
@@ -603,7 +603,7 @@ def title_bg():
     save(out, "title_bg")
     # ending: soft dawn parchment with distant road
     end = make_sky(1280, 720, "ending_sky", sun=(0.5, 0.62)).astype(np.float32) / 255.0
-    over(end, far[:, 900:2180], 0, 300)
+    over(end, far[:, 700:1980], 0, 300)
     gm = mask_from(lambda d, ss: d.rectangle([0, 640 * ss, 1280 * ss, 720 * ss], fill=255), 1280, 720)
     over(end, paint(gm, hexc("#3a3028"), outline=0, tex=0.1, seed=3, shade=0.0), 0, 0)
     end[..., :3] = end[..., :3] * 0.75 + 0.25 * np.array([0.92, 0.86, 0.72])

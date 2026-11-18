@@ -4,7 +4,7 @@ extends RefCounted
 ## → 低洼污染区 → 废弃道观 → 乱葬岗 (elite). Encounters use the spec's
 ## Group A–D recipes. Ground is at y = 600; x grows to the right.
 
-const LENGTH := 10600.0
+const LENGTH := 11300.0
 
 const ZONES := [
 	{"x": 0.0, "cn": "荒村废墟", "en": "Ruined Village", "tint": Color(1.0, 0.93, 0.82), "fog": Color(0.85, 0.72, 0.55, 0.16), "music": "music_wander"},
@@ -17,7 +17,7 @@ const ZONES := [
 # Solid ground pieces: [x0, x1, top_y]. Gaps between pieces don't exist in
 # this slice (no pits) — elevation changes are steps/platforms.
 const GROUND := [
-	[-400.0, 10900.0, 600.0],
+	[-400.0, 11700.0, 600.0],
 ]
 
 # One-way-free solid platforms: [x0, x1, top_y, style]
@@ -29,6 +29,7 @@ const PLATFORMS := [
 	[6150.0, 6330.0, 525.0, "rock"],
 	[7020.0, 7120.0, 535.0, "altar"],
 	[8800.0, 8930.0, 530.0, "grave"],
+	[9300.0, 9420.0, 530.0, "grave"],
 ]
 
 const POOLS := [   # permanent taint pools [x, radius]
@@ -42,6 +43,7 @@ const CHECKPOINTS := [
 	{"id": 1, "x": 4440.0},
 	{"id": 2, "x": 6680.0},
 	{"id": 3, "x": 8700.0},
+	{"id": 4, "x": 9720.0},
 ]
 
 const SIGNS := [
@@ -54,7 +56,8 @@ const SIGNS := [
 	{"x": 6800.0, "text": "O 阴阳葫芦：饮下回血并震开周身（篝火处补满）"},
 	{"x": 7280.0, "text": "封印残尸：连续贪刀会引发「符力溃散」—— 见胸前符光，立刻退开！"},
 	{"x": 8240.0, "text": "P 念珠施法（耗 50 道力）：聚气后环阵爆发，解围利器"},
-	{"x": 8820.0, "text": "尸将：读它的举刀前摇 —— 竖劈要跳开震地，横扫可冲刺穿过；收招时反击"},
+	{"x": 8860.0, "text": "乱葬岗尸潮将起 —— 被围时以念珠解围，留意贴地而来的伏爬者"},
+	{"x": 9840.0, "text": "尸将：读它的举刀前摇 —— 竖劈要跳开震地，横扫可冲刺穿过；收招时反击"},
 ]
 
 # Encounters. `lock` = arena bounds (barriers close when the player crosses
@@ -67,15 +70,18 @@ const ENCOUNTERS := [
 	{"id": "e3_group_a", "group": "A", "trigger": 3620.0, "lock": [3420.0, 4300.0],
 		"enemies": [["grunt", 3950.0, -1.0, 0.0], ["grunt", 4200.0, 0.6, 0.9], ["crawler", 4150.0, 1.6, 0.6]]},
 	{"id": "e4_spitter", "group": "", "trigger": 0.0, "lock": [],
-		"enemies": [["spitter", 5080.0, -1.0, 0.0]]},
+		"enemies": [["spitter", 5080.0, -1.0, 0.0], ["crawler", 5330.0, -1.0, 0.0]]},
 	{"id": "e5_group_c", "group": "C", "trigger": 5760.0, "lock": [5620.0, 6480.0],
 		"enemies": [["spitter", 6270.0, -1.0, 0.0], ["grunt", 6000.0, 0.4, 0.9], ["grunt", 6180.0, 1.0, 0.9]]},
 	{"id": "e6_husk", "group": "", "trigger": 0.0, "lock": [],
 		"enemies": [["husk", 7380.0, -1.0, 0.0]]},
 	{"id": "e7_group_b", "group": "B", "trigger": 7820.0, "lock": [7620.0, 8480.0],
 		"enemies": [["husk", 8300.0, -1.0, 0.0], ["grunt", 8100.0, 0.5, 0.9], ["grunt", 8380.0, 1.2, 0.9]]},
-	{"id": "e8_elite", "group": "D", "trigger": 9300.0, "lock": [9080.0, 10180.0], "boss": true,
-		"enemies": [["elite", 9900.0, -1.0, 0.0], ["grunt", 9700.0, 1.4, 0.9]]},
+	{"id": "e7c_burial_wave", "group": "A+", "trigger": 9080.0, "lock": [8960.0, 9640.0],
+		"enemies": [["grunt", 9450.0, 0.3, 0.9], ["crawler", 9560.0, 0.9, 0.6], ["grunt", 9050.0, 3.2, 0.9],
+			["crawler", 9550.0, 3.8, 0.6], ["grunt", 9500.0, 4.4, 0.9]]},
+	{"id": "e8_elite", "group": "D", "trigger": 10000.0, "lock": [9800.0, 10900.0], "boss": true,
+		"enemies": [["elite", 10600.0, -1.0, 0.0], ["grunt", 10420.0, 1.4, 0.9]]},
 ]
 
-const END_X := 10380.0
+const END_X := 11080.0

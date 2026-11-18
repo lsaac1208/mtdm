@@ -104,11 +104,11 @@ func _build_background() -> void:
 	var sky := TextureRect.new()
 	sky.texture = _tex("sky")
 	sky.stretch_mode = TextureRect.STRETCH_SCALE
-	sky.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sky.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	cl.add_child(sky)
 	bg_layers.append({"node": sky, "factor": 0.0, "sky": true})
 	# [texture, scroll factor, top y on screen at rest, vertical factor]
-	for l in [["far", 0.08, 150.0, 0.03], ["mid", 0.22, 205.0, 0.08], ["near", 0.45, 250.0, 0.2]]:
+	for l in [["far", 0.08, 150.0, 0.03], ["mid", 0.22, 205.0, 0.08], ["near", 0.45, 262.0, 0.2]]:
 		var t := _tex(l[0])
 		if t == null:
 			continue
@@ -143,7 +143,7 @@ func _build_overlay() -> void:
 	cl.layer = 3
 	add_child(cl)
 	fog_rect = ColorRect.new()
-	fog_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fog_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	fog_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var m := ShaderMaterial.new()
 	m.shader = load("res://shaders/atmosphere.gdshader")
@@ -218,7 +218,8 @@ const PROPS := [
 	["prop_gate", 6620.0, 1.0, -1, false], ["prop_statue", 7000.0, 0.8, -1, false], ["prop_lantern", 7550.0, 0.8, -1, false],
 	["prop_statue", 7900.0, 0.85, -1, true], ["prop_shrine", 8320.0, 0.9, -1, false],
 	["prop_graves", 8640.0, 0.85, -1, false], ["prop_graves", 9200.0, 0.9, -1, true], ["prop_banner", 9560.0, 0.9, -1, false],
-	["prop_graves", 9980.0, 0.85, -1, false], ["prop_deadtree", 10260.0, 1.0, -1, true],
+	["prop_deadtree", 9780.0, 0.95, -1, false], ["prop_graves", 10150.0, 0.85, -1, false], ["prop_banner", 10480.0, 1.0, -1, true],
+	["prop_graves", 10760.0, 0.9, -1, true], ["prop_deadtree", 10980.0, 1.0, -1, true],
 ]
 
 
