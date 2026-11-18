@@ -64,3 +64,12 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D14 · Mix safety
 - Master bus gets a compressor (−12 dB, 3:1) and hard limiter (−1 dB); SFX play 3 dB under their nominal level. Verified from a movie-writer recording.
+
+## D15 · Arm bones from per-pose annotations (session 3)
+- `game/assets/sprites/rig.json` lists, per pose, up to two arm bones in sprite UV: shoulder `s`, hand `h`, optional tool tip `t`, half-widths `w`/`tw`. The shader rotates each capsule about the shoulder; vacated pixels are inpainted by probing perpendicular to the bone (both sides inside the body → fill, otherwise leave transparent).
+- Bone 0 is the weapon arm; gameplay code drives `vis.arm_rot`/`arm_off`. Attacks carry an `arm` curve `[wind-up, strike, off0, off1]` in the player `ATK` table; enemies call `swing_arm()`.
+- Outline/halo now take 8 rig samples instead of 14 — the outline was the dominant cost (measured 63 vs 47 FPS on llvmpipe).
+
+## D16 · Acceptance is a script, evidence is committed
+- `tools/acceptance.sh` is the release gate: engine tests, 6 bot runs (perfect + human-like), export + package, the same tests and a bot inside the exported binary, rendered captures, FPS log. It writes `evidence/acceptance-<date>/REPORT.md` with compact JPG frames (≈2 MB) so claims in DEVELOPMENT_STATUS are traceable to logs in git.
+- `package.py` deletes old binaries before exporting so a failed export can never be verified as stale.

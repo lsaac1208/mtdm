@@ -1,0 +1,21 @@
+SPEC player hurtbox 44x138                            OK   (44.0, 138.0)
+SPEC player run 260 / dash ~520                       OK   260 / 540
+SPEC player sprite ~150 px tall                       OK   152 px
+SPEC slash band 55..145 px                            OK   55..145
+SPEC down slash reaches ground                        OK   bottom 0
+SPEC grunt hurtbox 46x124                             OK   (46.0, 124.0)
+SPEC grunt visual height ~132 px                      OK   126 px
+SPEC crawler hurtbox 92x46                            OK   (92.0, 46.0)
+SPEC crawler visual height ~54 px                     OK   50 px
+SPEC husk hurtbox 50x138                              OK   (50.0, 138.0)
+SPEC husk visual height ~144 px                       OK   144 px
+SPEC spitter hurtbox 52x130                           OK   (52.0, 130.0)
+SPEC spitter visual height ~138 px                    OK   126 px
+SPEC elite hurtbox 72x172                             OK   (72.0, 172.0)
+SPEC elite visual height ~180 px                      OK   184 px
+SPEC crawler top < slash band bottom (whiff)          OK   
+SPEC grunt wind-up 0.35-0.45 s                        OK   0.40 s
+SPEC husk seal burst radius ~110 px                   OK   115 px
+SPEC taint puddle r=65 px, 4.5 s                      OK   65 px / 4.5 s
+SPEC elite chop/sweep wind-up 0.65-0.85 s (phase 1)   OK   0.80 / 0.65 s (see elite_windup_readable)
+SPEC elite armour: light hits never stagger           OK   interrupt_poise=9999

@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS — 道行者 / Taoist Wanderer
 
-_Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` · engine Godot 4.7.2 · version 0.1.2_
+_Last updated: 2026-11-19 (session 3) · branch `dev/vertical-slice-20261118` · engine Godot 4.7.2 · version 0.1.3_
 
 ## Where things are
 | Path | What |
@@ -17,6 +17,9 @@ _Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` ·
 | `tools/audio/make_audio.py`, `tools/build/make_fonts.py` | audio + font generation |
 | `build/` (git-ignored) | exported binaries and zips |
 
+## Acceptance evidence
+Run `GODOT=<godot> tools/acceptance.sh <version>` — it runs every executable gate and writes `evidence/acceptance-<date>/REPORT.md` (gates table, spec rows, test list, FPS, rendered frames, contact sheet). Latest: `evidence/acceptance-20261119/` — 11/11 gates PASS (41 engine checks in source **and** in the exported v0.1.3 Linux binary; 3 perfect + 3 human-like bot clears; exported bot clear; 50 rendered frames; 62–70 FPS at 720p on software GL).
+
 ## Implemented and verified
 **Flow:** title → level (5 zones, 6 campfires, 9 encounters) → elite boss → light gate → ending screen with time/deaths/kills/parries → back to title. Pause menu (resume / restart from campfire / title / volume slider). Death → "身陨" card → fade → respawn at last campfire; failed encounters reset, cleared ones stay cleared.
 
@@ -29,10 +32,10 @@ _Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` ·
 - Taint Spitter — keeps 220–520 px range, glowing throat-sac wind-up 0.9 s (interruptible by poise ≥ 12), parabolic glob → 4.5 s taint puddle (slow + corrosion), long recovery, weak swipe up close.
 - Undead Warrior Elite — super armour + poise meter, 0.8 s chop (+ low ground shock to jump), 0.65 s sweep (40–128 px band), long recoveries, parry/poise break → 1.8 s kneel with bonus damage, phase 2 at 50 % (faster, chains, 2-grunt summon). Boss bar with armour meter.
 
-**Presentation:** 50 concept-art pose sprites with ink contour + pale paper halo (figure/ground separation), shader two-bone leg rig (thighs rotate at hip pivots, knees bend, feet stay planted, hanging props stay rigid) for every character's walk/run, knee-tuck airborne pose, hit jitter + ground ink splats + camera zoom-punch, cross-fades, lean/squash, stride/sway/breath shader, hit flash, ink-burn deaths; sword-qi brush arcs, telegraph glints, danger bands, rings, particles, hit-stop, screen shake; parallax ink-wash wasteland with per-zone tint + fog + vignette/grain + ambient particles (dust/ash/spores/embers), cracked-earth ground with debris; brush-font zone cards, boss intro card, tutorial hint strip from roadside steles; generated SFX + 4 pentatonic music loops + 5 zone ambience beds (wind, crows, bubbling taint, wind chimes, burial groans) with crossfades; title and ending screens.
+**Presentation:** 50 concept-art pose sprites with ink contour + pale paper halo (figure/ground separation), shader skeletal rig per pose: two-bone legs (hip/knee) plus arm bones from `assets/sprites/rig.json` (shoulder pivot, hand, weapon tip; inpainted where the limb leaves) — legs, arms, torso move in walk/run/idle, the sword arm sweeps through every attack, enemy weapon arms raise and swing, knee-tuck airborne pose, hit jitter + ground ink splats + camera zoom-punch, cross-fades, lean/squash, stride/sway/breath shader, hit flash, ink-burn deaths; sword-qi brush arcs, telegraph glints, danger bands, rings, particles, hit-stop, screen shake; parallax ink-wash wasteland with per-zone tint + fog + vignette/grain + ambient particles (dust/ash/spores/embers), cracked-earth ground with debris; brush-font zone cards, boss intro card, tutorial hint strip from roadside steles; generated SFX + 4 pentatonic music loops + 5 zone ambience beds (wind, crows, bubbling taint, wind chimes, burial groans) with crossfades; title and ending screens.
 
 ### Verified results (this session)
-- `--test=all`: **38/38 checks pass** (incl. spawns-on-surfaces guard, flow: pause-restart keeps progress, ending→title→new run resets state, no stale actors) (movement, jump, dash, crawler band whiff/hit with slash vs down/dash slash, grunt stagger + combo kill, timed parry, husk seal burst + punishment + talisman no-pressure, spitter glob → puddle, talisman interrupts spitter wind-up, elite wind-up 0.80 s and armour vs light hits, death → respawn at campfire, encounter lock/barrier/clear, scripted clear of every encounter → ending scene). No script errors.
+- `--test=all`: **41/41 checks pass** (incl. 21-row spec conformance vs docs/05, animation-continuity (no pose pops), enemies-cross-ledges, spawns-on-surfaces guard, flow: pause-restart keeps progress, ending→title→new run resets state, no stale actors) (movement, jump, dash, crawler band whiff/hit with slash vs down/dash slash, grunt stagger + combo kill, timed parry, husk seal burst + punishment + talisman no-pressure, spitter glob → puddle, talisman interrupts spitter wind-up, elite wind-up 0.80 s and armour vs light hits, death → respawn at campfire, encounter lock/barrier/clear, scripted clear of every encounter → ending scene). No script errors.
 - `--test=bot` (input-only scripted player, full route from the title flow): completes the current route in 3 of 3 runs (0–1 deaths, 24–27 kills, ≈2:15–3:00 game time for the bot). Also passes **on the exported Linux binary**.
 - Full-length rendered playthrough recorded (movie writer, 161 s) and reviewed as a contact sheet; found & fixed: enemy hit-flash whiting out the whole silhouette, spitter spawning inside a rock ledge (could soft-lock Group C).
 - Audio integration verified by recording the mixed output with Godot's movie writer during a bot run (music + SFX present; peaks now limited by a master compressor/limiter). Not yet listened to by a human.
@@ -47,13 +50,16 @@ _Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` ·
 ## Not verified / known limitations
 - **No human playtest yet.** Feel (timing windows, difficulty, readability at speed) is tuned from specs and bot runs only. Bot clear time (~2 min) means a first-time human run is probably ~8–15 min.
 - **Audio never heard by a human** — mix verified numerically/spectrally from a recorded run only.
-- **Motion is single-pose rigging**: legs are rigged in the shader, but arms/torso don't animate during locomotion and attacks are key-pose cross-fades (no in-betweens). Still the main visual gap versus hand-animated frames.
+- **Motion is single-pose rigging** (legs, arms, torso deformed from one painted pose per state; attacks blend 2 key poses + arm sweep). Hands and cloth don't deform independently and there are no painted in-betweens; it reads as cut-out animation, not frame-by-frame.
 - Software GL only here; real-GPU frame rate untested (the game is light: sprites + a few shaders).
 - Elite uses the V1.0 sheet images (V1.1 corrected sheet not produced yet).
 - Environment art is procedural, not painted; ruins can look blocky up close.
 - Some enemy cut-outs keep small parchment specks between rags; the crawler/husk sheets' pose rows are lower-resolution than the hero's.
 - Gamepad: every binding verified by injecting joypad events in-engine (`gamepad_actions_fire`); not tried on a physical pad.
 - Windows export unrun; macOS not built.
+
+## Session-3 changes
+Arm bones (rig.json) for hero + grunt/husk/spitter/elite; attack arm curves; idle/run/air arm motion; elite cleaver raise/chop/sweep; ledge-hop for enemies (fixed crawler stall); spec-conformance, anim-continuity, ledge tests; outline sampling optimisation; acceptance.sh + evidence; v0.1.3.
 
 ## Session-2 changes (for reviewers)
 Leg rig + torso twist + knee-tuck jumps; enemy cut-out cleanup; hit jitter/splats/zoom-punch/smears; topple/kneel deaths; elite chop two-beat wind-up; ground strata + debris; parallax seam fix; ambient particles; zone ambience beds with crossfades; master limiter; Road's Edge campfire; dash i-frames 0.24 s; spawn-on-surface fix (Group C soft-lock); opening epigraph; F11 fullscreen; package.py; RELEASE_NOTES.md.

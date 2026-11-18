@@ -13,8 +13,10 @@ for preset, sub, binary, tag in targets:
     out_dir = os.path.join(root, "build", sub)
     os.makedirs(out_dir, exist_ok=True)
     out = os.path.join(out_dir, binary)
+    if os.path.exists(out):
+        os.remove(out)   # never let a stale binary survive a failed export
     subprocess.run([godot, "--headless", "--path", os.path.join(root, "game"), "--export-release", preset, out], check=True,
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                   stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     if not os.path.exists(out):
         sys.exit("export failed: " + preset)
     zpath = os.path.join(root, "build", f"TaoistWanderer-v{ver}-{tag}.zip")

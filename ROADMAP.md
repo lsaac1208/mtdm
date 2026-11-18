@@ -16,6 +16,9 @@ Priorities follow the project directive: launchable → core combat → distinct
 - Ground/debris/parallax seam fixes, ambient particles, zone ambience beds + crossfades, master limiter.
 - Human-like bot difficulty proxy, Road's Edge campfire, dash i-frame tuning, spawn soft-lock fix, gamepad mapping test, flow tests, package.py.
 
+## Done in session 3 (v0.1.3)
+- Arm bones + attack arm curves (hero and enemies), enemy ledge hop, spec-conformance/continuity/ledge tests, acceptance.sh with committed evidence.
+
 ## Next
 ### M6 · Playtest & tuning (highest value)
 - Human playtest of the full route; record time-to-clear, deaths per encounter, confusing moments.
@@ -23,7 +26,7 @@ Priorities follow the project directive: launchable → core combat → distinct
 - Add an options menu (volume sliders, screen shake toggle, key rebinding).
 
 ### M7 · Animation quality
-- (Legs/torso now rigged in-shader.) Remaining: arm swing, attack in-betweens. Hero locomotion: cut the ready pose into Skeleton2D parts (torso, arms, legs, robe panels, ribbons) or paint 6–8 run frames; same for grunt shamble and crawler crawl (sheet 08 already defines the 10-part split).
+- (Legs, arms, torso now rigged in-shader.) Remaining: painted in-betweens / hand poses if an artist is available. Hero locomotion: cut the ready pose into Skeleton2D parts (torso, arms, legs, robe panels, ribbons) or paint 6–8 run frames; same for grunt shamble and crawler crawl (sheet 08 already defines the 10-part split).
 - Add in-between frames for combo transitions; hair-ribbon/sword-tassel secondary motion as separate bones.
 - Produce the elite V1.1 sheet (docs/04 prompt) and cut its poses (raise, chop, sweep, kneel, collapse).
 

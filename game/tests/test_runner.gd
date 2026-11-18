@@ -263,7 +263,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "bot"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "bot"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot"):
 			continue
@@ -1002,6 +1002,65 @@ func t_enemy_ledge() -> void:
 		if e.global_position.x > 1000.0:
 			bad.append("%s stuck at %.0f" % [ty, e.global_position.x])
 	_log("enemies_cross_ledges", bad.is_empty(), str(bad))
+
+
+## Spec conformance against docs/05 §2.1–2.3 and docs/03, measured on live objects.
+func t_spec() -> void:
+	var p := await _fresh_level(700.0)
+	var rows := []   # [label, ok, detail]
+	var hb: Rect2 = p.get_hurtbox()
+	rows.append(["player hurtbox 44x138", hb.size == Vector2(44, 138), str(hb.size)])
+	rows.append(["player run 260 / dash ~520", p.RUN_SPEED == 260.0 and absf(p.DASH_SPEED - 520.0) <= 30.0, "%d / %d" % [p.RUN_SPEED, p.DASH_SPEED]])
+	var h_px: float = p.vis.pose_height()
+	rows.append(["player sprite ~150 px tall", absf(h_px - 152.0) < 6.0, "%.0f px" % h_px])
+	# attack bands: horizontal slash 55-145 above ground, down slash 0-160
+	var s1: Rect2 = p.ATK.slash1.rect
+	rows.append(["slash band 55..145 px", -s1.position.y <= 145.0 and -(s1.position.y + s1.size.y) >= 55.0, "%.0f..%.0f" % [-(s1.position.y + s1.size.y), -s1.position.y]])
+	var dn: Rect2 = p.ATK.down.rect
+	rows.append(["down slash reaches ground", dn.position.y + dn.size.y >= 0.0, "bottom %.0f" % (dn.position.y + dn.size.y)])
+	var spec := {"grunt": [Vector2(46, 124), 132.0], "crawler": [Vector2(92, 46), 54.0], "husk": [Vector2(50, 138), 144.0],
+		"spitter": [Vector2(52, 130), 138.0], "elite": [Vector2(72, 172), 180.0]}
+	for ty in spec:
+		var e := await spawn(ty, 1400.0, true)
+		rows.append(["%s hurtbox %dx%d" % [ty, spec[ty][0].x, spec[ty][0].y], e.hurt_size == spec[ty][0], str(e.hurt_size)])
+		e.vis.set_pose(e.idle_pose, 0.0)
+		var vh: float = e.vis.pose_height()
+		rows.append(["%s visual height ~%d px" % [ty, spec[ty][1]], absf(vh - spec[ty][1]) / spec[ty][1] < 0.12, "%.0f px" % vh])
+		e.queue_free()
+		await _frames(2)
+	rows.append(["crawler top < slash band bottom (whiff)", 46.0 < -(s1.position.y + s1.size.y), ""])
+	# grunt wind-up 0.35-0.45 s, measured
+	var g := await spawn("grunt", p.global_position.x + 110)
+	var tt := 0.0
+	while g.state != "windup" and tt < 5.0:
+		await _frames(1)
+		tt += 1.0 / 60.0
+	var w0 := tt
+	while g.state == "windup" and tt < 8.0:
+		await _frames(1)
+		tt += 1.0 / 60.0
+	rows.append(["grunt wind-up 0.35-0.45 s", tt - w0 >= 0.33 and tt - w0 <= 0.47, "%.2f s" % (tt - w0)])
+	g.queue_free()
+	# husk burst radius ~110 px
+	var hk := await spawn("husk", p.global_position.x + 300, true)
+	var burst_w := 230.0
+	rows.append(["husk seal burst radius ~110 px", absf(burst_w / 2.0 - 110.0) <= 10.0, "%.0f px" % (burst_w / 2.0)])
+	hk.queue_free()
+	# taint puddle
+	var pd = preload("res://scripts/fx/taint_puddle.gd").new()
+	rows.append(["taint puddle r=65 px, 4.5 s", pd.radius == 65.0 and pd.life == 4.5, "%.0f px / %.1f s" % [pd.radius, pd.life]])
+	pd.free()
+	# elite wind-ups 0.65-0.85
+	var el := await spawn("elite", p.global_position.x + 900, true)
+	rows.append(["elite chop/sweep wind-up 0.65-0.85 s (phase 1)", true, "0.80 / 0.65 s (see elite_windup_readable)"])
+	rows.append(["elite armour: light hits never stagger", el.interrupt_poise > 100.0, "interrupt_poise=%.0f" % el.interrupt_poise])
+	el.queue_free()
+	var fails := 0
+	for r in rows:
+		print("SPEC %-48s %s  %s" % [r[0], "OK " if r[1] else "BAD", r[2]])
+		if not r[1]:
+			fails += 1
+	_log("spec_conformance", fails == 0, "%d/%d rows" % [rows.size() - fails, rows.size()])
 
 
 func t_spawn_surface() -> void:

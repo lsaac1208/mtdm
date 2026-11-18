@@ -50,6 +50,14 @@ xvfb-run -a -s "-screen 0 1280x720x24" $G --fixed-fps 60 --path game --rendering
 ```
 Other dev flags (after `--`): `--autostart` (skip title), `--startx=<px> [--skip_cleared]` (spawn further along the route), `--shots=<dir> --shot_times=1,2.5`, `--quit_after=<s>`, `--nohitstop`, `--noshake`, `--mute`.
 
+## 3b. Full acceptance run (release gate)
+```bash
+GODOT=$G PYTHON=python3 tools/acceptance.sh 0.1.3   # ~25 min; exit 0 = all gates passed
+```
+Needs Pillow for the contact sheet and `xvfb-run` for rendered frames (skipped otherwise). Do not override `XDG_DATA_HOME` when running it — Godot looks for export templates there.
+
+Extra single checks: `spec`, `anim_continuity`, `enemy_ledge`, `spawn_surface`, `gamepad_map`, `flow`. Capture modes (Xvfb): `showcase`, `combocap`, `chopcap`, `crawlcap`, `walkcap`, `runcap`, `jumpcap`, `pausecap`, `ending_shot`.
+
 ## 4. Export
 ```bash
 mkdir -p build/linux build/windows
