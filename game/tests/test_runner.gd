@@ -175,6 +175,21 @@ func _run() -> void:
 		await _wait(float(Game.args.get("secs", "10")))
 		get_tree().quit()
 		return
+	if only == "chopcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(1500.0)
+		p.max_hp = 9999.0
+		p.hp = 9999.0
+		var e := await spawn("elite", 1660.0)
+		await _wait(0.6)
+		e.cd = 99.0
+		e.facing = -1
+		e._start("windup_chop")
+		for i in 10:
+			await _frames(6)
+			await _shot("c%d_%s" % [i, e.state])
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)

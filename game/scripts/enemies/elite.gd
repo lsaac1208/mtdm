@@ -155,8 +155,9 @@ func _ai(delta: float) -> void:
 				_start("windup_chop")
 		"windup_chop":
 			velocity.x = 0.0
-			vis.lean = lerpf(vis.lean, -16.0, delta * 5.0)
-			vis.squash = vis.squash.lerp(Vector2(0.97, 1.05), delta * 4.0)
+			vis.lean = lerpf(vis.lean, -12.0, delta * 5.0)
+			vis.squash = vis.squash.lerp(Vector2(0.95, 1.08), delta * 4.0)
+			vis.nudge = Vector2(-10.0 * clampf(state_t / 0.5, 0.0, 1.0), 0.0)
 			if state_t >= 0.8 * spd:
 				_chop()
 		"chop":
@@ -218,8 +219,8 @@ func _start(s: String) -> void:
 	attack_hits = {}
 	match s:
 		"windup_chop":
-			vis.set_pose("elite_attack", 0.08)
-			telegraph.flare(Vector2(70, -205), 0.8 * (1.0 if phase == 1 else 0.85), Color(1, 0.3, 0.15))
+			vis.set_pose("elite_main", 0.08)
+			telegraph.flare(Vector2(30, -215), 0.8 * (1.0 if phase == 1 else 0.85), Color(1, 0.3, 0.15))
 			telegraph.danger(Rect2(10, -28, 190, 28), 0.8 * (1.0 if phase == 1 else 0.85))
 			Sfx.play("elite_windup", -2.0)
 			if phase == 2 and randf() < 0.6:
