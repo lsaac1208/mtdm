@@ -165,7 +165,7 @@
   "w": 300,
   "h": 315,
   "body_h": 279,
-  "foot_x": 155.0,
+  "foot_x": 135.0,
   "foot_y": 297.0,
   "group": "grunt_side",
   "scale": 0.47312
@@ -198,11 +198,11 @@
   "scale": 0.92647
  },
  "grunt_attack": {
-  "w": 166,
-  "h": 156,
-  "body_h": 136,
-  "foot_x": 77.5,
-  "foot_y": 146.0,
+  "w": 158,
+  "h": 153,
+  "body_h": 133,
+  "foot_x": 69.5,
+  "foot_y": 143.0,
   "group": "grunt_row",
   "scale": 0.92647
  },
@@ -270,7 +270,7 @@
   "scale": 0.66667
  },
  "husk_side": {
-  "w": 319,
+  "w": 265,
   "h": 447,
   "body_h": 397,
   "foot_x": 133.0,
@@ -342,10 +342,10 @@
   "scale": 0.92308
  },
  "spitter_side": {
-  "w": 298,
+  "w": 290,
   "h": 329,
   "body_h": 291,
-  "foot_x": 146.5,
+  "foot_x": 140.5,
   "foot_y": 310.0,
   "group": "spitter_side",
   "scale": 0.4811
@@ -441,10 +441,10 @@
   "scale": 1.32331
  },
  "elite_attack": {
-  "w": 204,
+  "w": 202,
   "h": 168,
   "body_h": 144,
-  "foot_x": 91.0,
+  "foot_x": 89.0,
   "foot_y": 156.0,
   "group": "elite_row",
   "scale": 1.32331

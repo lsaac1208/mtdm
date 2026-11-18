@@ -16,8 +16,11 @@ uniform vec4 tint : source_color = vec4(1.0);
 uniform float dissolve = 0.0;
 uniform vec4 burn_color : source_color = vec4(0.85, 0.35, 0.12, 1.0);
 uniform float alpha_mul = 1.0;
-uniform float legs = 0.0;          // scissor stride amplitude (uv units)
-uniform float leg_lift = 0.0;      // foot lift (uv units)
+uniform float legs = 0.0;          // thigh swing amplitude (radians)
+uniform float leg_lift = 0.0;      // knee bend amplitude (radians)
+uniform float hip_w = 0.05;        // lateral hip pivot offset (uv)
+uniform float foot_v = 0.95;       // uv y of the feet
+uniform float leg_band = 0.13;     // half-width of each leg region (uv)
 uniform float split_x = 0.5;       // uv x between the legs (feet anchor)
 uniform float hip_y = 0.6;         // uv y where the legs start
 uniform float outline_px = 3.5;          // texels
@@ -36,6 +39,54 @@ float noise(vec2 p) {
 		mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 
+vec2 rot2(vec2 v, float a) {
+	float c = cos(a);
+	float s = sin(a);
+	return vec2(v.x * c - v.y * s, v.x * s + v.y * c);
+}
+
+// Inverse-mapped two-bone leg: thigh rotates about the hip pivot, shin bends
+// at the knee. side = +1 front leg (toward facing), -1 back leg.
+vec4 leg_sample(sampler2D tex, vec2 uv, vec2 px, float side, float th, float kn) {
+	vec2 P = uv * px;
+	vec2 hip = vec2((split_x + side * hip_w) * px.x, hip_y * px.y);
+	float wy = smoothstep(hip_y - 0.03, hip_y + 0.1, uv.y);
+	th *= wy;
+	vec2 Q = hip + rot2(P - hip, th);
+	vec2 knee = vec2(hip.x, mix(hip_y, foot_v, 0.52) * px.y);
+	vec2 S = Q;
+	if (Q.y > knee.y) {
+		S = knee + rot2(Q - knee, -kn * smoothstep(knee.y, knee.y + 0.04 * px.y, Q.y));
+	}
+	vec2 su = S / px;
+	float hx = split_x + side * hip_w;
+	float own = (side > 0.0 ? step(split_x - 0.01, su.x) : step(su.x, split_x + 0.01)) * step(abs(su.x - hx), leg_band);
+	if (su.x < 0.0 || su.x > 1.0 || su.y < 0.0 || su.y > 1.0) return vec4(0.0);
+	vec4 c = texture(tex, su);
+	c.a *= own;
+	return c;
+}
+
+vec4 rig_sample(sampler2D tex, vec2 uv, vec2 px) {
+	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return vec4(0.0);
+	if (legs <= 0.0 || uv.y < hip_y - 0.03) {
+		return texture(tex, uv);
+	}
+	float sw = sin(phase);
+	float cw = cos(phase);
+	vec4 f = leg_sample(tex, uv, px, 1.0, legs * sw, leg_lift * max(0.0, cw));
+	vec4 b = leg_sample(tex, uv, px, -1.0, -legs * sw, leg_lift * max(0.0, -cw));
+	vec4 o;
+	o.a = f.a + b.a * (1.0 - f.a);
+	o.rgb = (f.rgb * f.a + b.rgb * b.a * (1.0 - f.a)) / max(o.a, 0.001);
+	// pixels outside both leg bands (hanging sword, robe edges) stay rigid
+	float outside = step(leg_band, abs(uv.x - (split_x + hip_w))) * step(leg_band, abs(uv.x - (split_x - hip_w)));
+	vec4 r = texture(tex, uv) * vec4(1.0, 1.0, 1.0, outside);
+	o.rgb = (o.rgb * o.a + r.rgb * r.a * (1.0 - o.a)) / max(o.a + r.a * (1.0 - o.a), 0.001);
+	o.a = o.a + r.a * (1.0 - o.a);
+	return o;
+}
+
 void fragment() {
 	vec2 uv = UV;
 	float t = TIME + time_offset;
@@ -44,47 +95,35 @@ void fragment() {
 	uv.x += sway * low * sin(t * 6.0 + uv.y * 14.0 + uv.x * 5.0);
 	// stride: alternate lower-body shear, feet move most
 	uv.x += stride * low * low * sin(phase);
-	// scissor legs: front/back halves of the lower body swing in opposition
-	if (legs > 0.0) {
-		float w = smoothstep(hip_y, 1.0, UV.y);
-		float s = smoothstep(split_x - 0.035, split_x + 0.035, UV.x);
-		float sw = sin(phase);
-		float off = mix(-sw, sw, s) * legs;
-		float lift = mix(max(0.0, -cos(phase)), max(0.0, cos(phase)), s) * leg_lift;
-		uv.x -= off * w;
-		uv.y += lift * w * w;
-	}
 	// breathing: stretch upper body slightly
 	float up = 1.0 - smoothstep(0.1, 0.6, uv.y);
 	uv.y += breathe * up * sin(t * 2.2);
-	vec4 c = texture(TEXTURE, uv);
-	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-		c.a = 0.0;
-	}
+	vec2 px = 1.0 / TEXTURE_PIXEL_SIZE;
+	vec4 c = rig_sample(TEXTURE, uv, px);
 	// thick ink contour: max alpha of 8 neighbours, drawn behind the sprite
 	if (outline_px > 0.0) {
 		vec2 o = TEXTURE_PIXEL_SIZE * outline_px;
 		float na = 0.0;
-		na = max(na, texture(TEXTURE, uv + vec2(o.x, 0.0)).a);
-		na = max(na, texture(TEXTURE, uv - vec2(o.x, 0.0)).a);
-		na = max(na, texture(TEXTURE, uv + vec2(0.0, o.y)).a);
-		na = max(na, texture(TEXTURE, uv - vec2(0.0, o.y)).a);
-		na = max(na, texture(TEXTURE, uv + o * 0.7).a);
-		na = max(na, texture(TEXTURE, uv - o * 0.7).a);
-		na = max(na, texture(TEXTURE, uv + vec2(o.x, -o.y) * 0.7).a);
-		na = max(na, texture(TEXTURE, uv + vec2(-o.x, o.y) * 0.7).a);
+		na = max(na, rig_sample(TEXTURE, uv + vec2(o.x, 0.0), px).a);
+		na = max(na, rig_sample(TEXTURE, uv - vec2(o.x, 0.0), px).a);
+		na = max(na, rig_sample(TEXTURE, uv + vec2(0.0, o.y), px).a);
+		na = max(na, rig_sample(TEXTURE, uv - vec2(0.0, o.y), px).a);
+		na = max(na, rig_sample(TEXTURE, uv + o * 0.7, px).a);
+		na = max(na, rig_sample(TEXTURE, uv - o * 0.7, px).a);
+		na = max(na, rig_sample(TEXTURE, uv + vec2(o.x, -o.y) * 0.7, px).a);
+		na = max(na, rig_sample(TEXTURE, uv + vec2(-o.x, o.y) * 0.7, px).a);
 		float oa = clamp(na * 1.4, 0.0, 1.0) * outline_color.a;
 		// pale paper halo just outside the ink line (negative space)
 		float ha = 0.0;
 		if (halo_px > 0.0) {
 			vec2 h = TEXTURE_PIXEL_SIZE * halo_px;
 			float hn = 0.0;
-			hn = max(hn, texture(TEXTURE, uv + vec2(h.x, 0.0)).a);
-			hn = max(hn, texture(TEXTURE, uv - vec2(h.x, 0.0)).a);
-			hn = max(hn, texture(TEXTURE, uv + vec2(0.0, h.y)).a);
-			hn = max(hn, texture(TEXTURE, uv - vec2(0.0, h.y)).a);
-			hn = max(hn, texture(TEXTURE, uv + h * 0.7).a);
-			hn = max(hn, texture(TEXTURE, uv - h * 0.7).a);
+			hn = max(hn, rig_sample(TEXTURE, uv + vec2(h.x, 0.0), px).a);
+			hn = max(hn, rig_sample(TEXTURE, uv - vec2(h.x, 0.0), px).a);
+			hn = max(hn, rig_sample(TEXTURE, uv + vec2(0.0, h.y), px).a);
+			hn = max(hn, rig_sample(TEXTURE, uv - vec2(0.0, h.y), px).a);
+			hn = max(hn, rig_sample(TEXTURE, uv + h * 0.7, px).a);
+			hn = max(hn, rig_sample(TEXTURE, uv - h * 0.7, px).a);
 			ha = clamp(hn * 1.2, 0.0, 1.0) * halo_color.a;
 		}
 		vec3 under = mix(halo_color.rgb, outline_color.rgb, step(0.001, oa) * clamp(oa / max(outline_color.a, 0.001), 0.0, 1.0));

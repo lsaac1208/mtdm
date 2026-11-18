@@ -81,7 +81,6 @@ func _ready() -> void:
 	super._ready()
 	vis.set_pose("hero_01_ready", 0.0)
 	vis.sway = 0.005
-	vis.hip_y = 0.6
 	Game.player = self
 
 
@@ -680,14 +679,16 @@ func _animate(delta: float) -> void:
 			vis.breathe = 0.004
 		"run":
 			vis.set_pose("hero_01_ready", 0.08)
-			_step_t += delta * 11.0 * _speed_mul()
+			_step_t += delta * 13.0 * _speed_mul()
 			vis.phase = _step_t
 			vis.stride = 0.0
-			vis.legs = 0.075
-			vis.leg_lift = 0.035
-			vis.bob = absf(cos(_step_t)) * 5.0
+			vis.legs = 0.42
+			vis.leg_lift = 0.75
+			# legs swinging about the hip shorten vertically: drop the body to keep feet planted
+			var L := 150.0 * vis.hip_frac
+			vis.bob = -L * (1.0 - cos(vis.legs * sin(_step_t))) + absf(cos(_step_t)) * 2.0
 			target_lean = 7.0
-			if int(_step_t / PI) != int((_step_t - delta * 11.0) / PI):
+			if int(_step_t / PI) != int((_step_t - delta * 13.0) / PI):
 				Sfx.play("step", -18.0, 0.15)
 				Fx.dust(global_position + Vector2(-10 * facing, 0), 2, Vector2(-facing, -0.5))
 		"air":

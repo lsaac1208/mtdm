@@ -135,6 +135,29 @@ func _run() -> void:
 		get_tree().paused = false
 		get_tree().quit()
 		return
+	if only == "walkcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(700.0)
+		p.max_hp = 9999.0
+		p.hp = 9999.0
+		await _wait(0.5)
+		for ty in ["grunt", "crawler", "husk", "spitter", "elite"]:
+			var e := await spawn(ty, p.global_position.x + 620.0)
+			if ty == "husk":
+				e._awaken()
+			var tt := 0.0
+			while e.state != "chase" and tt < 4.0:
+				await _frames(1)
+				tt += 1.0 / 60.0
+			for i in 6:
+				await _frames(4)
+				var sx: float = e.global_position.x - Game.level.cam.global_position.x + 640.0
+				print("WALKPOS %s %d %.0f %.0f %s" % [ty, i, sx, e.global_position.y - Game.level.cam.global_position.y + 360.0, e.state])
+				await _shot("w_%s_%d" % [ty, i])
+			e.queue_free()
+			await _frames(2)
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)

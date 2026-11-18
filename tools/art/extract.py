@@ -50,6 +50,27 @@ def extract(entry, sheets_root):
     else:
         keep_ids = [i + 1 for i, s in enumerate(sizes) if s >= entry.get("min_area", 60)]
     m = np.isin(lab, keep_ids)
+    if entry.get("clean"):
+        # drop ink-wash scenery and enclosed parchment: remove light, desaturated
+        # pixels, keep the main figure, then restore grey pixels (pale corpse
+        # skin) that lie inside the figure's filled silhouette
+        labc = cv2.cvtColor(rgb, cv2.COLOR_RGB2LAB).astype(np.int32)
+        Lq = labc[..., 0]
+        chq = np.hypot(labc[..., 1] - 128, labc[..., 2] - 128)
+        grey = (Lq > 140) & (chq < 15)
+        parch = (Lq > 200) & (chq < 18)
+        core = m & ~grey
+        cl, cn = ndi.label(core)
+        if cn:
+            cs = ndi.sum(core, cl, range(1, cn + 1))
+            core = np.isin(cl, [i + 1 for i, s in enumerate(cs) if s >= cs.max() * 0.04])
+        inside = ndi.binary_fill_holes(ndi.binary_closing(core, iterations=3))
+        m = core | (m & grey & ~parch & inside)
+        holes = ndi.binary_fill_holes(m) & ~m
+        hl, hn = ndi.label(holes)
+        if hn:
+            hs = ndi.sum(holes, hl, range(1, hn + 1))
+            m |= np.isin(hl, np.nonzero(hs <= 60)[0] + 1)
     # drop the painted ground-shadow strokes under the feet (light, desaturated)
     lab_c = cv2.cvtColor(rgb, cv2.COLOR_RGB2LAB).astype(np.int32)
     Lc = lab_c[..., 0]

@@ -308,7 +308,8 @@
      466
     ]
    ],
-   "group": "grunt_side"
+   "group": "grunt_side",
+   "clean": true
   },
   {
    "name": "grunt_idle",
@@ -319,7 +320,8 @@
     568,
     696
    ],
-   "group": "grunt_row"
+   "group": "grunt_row",
+   "clean": true
   },
   {
    "name": "grunt_alert",
@@ -330,7 +332,8 @@
     782,
     698
    ],
-   "group": "grunt_row"
+   "group": "grunt_row",
+   "clean": true
   },
   {
    "name": "grunt_windup",
@@ -341,7 +344,8 @@
     1035,
     698
    ],
-   "group": "grunt_row"
+   "group": "grunt_row",
+   "clean": true
   },
   {
    "name": "grunt_attack",
@@ -352,7 +356,8 @@
     1189,
     698
    ],
-   "group": "grunt_row"
+   "group": "grunt_row",
+   "clean": true
   },
   {
    "name": "crawler_side",
@@ -371,7 +376,8 @@
      345
     ]
    ],
-   "group": "crawler_side"
+   "group": "crawler_side",
+   "clean": true
   },
   {
    "name": "crawler_idle",
@@ -382,7 +388,8 @@
     619,
     567
    ],
-   "group": "crawler_row"
+   "group": "crawler_row",
+   "clean": true
   },
   {
    "name": "crawler_alert",
@@ -393,7 +400,8 @@
     764,
     569
    ],
-   "group": "crawler_row"
+   "group": "crawler_row",
+   "clean": true
   },
   {
    "name": "crawler_crawl",
@@ -404,7 +412,8 @@
     936,
     570
    ],
-   "group": "crawler_row"
+   "group": "crawler_row",
+   "clean": true
   },
   {
    "name": "crawler_pounce",
@@ -415,7 +424,8 @@
     1176,
     572
    ],
-   "group": "crawler_row"
+   "group": "crawler_row",
+   "clean": true
   },
   {
    "name": "crawler_hit",
@@ -426,7 +436,8 @@
     1346,
     568
    ],
-   "group": "crawler_row"
+   "group": "crawler_row",
+   "clean": true
   },
   {
    "name": "crawler_retreat",
@@ -437,7 +448,8 @@
     1506,
     568
    ],
-   "group": "crawler_row"
+   "group": "crawler_row",
+   "clean": true
   },
   {
    "name": "husk_side",
@@ -456,7 +468,8 @@
      455
     ]
    ],
-   "group": "husk_side"
+   "group": "husk_side",
+   "clean": true
   },
   {
    "name": "husk_idle",
@@ -467,7 +480,8 @@
     454,
     740
    ],
-   "group": "husk_row"
+   "group": "husk_row",
+   "clean": true
   },
   {
    "name": "husk_awaken",
@@ -478,7 +492,8 @@
     622,
     741
    ],
-   "group": "husk_row"
+   "group": "husk_row",
+   "clean": true
   },
   {
    "name": "husk_walk",
@@ -489,7 +504,8 @@
     763,
     740
    ],
-   "group": "husk_row"
+   "group": "husk_row",
+   "clean": true
   },
   {
    "name": "husk_strike",
@@ -500,7 +516,8 @@
     927,
     740
    ],
-   "group": "husk_row"
+   "group": "husk_row",
+   "clean": true
   },
   {
    "name": "husk_burst",
@@ -511,7 +528,8 @@
     1106,
     740
    ],
-   "group": "husk_row"
+   "group": "husk_row",
+   "clean": true
   },
   {
    "name": "husk_hit",
@@ -522,7 +540,8 @@
     1213,
     739
    ],
-   "group": "husk_row"
+   "group": "husk_row",
+   "clean": true
   },
   {
    "name": "husk_collapse",
@@ -533,7 +552,8 @@
     1431,
     724
    ],
-   "group": "husk_row"
+   "group": "husk_row",
+   "clean": true
   },
   {
    "name": "spitter_side",
@@ -552,7 +572,8 @@
      400
     ]
    ],
-   "group": "spitter_side"
+   "group": "spitter_side",
+   "clean": true
   },
   {
    "name": "spitter_idle",
@@ -563,7 +584,8 @@
     464,
     608
    ],
-   "group": "spitter_row"
+   "group": "spitter_row",
+   "clean": true
   },
   {
    "name": "spitter_detect",
@@ -574,7 +596,8 @@
     605,
     608
    ],
-   "group": "spitter_row"
+   "group": "spitter_row",
+   "clean": true
   },
   {
    "name": "spitter_windup",
@@ -585,7 +608,8 @@
     736,
     608
    ],
-   "group": "spitter_row"
+   "group": "spitter_row",
+   "clean": true
   },
   {
    "name": "spitter_spit",
@@ -596,7 +620,8 @@
     890,
     608
    ],
-   "group": "spitter_row"
+   "group": "spitter_row",
+   "clean": true
   },
   {
    "name": "spitter_recover",
@@ -607,7 +632,8 @@
     1065,
     608
    ],
-   "group": "spitter_row"
+   "group": "spitter_row",
+   "clean": true
   },
   {
    "name": "spitter_swipe",
@@ -618,7 +644,8 @@
     1207,
     608
    ],
-   "group": "spitter_row"
+   "group": "spitter_row",
+   "clean": true
   },
   {
    "name": "spitter_hit",
@@ -629,7 +656,8 @@
     1363,
     609
    ],
-   "group": "spitter_row"
+   "group": "spitter_row",
+   "clean": true
   },
   {
    "name": "spitter_collapse",
@@ -640,7 +668,8 @@
     1509,
     608
    ],
-   "group": "spitter_row"
+   "group": "spitter_row",
+   "clean": true
   },
   {
    "name": "elite_main",
@@ -652,7 +681,8 @@
     446
    ],
    "flip": true,
-   "group": "elite_side"
+   "group": "elite_side",
+   "clean": true
   },
   {
    "name": "elite_idle",
@@ -664,7 +694,8 @@
     588
    ],
    "flip": true,
-   "group": "elite_row"
+   "group": "elite_row",
+   "clean": true
   },
   {
    "name": "elite_attack",
@@ -683,7 +714,8 @@
      548
     ]
    ],
-   "group": "elite_row"
+   "group": "elite_row",
+   "clean": true
   }
  ]
 }

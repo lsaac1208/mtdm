@@ -24,7 +24,7 @@ var sway := 0.004
 var stride := 0.0
 var legs := 0.0
 var leg_lift := 0.0
-var hip_y := 0.6
+var hip_frac := 0.47       # hip height as a fraction of body height
 var phase := 0.0
 var breathe := 0.0
 var flash := 0.0
@@ -120,10 +120,11 @@ func _set_params(s: Sprite2D, a: float) -> void:
 	m.set_shader_parameter("stride", stride)
 	m.set_shader_parameter("legs", legs)
 	m.set_shader_parameter("leg_lift", leg_lift)
-	m.set_shader_parameter("hip_y", hip_y)
 	var md := meta(pose)
 	if not md.is_empty():
 		m.set_shader_parameter("split_x", md.foot_x / md.w)
+		m.set_shader_parameter("foot_v", md.foot_y / md.h)
+		m.set_shader_parameter("hip_y", (md.foot_y - md.body_h * hip_frac) / md.h)
 	m.set_shader_parameter("phase", phase)
 	m.set_shader_parameter("breathe", breathe)
 	m.set_shader_parameter("flash", flash)
