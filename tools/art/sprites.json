@@ -1,0 +1,689 @@
+{
+ "groups": {
+  "grunt_row": [
+   "grunt_idle",
+   126
+  ],
+  "grunt_side": [
+   "grunt_walk",
+   132
+  ],
+  "crawler_row": [
+   "crawler_idle",
+   50
+  ],
+  "crawler_side": [
+   "crawler_side",
+   56
+  ],
+  "husk_row": [
+   "husk_idle",
+   144
+  ],
+  "husk_side": [
+   "husk_side",
+   150
+  ],
+  "spitter_row": [
+   "spitter_idle",
+   126
+  ],
+  "spitter_side": [
+   "spitter_side",
+   140
+  ],
+  "elite_side": [
+   "elite_main",
+   184
+  ],
+  "elite_row": [
+   "elite_idle",
+   176
+  ],
+  "icon": [
+   null,
+   0
+  ],
+  "hero_r1": [
+   "hero_01_ready",
+   152
+  ],
+  "hero_r2": [
+   "hero_10a_beads",
+   146
+  ]
+ },
+ "sprites": [
+  {
+   "name": "hero_01_ready",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    124,
+    85,
+    362,
+    394
+   ],
+   "group": "hero_r1"
+  },
+  {
+   "name": "hero_02_draw",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    363,
+    85,
+    595,
+    391
+   ],
+   "erase": [
+    [
+     363,
+     345,
+     425,
+     391
+    ]
+   ],
+   "group": "hero_r1"
+  },
+  {
+   "name": "hero_03_hslash",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    590,
+    100,
+    870,
+    340
+   ],
+   "group": "hero_r1"
+  },
+  {
+   "name": "hero_04_downslash",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    868,
+    47,
+    1160,
+    340
+   ],
+   "group": "hero_r1"
+  },
+  {
+   "name": "hero_05_thrust",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    1160,
+    101,
+    1514,
+    341
+   ],
+   "group": "hero_r1"
+  },
+  {
+   "name": "hero_06_dash",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    54,
+    405,
+    364,
+    578
+   ],
+   "group": "hero_r2"
+  },
+  {
+   "name": "hero_07_jump",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    400,
+    350,
+    712,
+    578
+   ],
+   "erase": [
+    [
+     395,
+     345,
+     470,
+     410
+    ],
+    [
+     640,
+     415,
+     712,
+     578
+    ],
+    [
+     545,
+     515,
+     640,
+     578
+    ]
+   ],
+   "group": "hero_r2"
+  },
+  {
+   "name": "hero_08_talisman",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    638,
+    379,
+    880,
+    578
+   ],
+   "group": "hero_r2"
+  },
+  {
+   "name": "hero_09_gourd",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    882,
+    386,
+    1100,
+    578
+   ],
+   "flip": true,
+   "group": "hero_r2"
+  },
+  {
+   "name": "hero_10a_beads",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    1114,
+    400,
+    1245,
+    578
+   ],
+   "group": "hero_r2"
+  },
+  {
+   "name": "hero_10b_beads",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    1250,
+    367,
+    1533,
+    578
+   ],
+   "group": "hero_r2"
+  },
+  {
+   "name": "hero_11_defense",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    24,
+    614,
+    213,
+    764
+   ],
+   "group": "hero_r2"
+  },
+  {
+   "name": "hero_12_hit",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    232,
+    627,
+    446,
+    764
+   ],
+   "group": "hero_r2"
+  },
+  {
+   "name": "hero_13_recovery",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    446,
+    595,
+    725,
+    771
+   ],
+   "group": "hero_r2"
+  },
+  {
+   "name": "icon_talisman",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    908,
+    826,
+    998,
+    954
+   ],
+   "keep": "all",
+   "group": "icon"
+  },
+  {
+   "name": "icon_gourd",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    1001,
+    827,
+    1140,
+    960
+   ],
+   "keep": "all",
+   "group": "icon"
+  },
+  {
+   "name": "icon_beads",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    1146,
+    839,
+    1235,
+    950
+   ],
+   "keep": "all",
+   "group": "icon"
+  },
+  {
+   "name": "icon_swordqi",
+   "sheet": "02_protagonist_combat_poses_v1.png",
+   "box": [
+    1249,
+    845,
+    1374,
+    939
+   ],
+   "keep": "all",
+   "group": "icon"
+  },
+  {
+   "name": "grunt_walk",
+   "sheet": "07_common_undead_grunt_sheet.png",
+   "box": [
+    949,
+    173,
+    1272,
+    466
+   ],
+   "erase": [
+    [
+     949,
+     173,
+     1008,
+     466
+    ],
+    [
+     949,
+     452,
+     1272,
+     466
+    ]
+   ],
+   "group": "grunt_side"
+  },
+  {
+   "name": "grunt_idle",
+   "sheet": "07_common_undead_grunt_sheet.png",
+   "box": [
+    452,
+    558,
+    568,
+    696
+   ],
+   "group": "grunt_row"
+  },
+  {
+   "name": "grunt_alert",
+   "sheet": "07_common_undead_grunt_sheet.png",
+   "box": [
+    622,
+    554,
+    782,
+    698
+   ],
+   "group": "grunt_row"
+  },
+  {
+   "name": "grunt_windup",
+   "sheet": "07_common_undead_grunt_sheet.png",
+   "box": [
+    795,
+    551,
+    1035,
+    698
+   ],
+   "group": "grunt_row"
+  },
+  {
+   "name": "grunt_attack",
+   "sheet": "07_common_undead_grunt_sheet.png",
+   "box": [
+    1041,
+    560,
+    1189,
+    698
+   ],
+   "group": "grunt_row"
+  },
+  {
+   "name": "crawler_side",
+   "sheet": "08_crawler_sheet.png",
+   "box": [
+    909,
+    254,
+    1199,
+    396
+   ],
+   "erase": [
+    [
+     909,
+     254,
+     965,
+     345
+    ]
+   ],
+   "group": "crawler_side"
+  },
+  {
+   "name": "crawler_idle",
+   "sheet": "08_crawler_sheet.png",
+   "box": [
+    446,
+    490,
+    619,
+    567
+   ],
+   "group": "crawler_row"
+  },
+  {
+   "name": "crawler_alert",
+   "sheet": "08_crawler_sheet.png",
+   "box": [
+    632,
+    465,
+    764,
+    569
+   ],
+   "group": "crawler_row"
+  },
+  {
+   "name": "crawler_crawl",
+   "sheet": "08_crawler_sheet.png",
+   "box": [
+    777,
+    480,
+    936,
+    570
+   ],
+   "group": "crawler_row"
+  },
+  {
+   "name": "crawler_pounce",
+   "sheet": "08_crawler_sheet.png",
+   "box": [
+    958,
+    460,
+    1176,
+    572
+   ],
+   "group": "crawler_row"
+  },
+  {
+   "name": "crawler_hit",
+   "sheet": "08_crawler_sheet.png",
+   "box": [
+    1194,
+    498,
+    1346,
+    568
+   ],
+   "group": "crawler_row"
+  },
+  {
+   "name": "crawler_retreat",
+   "sheet": "08_crawler_sheet.png",
+   "box": [
+    1357,
+    491,
+    1506,
+    568
+   ],
+   "group": "crawler_row"
+  },
+  {
+   "name": "husk_side",
+   "sheet": "09_talisman_bound_husk_sheet.png",
+   "box": [
+    804,
+    141,
+    1088,
+    540
+   ],
+   "erase": [
+    [
+     804,
+     250,
+     862,
+     455
+    ]
+   ],
+   "group": "husk_side"
+  },
+  {
+   "name": "husk_idle",
+   "sheet": "09_talisman_bound_husk_sheet.png",
+   "box": [
+    356,
+    582,
+    454,
+    740
+   ],
+   "group": "husk_row"
+  },
+  {
+   "name": "husk_awaken",
+   "sheet": "09_talisman_bound_husk_sheet.png",
+   "box": [
+    484,
+    580,
+    622,
+    741
+   ],
+   "group": "husk_row"
+  },
+  {
+   "name": "husk_walk",
+   "sheet": "09_talisman_bound_husk_sheet.png",
+   "box": [
+    637,
+    579,
+    763,
+    740
+   ],
+   "group": "husk_row"
+  },
+  {
+   "name": "husk_strike",
+   "sheet": "09_talisman_bound_husk_sheet.png",
+   "box": [
+    786,
+    580,
+    927,
+    740
+   ],
+   "group": "husk_row"
+  },
+  {
+   "name": "husk_burst",
+   "sheet": "09_talisman_bound_husk_sheet.png",
+   "box": [
+    956,
+    584,
+    1106,
+    740
+   ],
+   "group": "husk_row"
+  },
+  {
+   "name": "husk_hit",
+   "sheet": "09_talisman_bound_husk_sheet.png",
+   "box": [
+    1114,
+    596,
+    1213,
+    739
+   ],
+   "group": "husk_row"
+  },
+  {
+   "name": "husk_collapse",
+   "sheet": "09_talisman_bound_husk_sheet.png",
+   "box": [
+    1328,
+    611,
+    1431,
+    724
+   ],
+   "group": "husk_row"
+  },
+  {
+   "name": "spitter_side",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    800,
+    151,
+    1069,
+    445
+   ],
+   "erase": [
+    [
+     800,
+     151,
+     858,
+     400
+    ]
+   ],
+   "group": "spitter_side"
+  },
+  {
+   "name": "spitter_idle",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    367,
+    489,
+    464,
+    608
+   ],
+   "group": "spitter_row"
+  },
+  {
+   "name": "spitter_detect",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    489,
+    496,
+    605,
+    608
+   ],
+   "group": "spitter_row"
+  },
+  {
+   "name": "spitter_windup",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    629,
+    480,
+    736,
+    608
+   ],
+   "group": "spitter_row"
+  },
+  {
+   "name": "spitter_spit",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    765,
+    493,
+    890,
+    608
+   ],
+   "group": "spitter_row"
+  },
+  {
+   "name": "spitter_recover",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    938,
+    492,
+    1065,
+    608
+   ],
+   "group": "spitter_row"
+  },
+  {
+   "name": "spitter_swipe",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    1082,
+    483,
+    1207,
+    608
+   ],
+   "group": "spitter_row"
+  },
+  {
+   "name": "spitter_hit",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    1215,
+    496,
+    1363,
+    609
+   ],
+   "group": "spitter_row"
+  },
+  {
+   "name": "spitter_collapse",
+   "sheet": "10_taint_spitter_sheet.png",
+   "box": [
+    1367,
+    501,
+    1509,
+    608
+   ],
+   "group": "spitter_row"
+  },
+  {
+   "name": "elite_main",
+   "sheet": "06_corpse_tainted_first_wave_sheet.png",
+   "box": [
+    1188,
+    145,
+    1440,
+    446
+   ],
+   "flip": true,
+   "group": "elite_side"
+  },
+  {
+   "name": "elite_idle",
+   "sheet": "06_corpse_tainted_first_wave_sheet.png",
+   "box": [
+    1187,
+    453,
+    1322,
+    588
+   ],
+   "flip": true,
+   "group": "elite_row"
+  },
+  {
+   "name": "elite_attack",
+   "sheet": "06_corpse_tainted_first_wave_sheet.png",
+   "box": [
+    1326,
+    447,
+    1508,
+    593
+   ],
+   "erase": [
+    [
+     1326,
+     447,
+     1388,
+     548
+    ]
+   ],
+   "group": "elite_row"
+  }
+ ]
+}
