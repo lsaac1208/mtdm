@@ -66,6 +66,22 @@ func spawn(type: String, x: float, frozen := false) -> Enemy:
 
 
 func _run() -> void:
+	if only == "showcase":
+		await _showcase()
+		get_tree().quit()
+		return
+	if only == "slashcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(700.0)
+		await _wait(0.8)
+		p.facing = 1
+		await press(p, "attack")
+		for i in 6:
+			print("SLASHDBG state=", p.state, " t=", p.state_t, " pose=", p.vis.pose, " fx=", Game.level.get_node("Fx").get_child_count())
+			await _shot("s%d" % i)
+			await _frames(2)
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)
@@ -82,9 +98,9 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "bot"]
 	for t in tests:
-		if only != "all" and only != t:
+		if only != t and not (only == "all" and t != "bot"):
 			continue
 		await call("t_" + t)
 	var fails := results.filter(func(r): return not r[1]).size()
@@ -346,3 +362,338 @@ func t_full_route() -> void:
 	await _wait(0.5)
 	var scene := get_tree().current_scene
 	_log("demo_completes", scene != null and scene.scene_file_path == Game.END_SCENE, "scene=%s" % (scene.scene_file_path if scene else "?"))
+
+
+# ------------------------------------------------------------------ captures
+var shot_dir := ""
+var shot_i := 0
+
+
+func _shot(tag: String) -> void:
+	await RenderingServer.frame_post_draw
+	var img := get_viewport().get_texture().get_image()
+	var path := "%s/%02d_%s.png" % [shot_dir, shot_i, tag]
+	img.save_png(path)
+	print("SHOT ", path)
+	shot_i += 1
+
+
+func _showcase() -> void:
+	shot_dir = Game.args.get("shots", "user://shots")
+	DirAccess.make_dir_recursive_absolute(shot_dir)
+	var p := await _fresh_level(700.0)
+	p.max_hp = 9999.0
+	p.hp = 9999.0
+	p.qi = 100.0
+	await _wait(1.0)
+	var g := await spawn("grunt", p.global_position.x + 170)
+	await _wait(0.9)
+	p.facing = 1
+	await press(p, "attack")
+	await _wait(0.12)
+	await _shot("slash1")
+	await press(p, "attack")
+	await _wait(0.2)
+	await _shot("downslash")
+	await press(p, "attack")
+	await _wait(0.2)
+	await _shot("thrust")
+	if is_instance_valid(g):
+		g.queue_free()
+	var c := await spawn("crawler", p.global_position.x + 330)
+	var t := 0.0
+	while is_instance_valid(c) and c.state != "pounce" and t < 5.0:
+		await _frames(1)
+		t += 1.0 / 60.0
+	await _wait(0.08)
+	await _shot("crawler_pounce")
+	await _wait(1.0)
+	if is_instance_valid(c):
+		c.queue_free()
+	p.global_position.x = 1150
+	var s := await spawn("spitter", 1530)
+	t = 0.0
+	while s.state != "windup" and t < 6.0:
+		await _frames(1)
+		t += 1.0 / 60.0
+	await _wait(0.6)
+	await _shot("spitter_windup")
+	await _wait(0.55)
+	await _shot("spitter_glob")
+	await _wait(0.9)
+	await _shot("taint_puddle")
+	p.facing = 1
+	await press(p, "talisman")
+	await _wait(0.25)
+	await _shot("talisman")
+	await _wait(1.0)
+	s.queue_free()
+	var h := await spawn("husk", p.global_position.x + 100)
+	h._awaken()
+	await _wait(1.1)
+	h._burst_prep()
+	await _wait(0.53)
+	await _shot("husk_burst")
+	await _wait(1.0)
+	h.queue_free()
+	p.qi = 100.0
+	var g1 := await spawn("grunt", p.global_position.x - 120)
+	var g2 := await spawn("grunt", p.global_position.x + 130)
+	await _wait(0.3)
+	await press(p, "beads")
+	await _wait(0.5)
+	await _shot("beads_burst")
+	await _wait(1.0)
+	p.global_position.x = 2000
+	var e := await spawn("elite", 2230)
+	t = 0.0
+	while not e.state.begins_with("windup") and t < 8.0:
+		await _frames(1)
+		t += 1.0 / 60.0
+	await _wait(0.45)
+	await _shot("elite_" + e.state)
+	while not (e.state == "chop" or e.state == "sweep" or e.state.begins_with("recover")) and t < 12.0:
+		await _frames(1)
+		t += 1.0 / 60.0
+	await _wait(0.05)
+	await _shot("elite_strike")
+	p.global_position.x = 2080
+	p.facing = 1
+	hold(p, {"block": true})
+	await _wait(0.4)
+	await _shot("block")
+	hold(p, {})
+	await press(p, "jump", {"jump": true})
+	hold(p, {"jump": true})
+	await _wait(0.25)
+	await press(p, "attack")
+	await _wait(0.1)
+	await _shot("jump_attack")
+	hold(p, {})
+	await _wait(0.6)
+	await press(p, "dash")
+	await _frames(3)
+	await press(p, "attack")
+	await _wait(0.1)
+	await _shot("dash_attack")
+	await _wait(0.8)
+	await press(p, "gourd")
+	await _wait(0.3)
+	await _shot("gourd")
+
+
+# ------------------------------------------------------------------ bot
+## A scripted player that clears the whole demo using only inputs. It is not
+## optimal; it exists to prove the route is completable with real combat and
+## to surface soft-locks. Usage: --test=bot (add --fixed-fps 60 to speed up).
+var _bot_cd := 0.0
+var _bot_hits := 0
+var _bot_retreat := 0.0
+var _bot_stuck := 0.0
+var _bot_lastx := 0.0
+
+
+func t_bot() -> void:
+	Game.args.erase("startx")
+	Game.new_run()
+	await _frames(3)
+	while Game.level == null or not is_instance_valid(Game.level) or Game.level.player == null:
+		await _frames(1)
+	var p: Player = Game.level.player
+	var t := 0.0
+	var limit := float(Game.args.get("bot_limit", "900"))
+	var last_report := 0.0
+	while t < limit:
+		await _frames(1)
+		t += 1.0 / 60.0
+		var scene := get_tree().current_scene
+		if scene and scene.scene_file_path == Game.END_SCENE:
+			break
+		if Game.level == null or not is_instance_valid(Game.level):
+			continue
+		p = Game.level.player
+		if p == null or not is_instance_valid(p):
+			continue
+		_bot_step(p, 1.0 / 60.0)
+		if t - last_report > 20.0:
+			last_report = t
+			print("BOT t=%.0fs x=%.0f hp=%.0f deaths=%d kills=%d cleared=%s" % [t, p.global_position.x, p.hp, Game.deaths, Game.kills, Game.cleared.keys()])
+	var scene2 := get_tree().current_scene
+	var done := scene2 != null and scene2.scene_file_path == Game.END_SCENE
+	_log("bot_completes_demo", done, "sim_time=%.0fs deaths=%d kills=%d parries=%d run_time=%s" % [t, Game.deaths, Game.kills, Game.parries, Game.format_time(Game.run_time)])
+
+
+func _bot_press(d: Dictionary, action: String) -> void:
+	d[action] = true
+	d[action + "_just"] = true
+
+
+func _bot_step(p: Player, dt: float) -> void:
+	_bot_cd = maxf(0.0, _bot_cd - dt)
+	_bot_retreat = maxf(0.0, _bot_retreat - dt)
+	var d := {}
+	if p.dead:
+		p.input_override = d
+		return
+	var near: Enemy = null
+	var nd := 1e9
+	for e in Combat.enemies_alive():
+		if e.state == "spawn":
+			continue
+		var dd: float = absf(e.global_position.x - p.global_position.x)
+		if dd < nd:
+			nd = dd
+			near = e
+	# generic obstacle handling: if pushing but not moving, hop
+	if absf(p.global_position.x - _bot_lastx) < 0.5 and p.is_on_floor() and p.state in ["run", "idle"]:
+		_bot_stuck += dt
+	else:
+		_bot_stuck = 0.0
+	_bot_lastx = p.global_position.x
+	if near == null or nd > 520.0:
+		d["move_right"] = true
+		if _bot_stuck > 0.15 and _bot_cd <= 0.0:
+			_bot_press(d, "jump")
+			d["jump"] = true
+			_bot_cd = 0.3
+		for pd in get_tree().get_nodes_in_group("taint_puddle"):
+			var ahead: float = pd.global_position.x - p.global_position.x
+			if ahead > 30 and ahead < 60 + pd.radius and p.is_on_floor() and _bot_cd <= 0.0:
+				_bot_press(d, "jump")
+				d["jump"] = true
+				_bot_cd = 0.3
+		if not p.is_on_floor():
+			d["jump"] = true
+		if p.hp < p.max_hp * 0.5 and p.gourd > 0 and _bot_cd <= 0.0:
+			_bot_press(d, "gourd")
+			_bot_cd = 0.8
+		p.input_override = d
+		return
+	if _bot_stuck > 0.25 and _bot_cd <= 0.0:
+		_bot_press(d, "jump")
+		d["jump"] = true
+		_bot_cd = 0.3
+	var dx: float = near.global_position.x - p.global_position.x
+	var dir := "move_right" if dx > 0 else "move_left"
+	var away := "move_left" if dx > 0 else "move_right"
+	var ad := absf(dx)
+	var es: String = near.state
+	var est: float = near.state_t
+	# emergency heal when not under immediate threat
+	if p.hp < p.max_hp * 0.4 and p.gourd > 0 and _bot_cd <= 0.0 and not es.begins_with("windup"):
+		_bot_press(d, "gourd")
+		_bot_cd = 0.8
+		p.input_override = d
+		return
+	if p.in_taint > 0.0 and p.is_on_floor() and _bot_cd <= 0.0:
+		d[dir] = true
+		_bot_press(d, "jump")
+		d["jump"] = true
+		_bot_cd = 0.4
+		p.input_override = d
+		return
+	if not p.is_on_floor():
+		d["jump"] = true
+	var crowd := 0
+	for e in Combat.enemies_alive():
+		if absf(e.global_position.x - p.global_position.x) < 200:
+			crowd += 1
+	if crowd >= 2 and p.qi >= p.BEADS_COST and _bot_cd <= 0.0:
+		_bot_press(d, "beads")
+		_bot_cd = 1.0
+		p.input_override = d
+		return
+	var kind := near.enemy_name
+	match kind:
+		"伏爬者":
+			if (es == "prep" or es == "pounce") and ad < 260 and p.is_on_floor():
+				_bot_press(d, "jump")
+				d["jump"] = true
+				d[away] = true
+			elif ad < 125:
+				if _bot_cd <= 0.0:
+					d[dir] = true
+					d["move_down"] = true
+					_bot_press(d, "attack")
+					_bot_cd = 0.45
+			else:
+				d[dir] = true
+		"瘴吐者":
+			if ad > 260 and p.qi >= p.TALISMAN_COST and _bot_cd <= 0.0:
+				d[dir] = true
+				_bot_press(d, "talisman")
+				_bot_cd = 0.5
+			elif ad > 150 and _bot_cd <= 0.0 and p.dash_cd <= 0.0:
+				d[dir] = true
+				_bot_press(d, "dash")
+				_bot_cd = 0.1
+			elif ad <= 150 and _bot_cd <= 0.0:
+				d[dir] = true
+				_bot_press(d, "attack")
+				_bot_cd = 0.16
+			else:
+				d[dir] = true
+		"封印残尸":
+			if es == "burst_prep" or es == "burst" or _bot_retreat > 0.0:
+				d[away] = true
+				if es == "burst_prep" and p.dash_cd <= 0.0 and ad < 160:
+					_bot_press(d, "dash")
+			elif es == "windup" and ad < 150:
+				d["block"] = true
+			elif ad < 115 and _bot_cd <= 0.0:
+				d[dir] = true
+				_bot_press(d, "attack")
+				_bot_cd = 0.3
+				_bot_hits += 1
+				if _bot_hits >= 3:
+					_bot_hits = 0
+					_bot_retreat = 1.2
+			elif ad > 330 and p.qi >= p.TALISMAN_COST and _bot_cd <= 0.0:
+				_bot_press(d, "talisman")
+				d[dir] = true
+				_bot_cd = 0.6
+			elif ad >= 115:
+				d[dir] = true
+		"尸将":
+			if es == "windup_chop" and ad < 260:
+				if est > 0.45 and p.dash_cd <= 0.0:
+					d[away] = true
+					_bot_press(d, "dash")
+				else:
+					d[away] = true
+			elif es == "windup_sweep" and ad < 280:
+				if est > 0.42 and p.is_on_floor():
+					_bot_press(d, "jump")
+					d["jump"] = true
+				d[away] = true
+			elif es in ["recover_chop", "recover_sweep", "stagger", "recoil"]:
+				if ad > 120:
+					d[dir] = true
+				elif _bot_cd <= 0.0:
+					d[dir] = true
+					_bot_press(d, "attack")
+					_bot_cd = 0.14
+			elif es == "chase" or es == "lunge":
+				if ad < 190:
+					d[away] = true
+				elif p.qi >= p.TALISMAN_COST and _bot_cd <= 0.0:
+					d[dir] = true
+					_bot_press(d, "talisman")
+					_bot_cd = 0.6
+			else:
+				if ad < 220:
+					d[away] = true
+		_:
+			# grunts: guard their claw, punish recovery
+			if es == "windup" and ad < 170:
+				if est > 0.24:
+					d["block"] = true
+			elif es == "attack" and ad < 170:
+				d["block"] = true
+			elif ad > 115:
+				d[dir] = true
+			elif _bot_cd <= 0.0:
+				d[dir] = true
+				_bot_press(d, "attack")
+				_bot_cd = 0.15
+	p.input_override = d

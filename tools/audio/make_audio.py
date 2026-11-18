@@ -1,0 +1,320 @@
+"""Procedural SFX + music for the Taoist Wanderer demo (no third-party audio).
+
+Music: Chinese pentatonic (宫商角徵羽) guqin-like plucks (Karplus-Strong with
+pitch slides), low drones, wood block and temple bell. SFX: filtered noise
+and modal synthesis. Output: 16-bit mono WAV, 22.05 kHz.
+
+Usage: python -I tools/audio/make_audio.py game/assets/audio
+"""
+import os, sys, wave
+import numpy as np
+
+SR = 22050
+OUT = sys.argv[1]
+os.makedirs(OUT, exist_ok=True)
+rng = np.random.default_rng(3)
+
+
+def t_(d):
+    return np.arange(int(SR * d)) / SR
+
+
+def env(n, a=0.005, d=0.2, s=0.0, r=0.0, curve=4.0):
+    total = n
+    e = np.zeros(total)
+    ai = max(1, int(a * SR))
+    e[:ai] = np.linspace(0, 1, ai)
+    rest = total - ai
+    e[ai:] = s + (1 - s) * np.exp(-np.arange(rest) / max(1, d * SR) * curve / 4)
+    return e
+
+
+def lowpass(x, cut):
+    # one-pole, cut in Hz (scalar or array)
+    cut = np.broadcast_to(np.asarray(cut, float), x.shape)
+    a = np.exp(-2 * np.pi * cut / SR)
+    y = np.zeros_like(x)
+    prev = 0.0
+    for i in range(len(x)):
+        prev = (1 - a[i]) * x[i] + a[i] * prev
+        y[i] = prev
+    return y
+
+
+def lp_fast(x, cut):
+    a = np.exp(-2 * np.pi * cut / SR)
+    from scipy.signal import lfilter
+    return lfilter([1 - a], [1, -a], x)
+
+
+def hp_fast(x, cut):
+    return x - lp_fast(x, cut)
+
+
+def bp(x, lo, hi):
+    return hp_fast(lp_fast(x, hi), lo)
+
+
+def noise(d):
+    return rng.standard_normal(int(SR * d))
+
+
+def norm(x, peak=0.9):
+    m = np.max(np.abs(x)) + 1e-9
+    return x / m * peak
+
+
+def save(name, x, peak=0.9):
+    x = norm(x, peak)
+    # tiny fade to avoid clicks
+    f = min(len(x) // 10, 64)
+    if f > 0:
+        x[:f] *= np.linspace(0, 1, f)
+        x[-f:] *= np.linspace(1, 0, f)
+    data = (x * 32767).astype(np.int16)
+    with wave.open(os.path.join(OUT, name + ".wav"), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(SR)
+        w.writeframes(data.tobytes())
+
+
+def sweep_noise(d, f0, f1, q=1.0):
+    n = noise(d)
+    out = np.zeros_like(n)
+    k = len(n)
+    seg = 256
+    for i in range(0, k, seg):
+        frac = i / k
+        fc = f0 * (f1 / f0) ** frac
+        out[i:i + seg] = bp(n[max(0, i - 512):i + seg], fc / (1 + q), fc * (1 + q))[-len(n[i:i + seg]):]
+    return out
+
+
+def thud(d, f0, f1):
+    tt = t_(d)
+    f = f0 * (f1 / f0) ** (tt / d)
+    ph = np.cumsum(2 * np.pi * f / SR)
+    return np.sin(ph) * env(len(tt), 0.002, d * 0.5)
+
+
+def modal(d, freqs, decays, amps):
+    tt = t_(d)
+    x = np.zeros_like(tt)
+    for f, dc, a in zip(freqs, decays, amps):
+        x += a * np.sin(2 * np.pi * f * tt) * np.exp(-tt / dc)
+    return x
+
+
+def ks_pluck(freq, d, bright=0.5, slide=0.0):
+    """Karplus-Strong with optional end-of-note pitch slide (guqin 吟猱)."""
+    n = int(SR * d)
+    period = SR / freq
+    buf_len = int(period) + 2
+    buf = rng.uniform(-1, 1, buf_len)
+    buf = lp_fast(buf, 2000 + 4000 * bright)
+    buf -= buf.mean()
+    out = np.zeros(n)
+    idx = 0.0
+    hist = np.zeros(int(SR / (freq * 0.5)) + 4)
+    # simple fractional-delay KS using resampling of the period
+    y = np.zeros(n + buf_len)
+    y[:buf_len] = buf
+    p = period
+    for i in range(buf_len, n + buf_len):
+        tfrac = (i - buf_len) / n
+        cur_p = period / (2 ** (slide * max(0, tfrac - 0.35) / 0.65 / 12))
+        j = i - cur_p
+        j0 = int(j)
+        fr = j - j0
+        s = (1 - fr) * y[j0] + fr * y[j0 + 1]
+        s1 = (1 - fr) * y[j0 - 1] + fr * y[j0]
+        y[i] = 0.4993 * (s + s1)
+    out = y[buf_len:]
+    # body resonance
+    out = hp_fast(out + 0.3 * lp_fast(out, 400), 90)
+    return out * env(n, 0.001, d * 1.2)
+
+
+# ------------------------------------------------------------------ SFX
+def make_sfx():
+    save("swing_pre", bp(noise(0.12), 800, 3000) * env(int(SR * 0.12), 0.01, 0.05), 0.4)
+    sw = sweep_noise(0.22, 600, 3200, 0.6) * env(int(SR * 0.22), 0.03, 0.1)
+    save("swing", sw, 0.8)
+    save("step", bp(noise(0.08), 100, 900) * env(int(SR * 0.08), 0.002, 0.02), 0.5)
+    save("jump", sweep_noise(0.18, 300, 1200, 0.8) * env(int(SR * 0.18), 0.01, 0.06), 0.5)
+    save("land", (bp(noise(0.2), 60, 600) + 0.8 * thud(0.2, 120, 50)) * env(int(SR * 0.2), 0.002, 0.06), 0.7)
+    save("dash", sweep_noise(0.3, 2400, 500, 0.8) * env(int(SR * 0.3), 0.01, 0.12), 0.7)
+    save("guard_up", modal(0.25, [1800, 2700], [0.05, 0.03], [0.3, 0.2]) + bp(noise(0.25), 1000, 4000) * env(int(SR * 0.25), 0.002, 0.02), 0.5)
+    clang = modal(0.6, [880, 1320, 2210, 3170, 4400], [0.25, 0.18, 0.12, 0.08, 0.05], [1, 0.7, 0.5, 0.35, 0.2])
+    save("block", clang + 2 * bp(noise(0.6), 2000, 6000) * env(int(SR * 0.6), 0.001, 0.015), 0.8)
+    ring = modal(1.2, [1047, 1568, 2093, 3136, 4186], [0.7, 0.5, 0.4, 0.25, 0.15], [1, 0.8, 0.6, 0.4, 0.3])
+    save("parry", ring + 3 * bp(noise(1.2), 2500, 7000) * env(int(SR * 1.2), 0.001, 0.02) + 0.6 * thud(1.2, 200, 80), 0.9)
+    hurt = (bp(noise(0.35), 150, 1500) + 1.2 * thud(0.35, 160, 60)) * env(int(SR * 0.35), 0.002, 0.12)
+    save("player_hurt", hurt, 0.85)
+    die = (bp(noise(1.6), 80, 800) * env(int(SR * 1.6), 0.01, 0.8) + thud(1.6, 110, 35) + 0.3 * modal(1.6, [220, 330], [0.8, 0.6], [1, 0.6]))
+    save("player_die", die, 0.85)
+    save("talisman_draw", bp(noise(0.18), 2000, 7000) * env(int(SR * 0.18), 0.01, 0.06), 0.4)
+    fire = bp(noise(0.5), 500, 4000) * env(int(SR * 0.5), 0.005, 0.3)
+    crack = np.zeros(int(SR * 0.5))
+    for _ in range(18):
+        i = rng.integers(0, len(crack) - 200)
+        crack[i:i + 60] += rng.uniform(-1, 1, 60) * np.exp(-np.arange(60) / 10)
+    save("talisman_fire", fire + 1.5 * crack + 0.3 * sweep_noise(0.5, 3000, 800, 0.5) * env(int(SR * 0.5), 0.01, 0.2), 0.75)
+    save("talisman_hit", (bp(noise(0.4), 400, 5000) * env(int(SR * 0.4), 0.001, 0.1) + 0.5 * thud(0.4, 300, 90)), 0.8)
+    pop = thud(0.15, 400, 900) * env(int(SR * 0.15), 0.001, 0.03)
+    save("gourd_uncork", pop + 0.3 * bp(noise(0.15), 1000, 3000) * env(int(SR * 0.15), 0.001, 0.02), 0.6)
+    gust = sweep_noise(0.9, 200, 1500, 1.0) * env(int(SR * 0.9), 0.08, 0.4) + 0.6 * thud(0.9, 90, 50)
+    save("gourd_gust", gust, 0.85)
+    tt = t_(0.5)
+    shim = sum(np.sin(2 * np.pi * f * tt * (1 + 0.3 * tt)) * 0.2 for f in [523, 659, 784, 1047]) * env(len(tt), 0.3, 0.3)
+    save("beads_charge", shim + 0.4 * bp(noise(0.5), 3000, 8000) * env(len(tt), 0.3, 0.2), 0.6)
+    bell = modal(2.0, [262, 524, 698, 1047, 1400, 2093], [1.4, 1.0, 0.8, 0.6, 0.4, 0.3], [1, 0.6, 0.5, 0.4, 0.3, 0.25])
+    save("beads_burst", bell + 1.2 * thud(2.0, 140, 45) + 0.6 * sweep_noise(2.0, 2500, 400, 0.8) * env(int(SR * 2.0), 0.01, 0.4), 0.9)
+    flesh = (bp(noise(0.22), 200, 2500) * env(int(SR * 0.22), 0.001, 0.05) + 0.9 * thud(0.22, 180, 70))
+    save("hit_flesh", flesh, 0.85)
+    save("hit_heavy", flesh * 0.7 + 1.2 * thud(0.3, 120, 40)[:len(flesh)], 0.9)
+    armor = modal(0.5, [310, 470, 930, 1400], [0.12, 0.1, 0.07, 0.05], [1, 0.8, 0.5, 0.3]) + bp(noise(0.5), 300, 3000) * env(int(SR * 0.5), 0.001, 0.03) + 0.8 * thud(0.5, 140, 60)
+    save("hit_armor", armor, 0.85)
+    edie = bp(noise(1.0), 100, 1200) * env(int(SR * 1.0), 0.01, 0.4) + 0.6 * thud(1.0, 90, 40)
+    tt = t_(1.0)
+    moan = np.sin(2 * np.pi * (110 - 40 * tt) * tt + 3 * np.sin(2 * np.pi * 6 * tt)) * env(len(tt), 0.05, 0.5)
+    save("enemy_die", edie + 0.5 * moan, 0.8)
+
+    def growl(d, f, rough=0.6, pitch_drop=0.3):
+        tt = t_(d)
+        ff = f * (1 - pitch_drop * tt / d)
+        ph = np.cumsum(2 * np.pi * ff / SR)
+        mod = 1 + rough * np.sin(2 * np.pi * 31 * tt) * rng.uniform(0.6, 1.0)
+        x = np.sign(np.sin(ph)) * 0.5 + np.sin(ph * 2) * 0.3
+        x = x * mod + 0.8 * bp(noise(d), f, f * 6)
+        return lp_fast(x, 1400) * env(len(tt), 0.05, d * 0.5)
+    save("growl", growl(0.7, 85), 0.7)
+    save("husk_groan", growl(1.0, 60, 0.4, 0.1), 0.7)
+    save("claw", sweep_noise(0.2, 1500, 4000, 0.5) * env(int(SR * 0.2), 0.005, 0.06), 0.6)
+    save("hiss", bp(noise(0.6), 3000, 8000) * env(int(SR * 0.6), 0.05, 0.3), 0.6)
+    save("pounce", sweep_noise(0.3, 800, 2500, 0.6) * env(int(SR * 0.3), 0.01, 0.1) + 0.3 * growl(0.3, 140), 0.7)
+    cr = np.zeros(int(SR * 0.9))
+    for _ in range(30):
+        i = rng.integers(0, len(cr) - 300)
+        cr[i:i + 200] += rng.uniform(-1, 1, 200) * np.exp(-np.arange(200) / 30) * rng.uniform(0.3, 1)
+    save("seal_crack", bp(cr, 500, 6000) + 0.4 * thud(0.9, 70, 40), 0.8)
+    tt = t_(0.55)
+    rise = np.sin(2 * np.pi * np.cumsum(200 + 900 * (tt / 0.55) ** 2) / SR) * env(len(tt), 0.3, 0.3, 0.6)
+    save("seal_charge", rise * 0.5 + bp(noise(0.55), 400, 3000) * (tt / 0.55), 0.7)
+    save("seal_burst", bp(noise(1.0), 80, 3000) * env(int(SR * 1.0), 0.001, 0.25) + 1.4 * thud(1.0, 160, 35) + 0.5 * modal(1.0, [180, 270, 405], [0.5, 0.4, 0.3], [1, 0.6, 0.4]), 0.95)
+    save("sleeve", sweep_noise(0.35, 300, 1200, 1.0) * env(int(SR * 0.35), 0.03, 0.12), 0.7)
+    tt = t_(0.6)
+    bub = sum(np.sin(2 * np.pi * rng.uniform(150, 400) * tt * (1 + tt)) * np.exp(-((tt - rng.uniform(0, 0.5)) / 0.03) ** 2) for _ in range(12))
+    save("gurgle", bub + 0.3 * lp_fast(noise(0.6), 500) * env(len(tt), 0.05, 0.3), 0.6)
+    tt = t_(0.9)
+    swell = lowpass(noise(0.9), 300 + 900 * tt / 0.9) * (tt / 0.9) ** 1.5 + 0.4 * np.sin(2 * np.pi * (80 + 60 * tt) * tt) * (tt / 0.9)
+    save("sac_swell", swell + 0.4 * bub[:len(swell)] if len(bub) >= len(swell) else swell, 0.7)
+    save("spit", (bp(noise(0.35), 300, 3000) * env(int(SR * 0.35), 0.002, 0.08) + 0.6 * thud(0.35, 220, 90)), 0.8)
+    save("splat", (bp(noise(0.5), 150, 2500) * env(int(SR * 0.5), 0.001, 0.12) + 0.4 * thud(0.5, 140, 60)), 0.8)
+    save("elite_roar", growl(1.6, 55, 0.8, 0.25) + 0.5 * thud(1.6, 70, 40), 0.9)
+    save("elite_windup", lp_fast(noise(0.8), 600) * env(int(SR * 0.8), 0.4, 0.3, 0.7) + 0.4 * modal(0.8, [140, 210], [0.6, 0.5], [1, 0.6]), 0.7)
+    chop = bp(noise(1.2), 40, 2000) * env(int(SR * 1.2), 0.001, 0.25) + 1.8 * thud(1.2, 120, 28) + 0.5 * modal(1.2, [95, 160, 250], [0.6, 0.5, 0.3], [1, 0.6, 0.4])
+    save("elite_chop", chop, 0.98)
+    save("elite_sweep", sweep_noise(0.6, 250, 1800, 1.0) * env(int(SR * 0.6), 0.05, 0.2) + 0.6 * thud(0.6, 90, 50), 0.9)
+    save("elite_step", lp_fast(noise(0.3), 300) * env(int(SR * 0.3), 0.002, 0.08) + thud(0.3, 70, 40), 0.8)
+    save("armor_break", modal(1.0, [400, 620, 980, 1500], [0.4, 0.3, 0.25, 0.15], [1, 0.8, 0.6, 0.4]) + bp(noise(1.0), 1000, 6000) * env(int(SR * 1.0), 0.001, 0.05) + thud(1.0, 120, 40), 0.9)
+    save("elite_die", growl(2.5, 50, 0.6, 0.5) + 1.5 * thud(2.5, 80, 25) + 0.4 * bp(noise(2.5), 60, 800) * env(int(SR * 2.5), 0.2, 1.5), 0.95)
+    save("spawn_rise", lp_fast(noise(0.9), 400) * env(int(SR * 0.9), 0.4, 0.4) + 0.3 * growl(0.9, 70, 0.3, 0.1), 0.6)
+    tt = t_(1.2)
+    save("barrier_up", modal(1.2, [392, 587, 784], [0.8, 0.6, 0.4], [1, 0.7, 0.5]) + 0.5 * bp(noise(1.2), 2000, 6000) * env(len(tt), 0.2, 0.4), 0.7)
+    save("barrier_down", modal(1.6, [523, 659, 784, 1047], [1.0, 0.8, 0.7, 0.5], [1, 0.8, 0.6, 0.5]), 0.7)
+    save("rest", modal(2.5, [196, 294, 392, 587], [1.6, 1.3, 1.0, 0.8], [1, 0.6, 0.5, 0.3]) + 0.2 * lp_fast(noise(2.5), 800) * env(int(SR * 2.5), 0.5, 1.0), 0.7)
+    save("ending_chime", modal(3.5, [262, 392, 524, 659, 784], [3.0, 2.5, 2.0, 1.6, 1.2], [1, 0.8, 0.6, 0.5, 0.4]), 0.8)
+    save("ui_confirm", modal(0.6, [784, 1175], [0.3, 0.2], [1, 0.6]), 0.6)
+    save("ui_move", modal(0.2, [1175], [0.06], [1]), 0.4)
+
+
+# ------------------------------------------------------------------ music
+PENTA = [0, 2, 4, 7, 9]  # gong shang jiao zhi yu
+
+
+def note_freq(root, degree, octave=0):
+    o, d = divmod(degree, 5)
+    return root * 2 ** ((PENTA[d] + 12 * (o + octave)) / 12)
+
+
+def drone(d, f, amp=0.3, breathe=0.1):
+    tt = t_(d)
+    x = sum(np.sin(2 * np.pi * f * h * tt + rng.uniform(0, 6)) / h for h in (1, 2, 3, 4))
+    x = x * (1 + breathe * np.sin(2 * np.pi * tt / 7.0))
+    x += 0.6 * lp_fast(noise(d), f * 2) * 3
+    return lp_fast(x, f * 4) * amp
+
+
+def music(name, root, dur, bpm, density, mood_low, seed, bells=False, wood=True):
+    r = np.random.default_rng(seed)
+    n = int(SR * dur)
+    mix = np.zeros(n + SR * 4)
+    mix[:n] += drone(dur, root / 2, 0.07)
+    mix[:n] += drone(dur, root / 2 * 1.5, 0.025)
+    beat = 60.0 / bpm
+    t = 0.5
+    deg = 5
+    while t < dur - 3:
+        if r.random() < density:
+            step = r.choice([-2, -1, -1, 0, 1, 1, 2, 3])
+            deg = int(np.clip(deg + step, mood_low, 12))
+            f = note_freq(root, deg)
+            ln = r.choice([1.5, 2.5, 3.5])
+            p = ks_pluck(f, ln, bright=r.uniform(0.3, 0.7), slide=r.choice([0, 0, 0, 1, -1, 2]))
+            i = int(t * SR)
+            mix[i:i + len(p)] += p * r.uniform(0.8, 1.2)
+            if r.random() < 0.25:  # octave harmonic 泛音
+                h = ks_pluck(f * 2, 1.5, bright=0.9)
+                mix[i + 40:i + 40 + len(h)] += h * 0.15
+        t += beat * r.choice([1, 1, 1, 2, 2, 3])
+    if wood:
+        t = 0.0
+        while t < dur - 1:
+            if r.random() < 0.3:
+                k = modal(0.15, [800, 1250], [0.03, 0.02], [1, 0.4]) * 0.18
+                i = int(t * SR)
+                mix[i:i + len(k)] += k
+            t += beat * 2
+    if bells:
+        for tb in np.arange(2.0, dur - 4, 12.0):
+            b = modal(4.0, [root, root * 2.76, root * 5.4, root * 8.9], [3.0, 2.0, 1.2, 0.8], [1, 0.5, 0.3, 0.2]) * 0.25
+            i = int(tb * SR)
+            mix[i:i + len(b)] += b
+    # wrap the tail into the head so the loop is seamless
+    tail = mix[n:]
+    mix = mix[:n]
+    mix[:len(tail)] += tail
+    # gentle reverb-ish smear
+    rev = np.zeros_like(mix)
+    for dly, g in [(0.083, 0.3), (0.131, 0.22), (0.197, 0.16), (0.271, 0.1)]:
+        k = int(dly * SR)
+        rev[k:] += mix[:-k] * g
+        rev[:k] += mix[-k:] * g
+    save(name, hp_fast(lp_fast(mix + rev, 5000), 40), 0.7)
+
+
+def ambience():
+    d = 30.0
+    n = noise(d)
+    tt = t_(d)
+    cut = 300 + 250 * (np.sin(2 * np.pi * tt / 9.0) + 1) + 120 * np.sin(2 * np.pi * tt / 3.3)
+    x = np.zeros_like(n)
+    seg = 512
+    for i in range(0, len(n), seg):
+        x[i:i + seg] = bp(n[max(0, i - 2048):i + seg], cut[i] * 0.5, cut[i] * 1.6)[-len(n[i:i + seg]):]
+    x *= 0.6 + 0.4 * np.sin(2 * np.pi * tt / 11.0)
+    k = int(2 * SR)
+    x[:k] = x[:k] * np.linspace(0, 1, k) + x[-k:] * np.linspace(1, 0, k)
+    save("amb_wind", x[:-k] if False else x, 0.5)
+
+
+if __name__ == "__main__":
+    make_sfx()
+    ambience()
+    music("music_title", 196.0, 48.0, 54, 0.75, 2, 11, bells=True, wood=False)
+    music("music_wander", 220.0, 48.0, 66, 0.8, 3, 12)
+    music("music_taint", 185.0, 48.0, 60, 0.7, 0, 13, wood=True)
+    music("music_temple", 174.6, 48.0, 58, 0.75, 1, 14, bells=True)
+    print("audio done")

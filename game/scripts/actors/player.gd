@@ -29,19 +29,19 @@ const GOURD_MAX := 3
 const ATK := {
 	"slash1": {"pre": "hero_02_draw", "pose": "hero_03_hslash", "startup": 0.07, "active": 0.09,
 		"recover": 0.22, "rect": Rect2(0, -145, 118, 90), "dmg": 10.0, "poise": 8.0, "knock": 170.0,
-		"lunge": 170.0, "next": "slash2", "fx": [-40.0, 35.0, 72.0, 30.0, 0.55], "fx_off": Vector2(18, -98),
+		"lunge": 170.0, "next": "slash2", "fx": [-70.0, 55.0, 88.0, 34.0, 0.6], "fx_off": Vector2(10, -96),
 		"lean": 6.0},
 	"slash2": {"pre": "hero_04_downslash", "pose": "hero_04_downslash", "startup": 0.12, "active": 0.09,
 		"recover": 0.26, "rect": Rect2(4, -160, 104, 160), "dmg": 14.0, "poise": 16.0, "knock": 120.0,
-		"lunge": 120.0, "next": "slash3", "fx": [-115.0, 75.0, 78.0, 34.0, 1.0], "fx_off": Vector2(28, -78),
+		"lunge": 120.0, "next": "slash3", "fx": [-120.0, 80.0, 86.0, 38.0, 1.0], "fx_off": Vector2(24, -80),
 		"lean": 10.0, "low": true},
 	"slash3": {"pre": "hero_02_draw", "pose": "hero_05_thrust", "startup": 0.11, "active": 0.1,
 		"recover": 0.32, "rect": Rect2(10, -132, 160, 62), "dmg": 17.0, "poise": 20.0, "knock": 300.0,
-		"lunge": 360.0, "next": "", "fx": [-70.0, 70.0, 110.0, 18.0, 0.12], "fx_off": Vector2(70, -102),
+		"lunge": 360.0, "next": "", "fx": [-80.0, 80.0, 120.0, 22.0, 0.14], "fx_off": Vector2(60, -100),
 		"lean": 4.0},
 	"down": {"pre": "hero_04_downslash", "pose": "hero_04_downslash", "startup": 0.14, "active": 0.1,
 		"recover": 0.28, "rect": Rect2(4, -160, 106, 160), "dmg": 16.0, "poise": 20.0, "knock": 140.0,
-		"lunge": 90.0, "next": "slash3", "fx": [-115.0, 80.0, 80.0, 36.0, 1.0], "fx_off": Vector2(28, -78),
+		"lunge": 90.0, "next": "slash3", "fx": [-120.0, 85.0, 88.0, 40.0, 1.0], "fx_off": Vector2(24, -80),
 		"lean": 12.0, "low": true},
 }
 
@@ -300,7 +300,7 @@ func _st_attack(delta: float) -> void:
 	if t >= st and vis.pose != a.pose:
 		vis.set_pose(a.pose, 0.03)
 		var f: Array = a.fx
-		Fx.slash(global_position + Vector2(a.fx_off.x * facing, a.fx_off.y), facing, f[0], f[1], f[2], f[3], 0.22,
+		Fx.slash(global_position + Vector2(a.fx_off.x * facing, a.fx_off.y), facing, f[0], f[1], f[2], f[3], 0.3,
 			Fx.C_CINNABAR, Color(1, 0.97, 0.9), f[4])
 		Sfx.play("swing", -4.0)
 		vis.squash = Vector2(1.06, 0.95)
@@ -376,8 +376,8 @@ func _start_dash_attack() -> void:
 	invuln = maxf(invuln, 0.16)
 	vis.set_pose("hero_06_dash", 0.02)
 	Sfx.play("swing", -3.0, 0.05, 0.9)
-	Fx.slash(global_position + Vector2(40 * facing, -48), facing, -40.0, 40.0, 95.0, 22.0, 0.24,
-		Fx.C_CINNABAR, Color(1, 0.97, 0.9), 0.22)
+	Fx.slash(global_position + Vector2(30 * facing, -50), facing, -70.0, 70.0, 110.0, 26.0, 0.3,
+		Fx.C_CINNABAR, Color(1, 0.97, 0.9), 0.25)
 
 
 func _st_dash_attack(delta: float) -> void:
@@ -403,7 +403,7 @@ func _start_jump_attack() -> void:
 	hit_set = {}
 	vis.set_pose("hero_07_jump", 0.03)
 	Sfx.play("swing", -4.0, 0.06, 1.08)
-	Fx.slash(global_position + Vector2(30 * facing, -70), facing, -70.0, 90.0, 80.0, 30.0, 0.24)
+	Fx.slash(global_position + Vector2(26 * facing, -70), facing, -80.0, 95.0, 88.0, 34.0, 0.3)
 
 
 func _st_jump_attack(delta: float) -> void:

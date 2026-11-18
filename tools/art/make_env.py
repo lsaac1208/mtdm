@@ -151,7 +151,19 @@ def tower(d, ss, x, base, w, h, seed):
         pts.append((px, base - h - r.uniform(-h * 0.12, h * 0.08)))
     pts += [(x + w, base)]
     d.polygon([(p[0] * ss, p[1] * ss) for p in pts], fill=255)
-    # window holes are drawn later as separate darker marks
+    # window holes (gutted floors) and rebar sticking out of the broken top
+    cols = max(1, int(w // 22))
+    for row in range(int(h // 34)):
+        for c in range(cols):
+            if r.random() < 0.55:
+                wx = x + 6 + c * (w - 12) / cols
+                wy = base - h + 22 + row * 34
+                if wy > base - 20:
+                    continue
+                d.rectangle([wx * ss, wy * ss, (wx + (w - 12) / cols * 0.55) * ss, (wy + 16) * ss], fill=0)
+    for _ in range(r.randint(1, 4)):
+        rx = x + r.uniform(0.1, 0.9) * w
+        d.line([(rx * ss, (base - h + 4) * ss), ((rx + r.uniform(-12, 12)) * ss, (base - h - r.uniform(14, 40)) * ss)], fill=255, width=2 * ss)
 
 
 def chimney(d, ss, x, base, w, h):
@@ -313,10 +325,14 @@ def ruins_layer(w, h, name, tone, seed, density, kinds, base_y, scale, alpha, mi
             elif k == "wall":
                 ww, wh = r.uniform(80, 200) * s, r.uniform(30, 70) * s
                 pts = [(x, base_y), (x, base_y - wh)]
-                for i in range(5):
-                    pts.append((x + ww * (i + 1) / 5, base_y - wh * r.uniform(0.4, 1.1)))
+                for i in range(7):
+                    pts.append((x + ww * (i + 1) / 7, base_y - wh * r.uniform(0.3, 1.15)))
                 pts.append((x + ww, base_y))
                 d.polygon([(p[0] * ss, p[1] * ss) for p in pts], fill=255)
+                # missing bricks
+                for _ in range(int(ww // 25)):
+                    bx = x + r.uniform(5, ww - 20); by = base_y - r.uniform(10, wh * 0.8)
+                    d.rectangle([bx * ss, by * ss, (bx + 14) * ss, (by + 7) * ss], fill=0)
                 x += ww + r.uniform(10, 50) * density
             elif k == "gap":
                 x += r.uniform(60, 200) * density
@@ -597,8 +613,8 @@ def title_bg():
 if __name__ == "__main__":
     make_sky()
     mountains()
-    ruins_layer(2048, 480, "mid", "#6a6158", 51, 1.0, ["tower", "chimney", "pylon", "pagoda", "gap", "tower", "tree"], 470, 1.0, 0.85)
-    ruins_layer(2048, 520, "near", "#3a332d", 61, 1.3, ["house", "tree", "wall", "gap", "pagoda", "wall", "tree", "chimney"], 512, 1.15, 0.95, mist=0.35)
+    ruins_layer(2048, 480, "mid", "#5f5850", 51, 1.0, ["tower", "chimney", "pylon", "pagoda", "gap", "tower", "tree"], 470, 1.0, 0.85)
+    ruins_layer(2048, 520, "near", "#2c2622", 61, 1.3, ["house", "tree", "wall", "gap", "pagoda", "tree", "tower", "gap"], 512, 1.15, 0.95, mist=0.3)
     foreground()
     ground()
     make_props()
