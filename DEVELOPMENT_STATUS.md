@@ -32,7 +32,7 @@ _Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` ·
 **Presentation:** 50 concept-art pose sprites with ink contour + pale paper halo (figure/ground separation), shader two-bone leg rig (thighs rotate at hip pivots, knees bend, feet stay planted, hanging props stay rigid) for every character's walk/run, knee-tuck airborne pose, hit jitter + ground ink splats + camera zoom-punch, cross-fades, lean/squash, stride/sway/breath shader, hit flash, ink-burn deaths; sword-qi brush arcs, telegraph glints, danger bands, rings, particles, hit-stop, screen shake; parallax ink-wash wasteland with per-zone tint + fog + vignette/grain + ambient particles (dust/ash/spores/embers), cracked-earth ground with debris; brush-font zone cards, boss intro card, tutorial hint strip from roadside steles; generated SFX + 4 pentatonic music loops + 5 zone ambience beds (wind, crows, bubbling taint, wind chimes, burial groans) with crossfades; title and ending screens.
 
 ### Verified results (this session)
-- `--test=all`: **37/37 checks pass** (incl. spawns-on-surfaces guard, flow: pause-restart keeps progress, ending→title→new run resets state, no stale actors) (movement, jump, dash, crawler band whiff/hit with slash vs down/dash slash, grunt stagger + combo kill, timed parry, husk seal burst + punishment + talisman no-pressure, spitter glob → puddle, talisman interrupts spitter wind-up, elite wind-up 0.80 s and armour vs light hits, death → respawn at campfire, encounter lock/barrier/clear, scripted clear of every encounter → ending scene). No script errors.
+- `--test=all`: **38/38 checks pass** (incl. spawns-on-surfaces guard, flow: pause-restart keeps progress, ending→title→new run resets state, no stale actors) (movement, jump, dash, crawler band whiff/hit with slash vs down/dash slash, grunt stagger + combo kill, timed parry, husk seal burst + punishment + talisman no-pressure, spitter glob → puddle, talisman interrupts spitter wind-up, elite wind-up 0.80 s and armour vs light hits, death → respawn at campfire, encounter lock/barrier/clear, scripted clear of every encounter → ending scene). No script errors.
 - `--test=bot` (input-only scripted player, full route from the title flow): completes the current route in 3 of 3 runs (0–1 deaths, 24–27 kills, ≈2:15–3:00 game time for the bot). Also passes **on the exported Linux binary**.
 - Full-length rendered playthrough recorded (movie writer, 161 s) and reviewed as a contact sheet; found & fixed: enemy hit-flash whiting out the whole silhouette, spitter spawning inside a rock ledge (could soft-lock Group C).
 - Audio integration verified by recording the mixed output with Godot's movie writer during a bot run (music + SFX present; peaks now limited by a master compressor/limiter). Not yet listened to by a human.
@@ -51,7 +51,7 @@ _Last updated: 2026-11-18 (session 2) · branch `dev/vertical-slice-20261118` ·
 - Elite uses the V1.0 sheet images (V1.1 corrected sheet not produced yet).
 - Environment art is procedural, not painted; ruins can look blocky up close.
 - Some enemy cut-outs keep small parchment specks between rags; the crawler/husk sheets' pose rows are lower-resolution than the hero's.
-- Gamepad bindings exist but were not tested with a physical pad.
+- Gamepad: every binding verified by injecting joypad events in-engine (`gamepad_actions_fire`); not tried on a physical pad.
 - Windows export unrun; macOS not built.
 
 ## Next concrete tasks

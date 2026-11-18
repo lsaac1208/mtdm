@@ -191,7 +191,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "bot"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "bot"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot"):
 			continue
@@ -845,6 +845,37 @@ func _bot_step_inner(p: Player, dt: float) -> void:
 				_bot_cd = 0.15
 	p.input_override = d
 
+
+
+func t_gamepad_map() -> void:
+	# inject real joypad events and check every gameplay action responds
+	var bad := []
+	for action in Game.PAD_BUTTONS:
+		for b in Game.PAD_BUTTONS[action]:
+			var ev := InputEventJoypadButton.new()
+			ev.button_index = b
+			ev.pressed = true
+			Input.parse_input_event(ev)
+			Input.flush_buffered_events()
+			if not Input.is_action_pressed(action):
+				bad.append("%s/btn%d" % [action, b])
+			ev.pressed = false
+			Input.parse_input_event(ev)
+			Input.flush_buffered_events()
+	for pair in [["move_left", JOY_AXIS_LEFT_X, -1.0], ["move_right", JOY_AXIS_LEFT_X, 1.0], ["move_down", JOY_AXIS_LEFT_Y, 1.0],
+			["gourd", JOY_AXIS_TRIGGER_LEFT, 1.0], ["beads", JOY_AXIS_TRIGGER_RIGHT, 1.0]]:
+		var m := InputEventJoypadMotion.new()
+		m.axis = pair[1]
+		m.axis_value = pair[2]
+		Input.parse_input_event(m)
+		Input.flush_buffered_events()
+		if not Input.is_action_pressed(pair[0]):
+			bad.append("%s/axis%d" % [pair[0], pair[1]])
+		m.axis_value = 0.0
+		Input.parse_input_event(m)
+		Input.flush_buffered_events()
+	_log("gamepad_actions_fire", bad.is_empty(), str(bad))
+	await _frames(1)
 
 
 func t_spawn_surface() -> void:
