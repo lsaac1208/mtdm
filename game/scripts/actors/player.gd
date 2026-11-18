@@ -340,7 +340,7 @@ func _start_dash() -> void:
 	if ax != 0.0:
 		facing = int(signf(ax))
 	dash_cd = 0.42
-	invuln = 0.2
+	invuln = 0.24
 	if not is_on_floor():
 		air_dash = false
 	velocity.y = minf(velocity.y, 0.0) if not is_on_floor() else velocity.y

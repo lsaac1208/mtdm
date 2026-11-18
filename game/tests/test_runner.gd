@@ -787,7 +787,16 @@ func _bot_step_inner(p: Player, dt: float) -> void:
 			elif ad >= 115:
 				d[dir] = true
 		"尸将":
-			if es == "windup_chop" and ad < 260:
+			var cornered := false
+			for enc in Game.level.encounters:
+				var lb: Array = enc.locked_bounds()
+				if lb.size() == 2:
+					var wall: float = lb[0] if dx > 0 else lb[1]
+					cornered = absf(p.global_position.x - wall) < 170.0
+			if cornered and es.begins_with("windup") and est > 0.3 and p.dash_cd <= 0.0 and ad < 220:
+				d[dir] = true          # dash through the elite instead of backing into the wall
+				_bot_press(d, "dash")
+			elif es == "windup_chop" and ad < 260:
 				if est > 0.45 and p.dash_cd <= 0.0:
 					d[away] = true
 					_bot_press(d, "dash")

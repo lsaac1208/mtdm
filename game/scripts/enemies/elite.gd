@@ -161,7 +161,7 @@ func _ai(delta: float) -> void:
 		"chop":
 			velocity.x = move_toward(velocity.x, 0.0, 1600.0 * delta)
 			if state_t < 0.12:
-				melee(Rect2(18, -196, 156, 196), 34.0, 380.0, {"heavy": true})
+				melee(Rect2(18, -196, 156, 196), 30.0, 380.0, {"heavy": true})
 			if state_t >= 0.12:
 				set_state("recover_chop")
 		"recover_chop":
