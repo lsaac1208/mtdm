@@ -17,7 +17,7 @@ TEST talisman_no_seal_pressure    PASS  seal=0
 TEST spitter_fires_parabolic_glob PASS  t=2.3s
 TEST glob_leaves_taint_puddle     PASS  
 TEST talisman_interrupts_spitter  PASS  state=stagger
-TEST elite_windup_readable        PASS  windup_chop lead=0.80s (spec 0.65–0.85)
+TEST elite_windup_readable        PASS  windup_sweep lead=0.65s (spec 0.65–0.85)
 TEST elite_armor_ignores_light_hit PASS  state chase -> chase
 DEATH x=600 zone=Ruined Village cp=0
 TEST player_dies                  PASS  
@@ -37,7 +37,7 @@ DEMO_COMPLETE time=00:20 deaths=0 kills=22 parries=0
 TEST demo_completes               PASS  scene=res://scenes/ending.tscn
 TEST restart_keeps_progress       PASS  x=2460 cp1=2400
 DEMO_COMPLETE time=00:00 deaths=0 kills=0 parries=0
-ERROR: Tween (bound to /root/Level/@CanvasLayer@4155): started with no Tweeners.
+ERROR: Tween (bound to /root/Level/@CanvasLayer@4139): started with no Tweeners.
    at: step (scene/animation/tween.cpp:366)
 TEST new_run_resets_state         PASS  cleared=0 cp=0 x=320 alive=9 actors=10
 TEST no_stale_actors              PASS  stale=0
@@ -49,7 +49,7 @@ You can call duplicate() on the event to get a new instance with identical value
      GDScript backtrace (most recent call first):
          [0] t_gamepad_map (res://tests/test_runner.gd:935)
          [1] _run (res://tests/test_runner.gd:270)
-         [2] t_spawn_surface (res://tests/test_runner.gd:1077)
+         [2] t_spawn_surface (res://tests/test_runner.gd:1105)
          [3] _wait (res://tests/test_runner.gd:23)
 TEST gamepad_actions_fire         PASS  []
 TEST hero_anim_no_pops            PASS  max body-centre jump 18.1 px at hero_01_ready f135
@@ -76,8 +76,9 @@ SPEC taint puddle r=65 px, 4.5 s                      OK   65 px / 4.5 s
 SPEC elite chop/sweep wind-up 0.65-0.85 s (phase 1)   OK   0.80 / 0.65 s (see elite_windup_readable)
 SPEC elite armour: light hits never stagger           OK   interrupt_poise=9999
 TEST spec_conformance             PASS  21/21 rows
-TESTS DONE pass=41 fail=0
-WARNING: 15 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+TEST settings_persist             PASS  volume 0.35
+TESTS DONE pass=42 fail=0
+WARNING: 11 ObjectDB instances were leaked at exit (run with `--verbose` for details).
    at: cleanup (core/object/object.cpp:2536)
-ERROR: 7 resources still in use at exit (run with --verbose for details).
+ERROR: 5 resources still in use at exit (run with --verbose for details).
    at: clear (core/io/resource.cpp:822)

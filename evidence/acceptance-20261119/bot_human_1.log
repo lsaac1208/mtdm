@@ -2,16 +2,16 @@ Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
 ERROR: Tween (bound to /root/Level/@CanvasLayer@203): started with no Tweeners.
    at: step (scene/animation/tween.cpp:366)
-BOT t=20s x=3821 hp=90 deaths=0 kills=3 cleared=["e1_village", "e2_crawler"]
-BOT t=40s x=5769 hp=55 deaths=0 kills=8 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
-BOT t=60s x=7356 hp=64 deaths=0 kills=12 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk"]
-BOT t=80s x=9364 hp=63 deaths=0 kills=16 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
-BOT t=100s x=9280 hp=52 deaths=0 kills=20 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=120s x=10033 hp=64 deaths=0 kills=22 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-DEMO_COMPLETE time=02:17 deaths=0 kills=24 parries=7
-TEST bot_completes_demo           PASS  sim_time=138s deaths=0 kills=24 parries=7 run_time=02:17
+BOT t=20s x=3748 hp=90 deaths=0 kills=3 cleared=["e1_village", "e2_crawler"]
+BOT t=40s x=6029 hp=34 deaths=0 kills=9 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
+BOT t=60s x=7137 hp=79 deaths=0 kills=11 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c"]
+BOT t=80s x=9329 hp=66 deaths=0 kills=15 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
+BOT t=100s x=10090 hp=88 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=120s x=11074 hp=71 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
+DEMO_COMPLETE time=02:01 deaths=0 kills=24 parries=7
+TEST bot_completes_demo           PASS  sim_time=121s deaths=0 kills=24 parries=7 run_time=02:01
 TESTS DONE pass=1 fail=0
-WARNING: 18 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+WARNING: 26 ObjectDB instances were leaked at exit (run with `--verbose` for details).
    at: cleanup (core/object/object.cpp:2536)
-ERROR: 9 resources still in use at exit (run with --verbose for details).
+ERROR: 13 resources still in use at exit (run with --verbose for details).
    at: clear (core/io/resource.cpp:822)

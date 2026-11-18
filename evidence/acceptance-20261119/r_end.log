@@ -18,7 +18,3 @@ WARNING: All audio drivers failed, falling back to the dummy driver.
 DEMO_COMPLETE time=08:32 deaths=2 kills=27 parries=6
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/ending/shot_00.png
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/ending/00_ending.png
-WARNING: 4 ObjectDB instances were leaked at exit (run with `--verbose` for details).
-   at: cleanup (core/object/object.cpp:2536)
-ERROR: 2 resources still in use at exit (run with --verbose for details).
-   at: clear (core/io/resource.cpp:822)

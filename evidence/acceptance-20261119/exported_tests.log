@@ -1,6 +1,6 @@
-ERROR: Tween (bound to /root/Level/@CanvasLayer@4164): started with no Tweeners.
+ERROR: Tween (bound to /root/Level/@CanvasLayer@4177): started with no Tweeners.
    at: step (scene/animation/tween.cpp:366)
-WARNING: 23 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+WARNING: 22 ObjectDB instances were leaked at exit (run with `--verbose` for details).
    at: cleanup (core/object/object.cpp:2536)
 ERROR: 10 resources still in use at exit (run with --verbose for details).
    at: clear (core/io/resource.cpp:822)
@@ -71,4 +71,5 @@ SPEC taint puddle r=65 px, 4.5 s                      OK   65 px / 4.5 s
 SPEC elite chop/sweep wind-up 0.65-0.85 s (phase 1)   OK   0.80 / 0.65 s (see elite_windup_readable)
 SPEC elite armour: light hits never stagger           OK   interrupt_poise=9999
 TEST spec_conformance             PASS  21/21 rows
-TESTS DONE pass=41 fail=0
+TEST settings_persist             PASS  volume 0.35
+TESTS DONE pass=42 fail=0
