@@ -169,6 +169,12 @@ func _run() -> void:
 			await _shot("j%d" % i)
 		get_tree().quit()
 		return
+	if only == "walkright":
+		var p := await _fresh_level(float(Game.args.get("from", "4200")))
+		hold(p, {"move_right": true})
+		await _wait(float(Game.args.get("secs", "10")))
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)

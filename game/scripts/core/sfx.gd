@@ -80,9 +80,7 @@ func play_music(name_: String, vol_db := -9.0) -> void:
 	if s is AudioStreamWAV:
 		s.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		s.loop_end = s.data.size() / (4 if s.stereo else 2)
-	music.stream = s
-	music.volume_db = vol_db
-	music.play()
+	_crossfade(music, s, vol_db)
 
 
 func play_ambience(name_: String) -> void:
@@ -94,8 +92,20 @@ func play_ambience(name_: String) -> void:
 		s.loop_end = s.data.size() / (4 if s.stereo else 2)
 	if ambience.stream == s and ambience.playing:
 		return
-	ambience.stream = s
-	ambience.play()
+	_crossfade(ambience, s, -14.0)
+
+
+func _crossfade(p: AudioStreamPlayer, s: AudioStream, vol_db: float) -> void:
+	if not p.playing or p.stream == null:
+		p.stream = s
+		p.volume_db = -40.0
+		p.play()
+		create_tween().tween_property(p, "volume_db", vol_db, 1.2)
+		return
+	var tw := create_tween()
+	tw.tween_property(p, "volume_db", -40.0, 0.9)
+	tw.tween_callback(func(): p.stream = s; p.play())
+	tw.tween_property(p, "volume_db", vol_db, 1.4)
 
 
 func stop_music() -> void:

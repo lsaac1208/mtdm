@@ -81,6 +81,7 @@ func _ready() -> void:
 	_cam_x = player.position.x
 	_cam_y = Game.GROUND_Y - 190
 	_build_foreground()
+	_build_motes()
 	_build_overlay()
 	hud = Hud.new()
 	add_child(hud)
@@ -136,6 +137,54 @@ func _build_foreground() -> void:
 	s.modulate = Color(1, 1, 1, 0.92)
 	cl.add_child(s)
 	fg_layers.append({"node": s, "factor": 1.35, "y": 560.0, "yf": 1.0})
+
+
+var motes: CPUParticles2D
+
+
+func _build_motes() -> void:
+	motes = CPUParticles2D.new()
+	motes.amount = 220
+	motes.lifetime = 7.0
+	motes.preprocess = 7.0
+	motes.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	motes.emission_rect_extents = Vector2(720, 380)
+	motes.direction = Vector2(-1, 0)
+	motes.spread = 40.0
+	motes.initial_velocity_min = 8.0
+	motes.initial_velocity_max = 30.0
+	motes.scale_amount_min = 2.5
+	motes.scale_amount_max = 6.5
+	motes.z_index = 15
+	var g := Gradient.new()
+	g.set_color(0, Color(1, 1, 1, 0))
+	g.add_point(0.2, Color(1, 1, 1, 1))
+	g.add_point(0.8, Color(1, 1, 1, 1))
+	g.set_color(g.get_point_count() - 1, Color(1, 1, 1, 0))
+	motes.color_ramp = g
+	var dot := GradientTexture2D.new()
+	dot.width = 16
+	dot.height = 16
+	dot.fill = GradientTexture2D.FILL_RADIAL
+	dot.fill_from = Vector2(0.5, 0.5)
+	dot.fill_to = Vector2(1.0, 0.5)
+	var dg := Gradient.new()
+	dg.set_color(0, Color(1, 1, 1, 1))
+	dg.set_color(1, Color(1, 1, 1, 0))
+	dot.gradient = dg
+	motes.texture = dot
+	motes.scale_amount_min = 0.25
+	motes.scale_amount_max = 0.6
+	add_child(motes)
+
+
+func _set_motes(z: Dictionary) -> void:
+	if motes == null or not z.has("motes"):
+		return
+	var m: Array = z.motes
+	motes.color = m[0]
+	motes.gravity = Vector2(-6.0, m[1])
+	motes.initial_velocity_max = 10.0 + m[2] * 3.0
 
 
 func _build_overlay() -> void:
@@ -342,6 +391,8 @@ func _update_camera(delta: float) -> void:
 	var ty := minf(Game.GROUND_Y - 190.0, player.global_position.y - 150.0)
 	_cam_y = lerpf(_cam_y, ty, minf(1.0, delta * 3.0))
 	cam.global_position = Vector2(_cam_x, _cam_y)
+	if motes:
+		motes.global_position = cam.global_position
 
 
 func _update_zone(force: bool) -> void:
@@ -357,6 +408,8 @@ func _update_zone(force: bool) -> void:
 		if not first or force:
 			Game.zone_entered.emit(z.cn, z.en)
 		Sfx.play_music(z.music)
+		Sfx.play_ambience(z.get("amb", "amb_wind"))
+		_set_motes(z)
 	# smooth atmosphere blend toward the current zone
 	var z2: Dictionary = LevelData.ZONES[zone_idx]
 	for l in bg_layers:

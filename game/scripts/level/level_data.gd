@@ -7,11 +7,11 @@ extends RefCounted
 const LENGTH := 11300.0
 
 const ZONES := [
-	{"x": 0.0, "cn": "荒村废墟", "en": "Ruined Village", "tint": Color(1.0, 0.93, 0.82), "fog": Color(0.85, 0.72, 0.55, 0.16), "music": "music_wander"},
-	{"x": 2350.0, "cn": "道路边缘", "en": "Road's Edge", "tint": Color(0.86, 0.86, 0.84), "fog": Color(0.7, 0.68, 0.62, 0.2), "music": "music_wander"},
-	{"x": 4350.0, "cn": "低洼污染区", "en": "Tainted Lowland", "tint": Color(0.78, 0.86, 0.68), "fog": Color(0.45, 0.6, 0.25, 0.26), "music": "music_taint"},
-	{"x": 6550.0, "cn": "废弃道观", "en": "Abandoned Temple", "tint": Color(0.95, 0.8, 0.7), "fog": Color(0.55, 0.3, 0.2, 0.2), "music": "music_temple"},
-	{"x": 8550.0, "cn": "乱葬岗", "en": "Burial Mound", "tint": Color(0.7, 0.72, 0.85), "fog": Color(0.3, 0.32, 0.45, 0.28), "music": "music_temple"},
+	{"x": 0.0, "cn": "荒村废墟", "en": "Ruined Village", "tint": Color(1.0, 0.93, 0.82), "fog": Color(0.85, 0.72, 0.55, 0.16), "music": "music_wander", "amb": "amb_village", "motes": [Color(0.95, 0.82, 0.55, 0.5), -12.0, 6.0]},
+	{"x": 2350.0, "cn": "道路边缘", "en": "Road's Edge", "tint": Color(0.86, 0.86, 0.84), "fog": Color(0.7, 0.68, 0.62, 0.2), "music": "music_wander", "amb": "amb_wind", "motes": [Color(0.55, 0.53, 0.5, 0.55), 25.0, 9.0]},
+	{"x": 4350.0, "cn": "低洼污染区", "en": "Tainted Lowland", "tint": Color(0.78, 0.86, 0.68), "fog": Color(0.45, 0.6, 0.25, 0.26), "music": "music_taint", "amb": "amb_lowland", "motes": [Color(0.7, 0.9, 0.3, 0.6), -30.0, 7.0]},
+	{"x": 6550.0, "cn": "废弃道观", "en": "Abandoned Temple", "tint": Color(0.95, 0.8, 0.7), "fog": Color(0.55, 0.3, 0.2, 0.2), "music": "music_temple", "amb": "amb_temple", "motes": [Color(1.0, 0.6, 0.25, 0.75), -35.0, 5.0]},
+	{"x": 8550.0, "cn": "乱葬岗", "en": "Burial Mound", "tint": Color(0.7, 0.72, 0.85), "fog": Color(0.3, 0.32, 0.45, 0.28), "music": "music_temple", "amb": "amb_burial", "motes": [Color(0.6, 0.6, 0.62, 0.6), 30.0, 10.0]},
 ]
 
 # Solid ground pieces: [x0, x1, top_y]. Gaps between pieces don't exist in

@@ -310,7 +310,77 @@ def ambience():
     save("amb_wind", x[:-k] if False else x, 0.5)
 
 
+def wind_bed(d, seed, lo=0.5, hi=1.6, base=300):
+    r = np.random.default_rng(seed)
+    n = r.standard_normal(int(SR * d))
+    tt = t_(d)
+    cut = base + base * 0.8 * (np.sin(2 * np.pi * tt / 9.0) + 1) / 2
+    x = np.zeros_like(n)
+    seg = 512
+    for i in range(0, len(n), seg):
+        x[i:i + seg] = bp(n[max(0, i - 2048):i + seg], cut[i] * lo, cut[i] * hi)[-len(n[i:i + seg]):]
+    return x * (0.6 + 0.4 * np.sin(2 * np.pi * tt / 11.0))
+
+
+def loop_fix(x, fade_s=2.0):
+    k = int(fade_s * SR)
+    y = x[:-k].copy()
+    y[:k] = y[:k] * np.linspace(0, 1, k) + x[-k:] * np.linspace(1, 0, k)
+    return y
+
+
+def crow():
+    tt = t_(0.35)
+    f = 900 - 300 * tt / 0.35
+    x = np.sign(np.sin(2 * np.pi * np.cumsum(f) / SR)) * 0.4 + bp(noise(0.35), 700, 2500)
+    return lp_fast(x, 2500) * env(len(tt), 0.01, 0.12)
+
+
+def ambience_beds():
+    d = 32.0
+    r = np.random.default_rng(91)
+    # village: wind + distant crows
+    v = wind_bed(d, 1) * 0.8
+    for tc in np.arange(3.0, d - 3, 7.5):
+        for k in range(r.integers(1, 3)):
+            c = crow() * 0.25
+            i = int((tc + k * 0.45) * SR)
+            v[i:i + len(c)] += c
+    save("amb_village", loop_fix(v), 0.5)
+    # lowland: bubbling taint + low drone
+    l = wind_bed(d, 2, base=180) * 0.4 + 0.3 * lp_fast(noise(d), 90)
+    for _ in range(140):
+        tb = r.uniform(0, d - 0.3)
+        f = r.uniform(180, 520)
+        tt = t_(0.12)
+        b = np.sin(2 * np.pi * f * tt * (1 + 3 * tt)) * np.exp(-tt / 0.03) * r.uniform(0.2, 0.6)
+        i = int(tb * SR)
+        l[i:i + len(b)] += b
+    save("amb_lowland", loop_fix(l), 0.5)
+    # temple: wind + sparse wind chimes
+    te = wind_bed(d, 3, base=380) * 0.6
+    for tc in np.arange(1.5, d - 4, 4.3):
+        for k in range(r.integers(2, 5)):
+            f = r.choice([1568, 1760, 2093, 2349, 2637])
+            ch = modal(2.5, [f, f * 2.76], [1.2, 0.6], [1, 0.3]) * 0.08
+            i = int((tc + k * r.uniform(0.1, 0.3)) * SR)
+            te[i:i + len(ch)] += ch
+    save("amb_temple", loop_fix(te), 0.5)
+    # burial: low howling wind + distant groans
+    bu = wind_bed(d, 4, lo=0.7, hi=1.3, base=220) * 1.0
+    for tc in np.arange(5.0, d - 4, 9.0):
+        tt = t_(2.0)
+        g = np.sin(2 * np.pi * (75 - 15 * tt) * tt + 2 * np.sin(2 * np.pi * 4 * tt)) * env(len(tt), 0.4, 1.0) * 0.12
+        i = int(tc * SR)
+        bu[i:i + len(g)] += lp_fast(g, 400)
+    save("amb_burial", loop_fix(bu), 0.5)
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[2] == "beds":
+        ambience_beds()
+        sys.exit(0)
+    ambience_beds()
     make_sfx()
     ambience()
     music("music_title", 196.0, 48.0, 54, 0.75, 2, 11, bells=True, wood=False)
