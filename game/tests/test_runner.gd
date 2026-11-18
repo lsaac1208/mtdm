@@ -263,9 +263,9 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "bot"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "bot", "soak"]
 	for t in tests:
-		if only != t and not (only == "all" and t != "bot"):
+		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
 		await call("t_" + t)
 	var fails := results.filter(func(r): return not r[1]).size()
@@ -1061,6 +1061,34 @@ func t_spec() -> void:
 		if not r[1]:
 			fails += 1
 	_log("spec_conformance", fails == 0, "%d/%d rows" % [rows.size() - fails, rows.size()])
+
+
+func t_settings() -> void:
+	var old := AudioServer.get_bus_volume_db(0)
+	AudioServer.set_bus_volume_db(0, linear_to_db(0.35))
+	Game.save_settings()
+	AudioServer.set_bus_volume_db(0, 0.0)
+	Game.load_settings()
+	var v := db_to_linear(AudioServer.get_bus_volume_db(0))
+	_log("settings_persist", absf(v - 0.35) < 0.01, "volume %.2f" % v)
+	AudioServer.set_bus_volume_db(0, old)
+	Game.save_settings()
+	await _frames(1)
+
+
+func t_soak() -> void:
+	var counts := []
+	for run in 2:
+		_bot_cd = 0.0
+		await t_bot()
+		Game.to_title()
+		await _wait(1.5)
+		counts.append([Performance.get_monitor(Performance.OBJECT_NODE_COUNT), Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT),
+			Performance.get_monitor(Performance.OBJECT_COUNT)])
+		print("SOAK run %d nodes=%d orphans=%d objects=%d" % [run, counts[-1][0], counts[-1][1], counts[-1][2]])
+	var grow: float = counts[1][2] - counts[0][2]
+	_log("soak_no_leak", counts[1][0] - counts[0][0] < 20 and counts[1][1] < 20 and grow < 400,
+		"nodes %d->%d orphans %d->%d objects %d->%d" % [counts[0][0], counts[1][0], counts[0][1], counts[1][1], counts[0][2], counts[1][2]])
 
 
 func t_spawn_surface() -> void:

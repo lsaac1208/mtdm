@@ -68,7 +68,7 @@ func _ready() -> void:
 	slider.step = 0.05
 	slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
 	slider.custom_minimum_size = Vector2(240, 30)
-	slider.value_changed.connect(func(v): AudioServer.set_bus_volume_db(0, linear_to_db(maxf(v, 0.0001))); AudioServer.set_bus_mute(0, v <= 0.001))
+	slider.value_changed.connect(func(v): AudioServer.set_bus_volume_db(0, linear_to_db(maxf(v, 0.0001))); AudioServer.set_bus_mute(0, v <= 0.001); Game.save_settings())
 	vol_row.add_child(slider)
 	box.add_child(vol_row)
 

@@ -61,6 +61,7 @@ func _ready() -> void:
 			var kv := a.substr(2).split("=", true, 1)
 			args[kv[0]] = kv[1] if kv.size() > 1 else "1"
 	_setup_input()
+	load_settings.call_deferred()
 	if args.has("shots"):
 		_shots.call_deferred()
 	if args.has("test") and ResourceLoader.exists("res://tests/test_runner.gd"):
@@ -114,10 +115,32 @@ func _process(delta: float) -> void:
 		Engine.time_scale = 1.0
 
 
+const SETTINGS_PATH := "user://settings.cfg"
+
+
+func load_settings() -> void:
+	var cf := ConfigFile.new()
+	if cf.load(SETTINGS_PATH) != OK:
+		return
+	var v: float = cf.get_value("audio", "volume", 1.0)
+	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(v, 0.0001)))
+	AudioServer.set_bus_mute(0, v <= 0.001 or args.has("mute"))
+	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
+		get_window().mode = Window.MODE_FULLSCREEN
+
+
+func save_settings() -> void:
+	var cf := ConfigFile.new()
+	cf.set_value("audio", "volume", db_to_linear(AudioServer.get_bus_volume_db(0)))
+	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
+	cf.save(SETTINGS_PATH)
+
+
 func _input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo and (e.physical_keycode == KEY_F11 or (e.physical_keycode == KEY_ENTER and e.alt_pressed)):
 		var w := get_window()
 		w.mode = Window.MODE_WINDOWED if w.mode == Window.MODE_FULLSCREEN else Window.MODE_FULLSCREEN
+		save_settings()
 		get_viewport().set_input_as_handled()
 
 

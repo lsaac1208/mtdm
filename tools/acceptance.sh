@@ -39,6 +39,11 @@ for f in "$OUT"/bot_*.log; do
   grep -q PASS <<< "$r" && gate "$(basename "$f" .log): $r" PASS || gate "$(basename "$f" .log): $r" FAIL
 done
 
+echo "== soak (two full playthroughs in one process)"
+timeout 2400 "$G" --headless --fixed-fps 60 --path . -- --test=soak --mute --bot_limit=1500 > "$OUT/soak.log" 2>&1
+r=$(grep "^TEST soak_no_leak" "$OUT/soak.log" | sed 's/  */ /g')
+grep -q PASS <<< "$r" && gate "Soak: $r" PASS || gate "Soak: $r" FAIL
+
 echo "== export"
 mkdir -p "$ROOT/build"
 if GODOT="$G" $PY "$ROOT/tools/build/package.py" "$VER" > "$OUT/package.log" 2>&1; then gate "Export + package Linux/Windows ($VER)" PASS; else gate "Export + package" FAIL; fi
