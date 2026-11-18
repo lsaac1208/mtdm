@@ -14,6 +14,7 @@ var idle_pose := ""
 var stagger_time := 0.45
 var interrupt_poise := 1.0       # single-hit poise needed to cancel a wind-up
 var armored_states: Array = []   # states that ignore stagger unless poise breaks
+var uninterruptible_states: Array = []  # states that never stagger
 var attack_hits := {}
 var burn := 0.0
 var spawn_rise := 0.0
@@ -136,6 +137,9 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 	if hp <= 0.0:
 		_die(dir)
 		return {"killed": true}
+	if uninterruptible_states.has(state):
+		vis.nudge.x = -4.0
+		return {"armored": true}
 	poise -= atk.poise
 	var interrupt: bool = atk.poise >= interrupt_poise and state == "windup"
 	if poise <= 0.0 or (interrupt and not armored_states.has(state)) or (not armored_states.has(state) and poise_breaks_on_any()):

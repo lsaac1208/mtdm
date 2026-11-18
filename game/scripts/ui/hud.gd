@@ -145,7 +145,7 @@ func _brush_bar(pos: Vector2, w: float, h: float, frac: float, lag: float, col: 
 	if lag > frac:
 		ci.draw_rect(Rect2(pos + Vector2(0, 2), Vector2(w * lag, h - 4)), Color(0.95, 0.85, 0.7, 0.55))
 	var fw := w * clampf(frac, 0.0, 1.0)
-	if fw > 1.0:
+	if fw > 6.0:
 		var fill := PackedVector2Array([pos + Vector2(0, 3), pos + Vector2(fw, 1), pos + Vector2(fw - 3, h - 1), pos + Vector2(0, h - 3)])
 		ci.draw_colored_polygon(fill, col)
 		ci.draw_line(pos + Vector2(2, 5), pos + Vector2(fw - 4, 4), Color(1, 1, 1, 0.18), 2.0)

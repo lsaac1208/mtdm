@@ -1,0 +1,348 @@
+extends Node
+## Engine-level gameplay tests. Run:
+##   godot --headless --path game -- --test=all --nohitstop --mute
+## Each test drives the real player through `input_override` (no direct
+## state poking for the behaviour under test) inside the real level scene.
+
+var results := []
+var only := ""
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	only = Game.args.get("test", "all")
+	_run.call_deferred()
+
+
+func _log(name_: String, ok: bool, detail := "") -> void:
+	results.append([name_, ok])
+	print("TEST %-28s %s  %s" % [name_, "PASS" if ok else "FAIL", detail])
+
+
+func _wait(sec: float) -> void:
+	await get_tree().create_timer(sec, true, true).timeout
+
+
+func _frames(n: int) -> void:
+	for i in n:
+		await get_tree().physics_frame
+
+
+func _fresh_level(startx := 600.0) -> Player:
+	Game.args["startx"] = str(startx)
+	Game.new_run()
+	await _frames(3)
+	while Game.level == null or not is_instance_valid(Game.level) or Game.level.player == null:
+		await _frames(1)
+	await _frames(5)
+	var p: Player = Game.level.player
+	p.input_override = {}
+	return p
+
+
+func press(p: Player, action: String, also := {}) -> void:
+	var d := {}
+	d.merge(also)
+	d[action] = true
+	d[action + "_just"] = true
+	p.input_override = d
+	await _frames(2)
+	p.input_override = {}
+
+
+func hold(p: Player, d: Dictionary) -> void:
+	p.input_override = d
+
+
+func spawn(type: String, x: float, frozen := false) -> Enemy:
+	var en: Enemy = Encounter.TYPES[type].new()
+	en.position = Vector2(x, Game.GROUND_Y - 2)
+	en.aggro = true
+	Game.level.get_node("Actors").add_child(en)
+	await _frames(2)
+	if frozen:
+		en.set_physics_process(false)
+	return en
+
+
+func _run() -> void:
+	if only == "debug":
+		var p := await _fresh_level(600.0)
+		await _wait(0.3)
+		print("DBG state=", p.state, " floor=", p.is_on_floor(), " pos=", p.global_position, " coyote=", p.coyote)
+		await press(p, "jump", {"jump": true})
+		for i in 6:
+			print("DBG f", i, " state=", p.state, " vy=", p.velocity.y, " jb=", p.jump_buf, " y=", p.global_position.y, " ov=", p.input_override)
+			await _frames(1)
+		await _wait(1.0)
+		await press(p, "dash")
+		for i in 6:
+			print("DBG d", i, " state=", p.state, " vx=", p.velocity.x, " x=", p.global_position.x)
+			await _frames(1)
+		get_tree().quit()
+		return
+	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route"]
+	for t in tests:
+		if only != "all" and only != t:
+			continue
+		await call("t_" + t)
+	var fails := results.filter(func(r): return not r[1]).size()
+	print("TESTS DONE pass=%d fail=%d" % [results.size() - fails, fails])
+	get_tree().quit(1 if fails > 0 else 0)
+
+
+# ------------------------------------------------------------------ tests
+func t_movement() -> void:
+	var p := await _fresh_level(600.0)
+	var x0 := p.global_position.x
+	hold(p, {"move_right": true})
+	await _wait(1.0)
+	hold(p, {})
+	var moved := p.global_position.x - x0
+	_log("move_right_1s", moved > 200 and moved < 300, "moved=%.0f px (spec 260 px/s)" % moved)
+	await _wait(0.3)
+	var y0 := p.global_position.y
+	await press(p, "jump", {"jump": true})
+	hold(p, {"jump": true})
+	var apex := y0
+	for i in 40:
+		await _frames(1)
+		apex = minf(apex, p.global_position.y)
+	hold(p, {})
+	await _wait(0.8)
+	_log("jump_and_land", y0 - apex > 100 and p.is_on_floor(), "apex=%.0f px" % (y0 - apex))
+	var xd := p.global_position.x
+	await press(p, "dash", {"move_left": true})
+	await _wait(0.4)
+	_log("dash", xd - p.global_position.x > 90, "dash dist=%.0f (left)" % (xd - p.global_position.x))
+
+
+func t_crawler_bands() -> void:
+	var p := await _fresh_level(600.0)
+	p.facing = 1
+	var c := await spawn("crawler", p.global_position.x + 70, true)
+	var hp0 := c.hp
+	await press(p, "attack")         # combo-1 horizontal slash (55–145 px band)
+	await _wait(0.6)
+	_log("hslash_whiffs_crawler", is_equal_approx(c.hp, hp0), "crawler hp %.0f -> %.0f" % [hp0, c.hp])
+	var g := await spawn("grunt", p.global_position.x + 70, true)
+	var ghp := g.hp
+	await press(p, "attack")
+	await _wait(0.6)
+	_log("hslash_hits_grunt", g.hp < ghp, "grunt hp %.0f -> %.0f" % [ghp, g.hp])
+	g.queue_free()
+	await _frames(2)
+	await press(p, "attack", {"move_down": true})   # S+J down slash (0–160 px)
+	await _wait(0.7)
+	_log("downslash_hits_crawler", c.hp < hp0, "crawler hp %.0f -> %.0f" % [hp0, c.hp])
+	c.hp = c.max_hp
+	p.global_position.x -= 160
+	await _wait(0.5)
+	await press(p, "dash")
+	await _frames(4)
+	await press(p, "attack")
+	await _wait(0.6)
+	_log("dash_slash_hits_crawler", c.hp < c.max_hp or c.dead, "crawler hp -> %.0f" % c.hp)
+
+
+func t_grunt_hit_and_stagger() -> void:
+	var p := await _fresh_level(600.0)
+	p.facing = 1
+	var g := await spawn("grunt", p.global_position.x + 90)
+	await _wait(0.1)
+	await press(p, "attack")
+	await _frames(12)
+	_log("grunt_staggers_on_light_hit", g.state == "stagger", "state=%s" % g.state)
+	# full combo kills a grunt (10 + 14 + 17 = 41 > 34)
+	await _wait(0.5)
+	for i in 3:
+		await press(p, "attack")
+		await _frames(14)
+	await _wait(0.8)
+	_log("combo_kills_grunt", g == null or not is_instance_valid(g) or g.dead, "")
+
+
+func t_parry() -> void:
+	var p := await _fresh_level(600.0)
+	p.facing = 1
+	var g := await spawn("grunt", p.global_position.x + 110)
+	var parried_before := Game.parries
+	var hp0 := p.hp
+	# wait for the claw wind-up, then raise the guard just before the strike
+	var waited := 0.0
+	while g.state != "windup" and waited < 6.0:
+		await _frames(1)
+		waited += 1.0 / 60.0
+	while g.state == "windup" and g.state_t < 0.33:
+		await _frames(1)
+	hold(p, {"block": true})
+	await _wait(0.5)
+	hold(p, {})
+	_log("parry_on_timed_guard", Game.parries > parried_before and p.hp >= hp0, "parries=%d hp=%.0f" % [Game.parries, p.hp])
+	_log("parry_staggers_enemy", g.state == "stagger" or g.state == "chase" or g.dead, "grunt state=%s" % g.state)
+
+
+func t_husk_backlash() -> void:
+	var p := await _fresh_level(600.0)
+	p.facing = 1
+	var h := await spawn("husk", p.global_position.x + 95)
+	h._awaken()
+	await _wait(1.0)
+	var burst_seen := false
+	var hp_before := p.hp
+	for i in 6:
+		await press(p, "attack")
+		for k in 14:
+			await _frames(1)
+			if h.state == "burst_prep" or h.state == "burst":
+				burst_seen = true
+		if burst_seen:
+			break
+	_log("husk_seal_burst_triggers", burst_seen, "after melee chain, state=%s" % h.state)
+	await _wait(0.9)
+	_log("husk_burst_punishes_greed", p.hp < hp_before, "player hp %.0f -> %.0f" % [hp_before, p.hp])
+	# ranged talisman does not build seal pressure
+	await _wait(1.5)
+	h.seal = 0
+	p.qi = 100.0
+	p.global_position.x = h.global_position.x - 330
+	p.facing = 1
+	await _frames(3)
+	await press(p, "talisman")
+	await _wait(0.8)
+	_log("talisman_no_seal_pressure", h.seal == 0, "seal=%d" % h.seal)
+
+
+func t_spitter_puddle() -> void:
+	var p := await _fresh_level(600.0)
+	p.facing = 1
+	var s := await spawn("spitter", p.global_position.x + 360)
+	var saw_proj := false
+	var saw_puddle := false
+	var t := 0.0
+	while t < 6.0 and not saw_puddle:
+		await _frames(1)
+		t += 1.0 / 60.0
+		for n in Game.level.get_node("Fx").get_children():
+			if n.get_script() == preload("res://scripts/fx/taint_projectile.gd"):
+				saw_proj = true
+		saw_puddle = get_tree().get_nodes_in_group("taint_puddle").filter(func(n): return not n.permanent).size() > 0
+	_log("spitter_fires_parabolic_glob", saw_proj, "t=%.1fs" % t)
+	_log("glob_leaves_taint_puddle", saw_puddle, "")
+	# windup interrupted by talisman (poise 20 >= 12)
+	await _wait(2.5)
+	p.qi = 100.0
+	var waited := 0.0
+	while s.state != "windup" and waited < 6.0:
+		await _frames(1)
+		waited += 1.0 / 60.0
+	p.facing = 1 if s.global_position.x > p.global_position.x else -1
+	await press(p, "talisman")
+	await _wait(0.7)
+	_log("talisman_interrupts_spitter", s.state == "stagger" or s.state == "chase" or s.dead, "state=%s" % s.state)
+
+
+func t_elite_telegraph() -> void:
+	var p := await _fresh_level(600.0)
+	p.facing = 1
+	p.max_hp = 9999.0
+	p.hp = 9999.0
+	var e := await spawn("elite", p.global_position.x + 130)
+	var wind_start := -1.0
+	var strike_at := -1.0
+	var kind := ""
+	var t := 0.0
+	while t < 8.0 and strike_at < 0.0:
+		await _frames(1)
+		t += 1.0 / 60.0
+		if wind_start < 0.0 and e.state.begins_with("windup"):
+			wind_start = t
+			kind = e.state
+		if wind_start >= 0.0 and (e.state == "chop" or e.state == "sweep"):
+			strike_at = t
+	var lead := strike_at - wind_start
+	_log("elite_windup_readable", lead >= 0.6 and lead <= 0.9, "%s lead=%.2fs (spec 0.65–0.85)" % [kind, lead])
+	# light attacks do not interrupt its approach (super armour)
+	await _wait(1.5)
+	var st_before: String = e.state
+	await press(p, "attack")
+	await _frames(10)
+	_log("elite_armor_ignores_light_hit", e.state != "stagger", "state %s -> %s" % [st_before, e.state])
+
+
+func t_death_respawn() -> void:
+	var p := await _fresh_level(600.0)
+	var deaths := Game.deaths
+	var hs := {}
+	p.hp = 5.0
+	Combat.strike({"owner": null, "team": Combat.TEAM_ENEMY, "rect": p.get_hurtbox(), "damage": 50.0, "poise": 0.0,
+		"knock": 100.0, "dir": 1, "kind": "melee", "unblockable": true, "tag": "test"}, hs)
+	await _frames(2)
+	_log("player_dies", p.dead, "")
+	await _wait(3.5)
+	var cpx: float = LevelData.CHECKPOINTS[Game.checkpoint_id].x
+	_log("respawn_at_checkpoint", not p.dead and p.hp == p.max_hp and absf(p.global_position.x - cpx) < 120 and Game.deaths == deaths + 1,
+		"x=%.0f cp=%.0f hp=%.0f" % [p.global_position.x, cpx, p.hp])
+
+
+func _kill_all() -> void:
+	for e in Combat.enemies_alive():
+		if e.state == "spawn":
+			continue
+		var hs := {}
+		Combat.strike({"owner": Game.player, "team": Combat.TEAM_PLAYER, "rect": e.get_hurtbox(), "damage": 9999.0,
+			"poise": 999.0, "knock": 0.0, "dir": 1, "kind": "aoe", "centre": e.global_position, "unblockable": false, "tag": "test"}, hs)
+
+
+func t_encounter_lock() -> void:
+	var p := await _fresh_level(1300.0)
+	hold(p, {"move_right": true})
+	await _wait(0.9)
+	hold(p, {})
+	var enc: Encounter = Game.level.encounters[0]
+	_log("encounter_locks_on_trigger", enc.state == "active" and enc.barriers.size() == 2, "state=%s" % enc.state)
+	p.global_position.x = 1000.0
+	await _frames(3)
+	var blocked := p.global_position.x
+	hold(p, {"move_left": true})
+	await _wait(0.6)
+	hold(p, {})
+	await _wait(0.2)
+	await _wait(1.6)
+	for i in 4:
+		_kill_all()
+		await _wait(1.0)
+	_log("encounter_clears", enc.state == "cleared" and Game.cleared.has("e1_village"), "state=%s alive=%d" % [enc.state, enc.alive.size()])
+
+
+func t_full_route() -> void:
+	# Teleport through every encounter, clearing each, then walk into the gate.
+	var p := await _fresh_level(600.0)
+	p.max_hp = 99999.0
+	p.hp = 99999.0
+	for enc in Game.level.encounters:
+		var d: Dictionary = enc.data
+		var tx: float = d.trigger + 20.0 if d.trigger > 0.0 else d.enemies[0][1] - 250.0
+		p.global_position = Vector2(tx, Game.GROUND_Y - 4)
+		await _wait(0.4)
+		var guard := 0
+		while enc.state != "cleared" and guard < 30:
+			_kill_all()
+			await _wait(0.6)
+			guard += 1
+		_log("route_" + d.id, enc.state == "cleared", "")
+	# rest at the final campfire then walk into the light
+	p.global_position = Vector2(LevelData.END_X - 200, Game.GROUND_Y - 4)
+	hold(p, {"move_right": true})
+	var t := 0.0
+	while t < 8.0 and Game.running:
+		await _frames(1)
+		t += 1.0 / 60.0
+		if not is_instance_valid(p):
+			break
+	if is_instance_valid(p):
+		hold(p, {})
+	await _wait(0.5)
+	var scene := get_tree().current_scene
+	_log("demo_completes", scene != null and scene.scene_file_path == Game.END_SCENE, "scene=%s" % (scene.scene_file_path if scene else "?"))

@@ -164,6 +164,11 @@ func _physics_process(delta: float) -> void:
 	if was_air and is_on_floor():
 		_on_landed(vy)
 	_animate(delta)
+	if input_override != null:
+		# test harness one-shot presses are consumed by exactly one physics step
+		for k in input_override.keys():
+			if String(k).ends_with("_just"):
+				input_override.erase(k)
 
 
 func _speed_mul() -> float:

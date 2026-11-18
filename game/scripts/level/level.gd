@@ -64,6 +64,11 @@ func _ready() -> void:
 	player.position = Vector2(start_x, Game.GROUND_Y - 2)
 	$Actors.add_child(player)
 	player.died.connect(_on_player_died)
+	if Game.args.has("startx") and Game.args.has("skip_cleared"):
+		for e in LevelData.ENCOUNTERS:
+			var right: float = e.lock[1] if e.lock.size() == 2 else e.enemies[0][1]
+			if right < start_x:
+				Game.cleared[e.id] = true
 	for e in LevelData.ENCOUNTERS:
 		var enc := Encounter.new()
 		add_child(enc)

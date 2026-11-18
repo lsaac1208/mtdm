@@ -15,14 +15,14 @@ var awake := false
 func _init() -> void:
 	enemy_name = "封印残尸"
 	max_hp = 90.0
-	max_poise = 40.0
+	max_poise = 60.0
 	hurt_size = Vector2(50, 138)
 	idle_pose = "husk_idle"
 	stagger_pose = "husk_hit"
 	death_pose = "husk_collapse"
 	stagger_time = 0.6
 	interrupt_poise = 30.0
-	armored_states = ["burst_prep", "burst"]
+	uninterruptible_states = ["burst_prep", "burst", "awaken"]
 	shadow_w = 60.0
 
 

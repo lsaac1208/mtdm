@@ -44,9 +44,12 @@ func _band(head: float, tail: float, r: float, w: float, col: Color, broken: boo
 		var d := Vector2(cos(ang) * facing, sin(ang) * squash_y)
 		outer.append(d * (r + ww * 0.5))
 		inner.append(d * (r - ww * 0.5))
-	inner.reverse()
-	var poly := outer + inner
-	draw_colored_polygon(poly, col)
+	# draw as quads so thin/curved bands never fail triangulation
+	for i in steps:
+		var q := PackedVector2Array([outer[i], outer[i + 1], inner[i + 1], inner[i]])
+		if (q[0] - q[3]).length() < 0.3 and (q[1] - q[2]).length() < 0.3:
+			continue
+		draw_primitive(q, PackedColorArray([col, col, col, col]), PackedVector2Array())
 
 
 func _draw() -> void:

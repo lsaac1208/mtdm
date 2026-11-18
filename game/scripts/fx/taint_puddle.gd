@@ -55,12 +55,14 @@ func _draw() -> void:
 	var grow := clampf(t / 0.25, 0.0, 1.0)
 	var fade := 1.0 if permanent else clampf((life - t) / 0.6, 0.0, 1.0)
 	var r := radius * grow
+	if r < 3.0:
+		return
 	var pts := PackedVector2Array()
 	for i in 33:
 		var ang := PI + PI * i / 32.0
 		var wob := 1.0 + 0.06 * sin(i * 1.7 + t * 2.0)
 		pts.append(Vector2(cos(ang) * r * wob, sin(ang) * 9.0 * wob + 2.0))
-	for i in 33:
+	for i in range(1, 32):
 		var ang := PI * i / 32.0
 		pts.append(Vector2(cos(ang) * r, sin(ang) * 5.0 + 2.0))
 	draw_colored_polygon(pts, Color(0.2, 0.26, 0.08, 0.85 * fade))
