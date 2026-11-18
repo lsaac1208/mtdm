@@ -15,6 +15,7 @@ var stagger_time := 0.45
 var interrupt_poise := 1.0       # single-hit poise needed to cancel a wind-up
 var armored_states: Array = []   # states that ignore stagger unless poise breaks
 var uninterruptible_states: Array = []  # states that never stagger
+var topple_on_death := true
 var attack_hits := {}
 var burn := 0.0
 var spawn_rise := 0.0
@@ -68,6 +69,12 @@ func _physics_process(delta: float) -> void:
 		if hp <= 0.0:
 			_die()
 	if dead:
+		if topple_on_death and _dissolve_t < 0.6:
+			# no painted collapse frame: topple backward and sink as the ink burns
+			var k := clampf(_dissolve_t / 0.45, 0.0, 1.0)
+			vis.lean = lerpf(vis.lean, -68.0, minf(1.0, delta * 9.0))
+			vis.bob = -hurt_size.y * 0.1 * k
+			vis.squash = Vector2(1.0 + 0.06 * k, 1.0 - 0.1 * k)
 		_dissolve_t += delta
 		vis.dissolve = clampf((_dissolve_t - 0.5) / 1.1, 0.0, 1.0)
 		velocity.x = move_toward(velocity.x, 0.0, 900.0 * delta)
@@ -215,6 +222,7 @@ func _die(dir := 0) -> void:
 	dead = true
 	set_state("dead")
 	telegraph.stop()
+	still_anim()
 	collision_layer = 0
 	if death_pose != "":
 		vis.set_pose(death_pose, 0.05)

@@ -14,7 +14,7 @@ func _init() -> void:
 	hurt_size = Vector2(46, 124)
 	idle_pose = "grunt_idle"
 	stagger_pose = "grunt_alert"
-	death_pose = "grunt_attack"
+	death_pose = "grunt_alert"
 	stagger_time = 0.5
 	shadow_w = 54.0
 

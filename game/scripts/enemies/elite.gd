@@ -29,6 +29,7 @@ func _init() -> void:
 	stagger_time = 1.8
 	interrupt_poise = 9999.0
 	armored_states = ["chase", "windup_chop", "chop", "recover_chop", "windup_sweep", "sweep", "recover_sweep", "roar", "idle", "lunge"]
+	topple_on_death = false
 	shadow_w = 92.0
 
 
@@ -284,6 +285,8 @@ func _roar() -> void:
 func _die(dir := 0) -> void:
 	super._die(dir)
 	vis.lean = 22.0
+	vis.squash = Vector2(1.05, 0.84)
+	vis.rig.skew = 0.0
 	Sfx.play("elite_die", 2.0)
 	Fx.shake(10.0, 0.6)
 	Fx.punch(0.08, 0.9)

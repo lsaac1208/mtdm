@@ -7,7 +7,7 @@ const CONTROLS := """移动  A / D　　跳跃  K / 空格　　冲刺  L / Shif
 攻击  J（三段连斩）　　下劈  S + J　　冲刺斩  冲刺中按 J　　跳劈  空中按 J
 格挡  按住 I（出手瞬间格挡 = 弹反）
 符箓  U（20 道力）　　阴阳葫芦  O（回血 + 震开）　　念珠  P（50 道力）
-手柄：A 跳　X 攻击　B/RB 冲刺　LB 格挡　Y 符箓　LT 葫芦　RT 念珠"""
+手柄：A 跳　X 攻击　B/RB 冲刺　LB 格挡　Y 符箓　LT 葫芦　RT 念珠　　F11 全屏"""
 
 var root: Control
 var buttons: Array = []

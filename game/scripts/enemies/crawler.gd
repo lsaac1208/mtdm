@@ -17,6 +17,7 @@ func _init() -> void:
 	stagger_pose = "crawler_hit"
 	death_pose = "crawler_hit"
 	stagger_time = 0.55
+	topple_on_death = false
 	shadow_w = 96.0
 
 

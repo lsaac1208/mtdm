@@ -23,6 +23,7 @@ func _init() -> void:
 	stagger_time = 0.6
 	interrupt_poise = 30.0
 	uninterruptible_states = ["burst_prep", "burst", "awaken"]
+	topple_on_death = false
 	shadow_w = 60.0
 
 

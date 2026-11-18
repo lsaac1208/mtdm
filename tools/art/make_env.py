@@ -237,6 +237,22 @@ def house(d, ss, x, base, w, h, seed):
     pts = [left, (x + w * 0.05, base - wall_h - h * 0.08), (peak, base - h), (x + w * 0.95, base - wall_h - h * 0.12), right,
            (x + w * 0.9, base - wall_h - 2), (x + w * 0.1, base - wall_h - 2)]
     d.polygon([(p[0] * ss, p[1] * ss) for p in pts], fill=255)
+    # roof tile courses and timber framing (thin gaps read as detail in silhouette)
+    for i in range(1, 5):
+        yy = base - h + (h - wall_h) * i / 5.0
+        d.line([((x - w * 0.05 + i * 3) * ss, yy * ss), ((x + w * 1.05 - i * 3) * ss, (yy + 3) * ss)], fill=0, width=max(1, int(1.2 * ss)))
+    for i in range(1, 4):
+        bx = x + w * i / 4.0
+        d.line([(bx * ss, (base - wall_h + 6) * ss), (bx * ss, base * ss)], fill=0, width=max(1, int(1.5 * ss)))
+    d.line([(x * ss, (base - wall_h * 0.55) * ss), ((x + w) * ss, (base - wall_h * 0.55) * ss)], fill=0, width=max(1, int(1.5 * ss)))
+    # doorway and a broken lattice window
+    dx0 = x + w * r.uniform(0.15, 0.3)
+    d.rectangle([dx0 * ss, (base - wall_h * 0.62) * ss, (dx0 + w * 0.14) * ss, base * ss], fill=0)
+    wx0 = x + w * r.uniform(0.55, 0.7)
+    d.rectangle([wx0 * ss, (base - wall_h * 0.8) * ss, (wx0 + w * 0.16) * ss, (base - wall_h * 0.45) * ss], fill=0)
+    for k in range(1, 3):
+        lx = wx0 + w * 0.16 * k / 3
+        d.line([(lx * ss, (base - wall_h * 0.8) * ss), (lx * ss, (base - wall_h * 0.45) * ss)], fill=255, width=max(1, int(1.5 * ss)))
     # hole in roof
     hx = x + w * r.uniform(0.55, 0.75)
     d.polygon([(hx * ss, (base - h * 0.85) * ss), ((hx + w * 0.15) * ss, (base - h * 0.75) * ss), ((hx + w * 0.05) * ss, (base - wall_h - 6) * ss)], fill=0)

@@ -114,6 +114,13 @@ func _process(delta: float) -> void:
 		Engine.time_scale = 1.0
 
 
+func _input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and not e.echo and (e.physical_keycode == KEY_F11 or (e.physical_keycode == KEY_ENTER and e.alt_pressed)):
+		var w := get_window()
+		w.mode = Window.MODE_WINDOWED if w.mode == Window.MODE_FULLSCREEN else Window.MODE_FULLSCREEN
+		get_viewport().set_input_as_handled()
+
+
 ## Freeze-frame for impact weight. Uses real time so it always recovers.
 func hitstop(duration: float, scale := 0.05) -> void:
 	if args.has("nohitstop"):

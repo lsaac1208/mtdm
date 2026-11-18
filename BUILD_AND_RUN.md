@@ -26,6 +26,7 @@ The first launch imports assets (~10 s).
 | Yin-Yang gourd 葫芦 (heal + push) | O | LT |
 | Prayer beads 念珠 (50 Qi AOE) | P | RT |
 | Pause | Esc | Start |
+| Fullscreen | F11 / Alt+Enter | — |
 
 ## 3. Tests (headless, no window)
 ```bash
@@ -54,6 +55,10 @@ Other dev flags (after `--`): `--autostart` (skip title), `--startx=<px> [--skip
 mkdir -p build/linux build/windows
 $G --headless --path game --export-release "Linux" ../build/linux/TaoistWanderer.x86_64
 $G --headless --path game --export-release "Windows" ../build/windows/TaoistWanderer.exe
+```
+One command does both exports and the zips (with `RELEASE_NOTES.md` as the player README):
+```bash
+GODOT=$G python3 tools/build/package.py 0.1.0   # -> build/TaoistWanderer-v0.1.0-{linux,windows}-x86_64.zip
 ```
 Both presets embed the PCK (single file). Run the Linux build with `./build/linux/TaoistWanderer.x86_64`. The exported binary accepts the same test flags, e.g. `./TaoistWanderer.x86_64 --headless --fixed-fps 60 -- --test=bot --mute`.
 

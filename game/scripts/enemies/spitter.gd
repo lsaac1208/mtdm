@@ -21,6 +21,7 @@ func _init() -> void:
 	death_pose = "spitter_collapse"
 	stagger_time = 0.55
 	interrupt_poise = 12.0
+	topple_on_death = false
 	shadow_w = 58.0
 
 
