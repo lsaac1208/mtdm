@@ -22,6 +22,8 @@ uniform float split_x = 0.5;       // uv x between the legs (feet anchor)
 uniform float hip_y = 0.6;         // uv y where the legs start
 uniform float outline_px = 3.5;          // texels
 uniform vec4 outline_color : source_color = vec4(0.06, 0.05, 0.04, 0.9);
+uniform float halo_px = 9.0;
+uniform vec4 halo_color : source_color = vec4(0.88, 0.82, 0.70, 0.22);
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -72,8 +74,23 @@ void fragment() {
 		na = max(na, texture(TEXTURE, uv + vec2(o.x, -o.y) * 0.7).a);
 		na = max(na, texture(TEXTURE, uv + vec2(-o.x, o.y) * 0.7).a);
 		float oa = clamp(na * 1.4, 0.0, 1.0) * outline_color.a;
-		c.rgb = mix(outline_color.rgb, c.rgb, c.a);
-		c.a = max(c.a, oa);
+		// pale paper halo just outside the ink line (negative space)
+		float ha = 0.0;
+		if (halo_px > 0.0) {
+			vec2 h = TEXTURE_PIXEL_SIZE * halo_px;
+			float hn = 0.0;
+			hn = max(hn, texture(TEXTURE, uv + vec2(h.x, 0.0)).a);
+			hn = max(hn, texture(TEXTURE, uv - vec2(h.x, 0.0)).a);
+			hn = max(hn, texture(TEXTURE, uv + vec2(0.0, h.y)).a);
+			hn = max(hn, texture(TEXTURE, uv - vec2(0.0, h.y)).a);
+			hn = max(hn, texture(TEXTURE, uv + h * 0.7).a);
+			hn = max(hn, texture(TEXTURE, uv - h * 0.7).a);
+			ha = clamp(hn * 1.2, 0.0, 1.0) * halo_color.a;
+		}
+		vec3 under = mix(halo_color.rgb, outline_color.rgb, step(0.001, oa) * clamp(oa / max(outline_color.a, 0.001), 0.0, 1.0));
+		float ua = max(oa, ha);
+		c.rgb = mix(under, c.rgb, c.a);
+		c.a = max(c.a, ua);
 	}
 	c.rgb = mix(c.rgb, flash_color.rgb, flash * c.a);
 	c *= tint;

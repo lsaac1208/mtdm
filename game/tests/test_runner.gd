@@ -106,6 +106,35 @@ func _run() -> void:
 		hold(p, {})
 		get_tree().quit()
 		return
+	if only == "elitecap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(1500.0)
+		p.max_hp = 9999.0
+		p.hp = 9999.0
+		await _wait(0.5)
+		var e := await spawn("elite", 1720.0)
+		var k := 0
+		var t := 0.0
+		while k < 16 and t < 12.0:
+			await _frames(5)
+			t += 5.0 / 60.0
+			if e.state != "chase" and e.state != "idle":
+				await _shot("e_%s" % e.state)
+				k += 1
+		get_tree().quit()
+		return
+	if only == "pausecap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(700.0)
+		await _wait(1.0)
+		for n in Game.level.get_children():
+			if n.has_method("_open"):
+				n._open()
+		await get_tree().create_timer(0.5, true, false, true).timeout
+		await _shot("pause")
+		get_tree().paused = false
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)

@@ -224,7 +224,7 @@ func _start(s: String) -> void:
 			if phase == 2 and randf() < 0.6:
 				chain = "sweep"
 		"windup_sweep":
-			vis.set_pose("elite_idle", 0.08)
+			vis.set_pose("elite_main", 0.08)
 			telegraph.flare(Vector2(-40, -96), 0.65 * (1.0 if phase == 1 else 0.85), Color(1, 0.55, 0.2))
 			telegraph.danger(Rect2(-30, -128, 222, 88), 0.65 * (1.0 if phase == 1 else 0.85), Color(0.8, 0.3, 0.05, 0.16))
 			Sfx.play("elite_windup", -2.0, 0.05, 1.2)
@@ -260,8 +260,8 @@ func _sweep() -> void:
 	vis.lean = 10.0
 	velocity.x = facing * 140.0
 	Sfx.play("elite_sweep", 1.0)
-	Fx.slash(global_position + Vector2(40 * facing, -88), facing, 165.0, 10.0, 130.0, 34.0, 0.26,
-		Color(0.42, 0.12, 0.08), Color(0.95, 0.85, 0.7), 0.32)
+	Fx.slash(global_position + Vector2(40 * facing, -88), facing, 170.0, 5.0, 135.0, 52.0, 0.32,
+		Color(0.48, 0.12, 0.08), Color(0.97, 0.88, 0.72), 0.45)
 	Fx.shake(5.0, 0.2)
 
 

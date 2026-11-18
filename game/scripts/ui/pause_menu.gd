@@ -56,6 +56,21 @@ func _ready() -> void:
 		buttons.append(btn)
 	for btn in buttons:
 		btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var vol_row := HBoxContainer.new()
+	vol_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	var vl := Label.new()
+	vl.text = "音量"
+	vl.add_theme_font_size_override("font_size", 20)
+	vol_row.add_child(vl)
+	var slider := HSlider.new()
+	slider.min_value = 0.0
+	slider.max_value = 1.0
+	slider.step = 0.05
+	slider.value = db_to_linear(AudioServer.get_bus_volume_db(0))
+	slider.custom_minimum_size = Vector2(240, 30)
+	slider.value_changed.connect(func(v): AudioServer.set_bus_volume_db(0, linear_to_db(maxf(v, 0.0001))); AudioServer.set_bus_mute(0, v <= 0.001))
+	vol_row.add_child(slider)
+	box.add_child(vol_row)
 
 
 func _unhandled_input(e: InputEvent) -> void:
@@ -72,12 +87,19 @@ func _open() -> void:
 		return
 	root.visible = true
 	get_tree().paused = true
+	_set_hud(false)
 	buttons[0].grab_focus()
+
+
+func _set_hud(v: bool) -> void:
+	if Game.level and is_instance_valid(Game.level) and Game.level.hud:
+		Game.level.hud.visible = v
 
 
 func _resume() -> void:
 	root.visible = false
 	get_tree().paused = false
+	_set_hud(true)
 
 
 func _restart() -> void:
