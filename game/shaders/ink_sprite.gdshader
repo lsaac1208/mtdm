@@ -22,7 +22,9 @@ uniform float leg_lift = 0.0;      // knee bend amplitude (radians)
 uniform float hip_w = 0.05;        // lateral hip pivot offset (uv)
 uniform float foot_v = 0.95;       // uv y of the feet
 uniform float leg_band = 0.13;
-uniform float tuck = 0.0;          // airborne: both thighs forward, knees bent (radians)     // half-width of each leg region (uv)
+uniform float tuck = 0.0;
+uniform float torso_twist = 0.0;  // upper-body counter-rotation about the hips (radians)
+uniform float ribbon = 0.0;       // head ribbon / hair flutter (uv units)          // airborne: both thighs forward, knees bent (radians)     // half-width of each leg region (uv)
 uniform float split_x = 0.5;       // uv x between the legs (feet anchor)
 uniform float hip_y = 0.6;         // uv y where the legs start
 uniform float outline_px = 3.5;          // texels
@@ -97,6 +99,18 @@ void fragment() {
 	uv.x += sway * low * sin(t * 6.0 + uv.y * 14.0 + uv.x * 5.0);
 	// stride: alternate lower-body shear, feet move most
 	uv.x += stride * low * low * sin(phase);
+	// upper body: counter-rotate about the hip line with the stride
+	if (torso_twist != 0.0 && UV.y < hip_y + 0.02) {
+		vec2 pxs = 1.0 / TEXTURE_PIXEL_SIZE;
+		vec2 hipp = vec2(split_x, hip_y) * pxs;
+		float wgt = smoothstep(hip_y + 0.02, hip_y - 0.08, UV.y);
+		uv = (hipp + rot2(uv * pxs - hipp, torso_twist * sin(phase) * wgt)) / pxs;
+	}
+	// ribbon / hair flutter near the head, trailing behind
+	if (ribbon > 0.0) {
+		float hw = smoothstep(0.32, 0.05, UV.y);
+		uv.x += ribbon * hw * (0.6 + 0.4 * sin(t * 11.0 + UV.y * 30.0));
+	}
 	// breathing: stretch upper body slightly
 	float up = 1.0 - smoothstep(0.1, 0.6, uv.y);
 	uv.y += breathe * up * sin(t * 2.2);

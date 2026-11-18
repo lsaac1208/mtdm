@@ -691,6 +691,8 @@ func _animate(delta: float) -> void:
 	vis.legs = 0.0
 	vis.leg_lift = 0.0
 	vis.tuck = 0.0
+	vis.torso_twist = 0.0
+	vis.ribbon = clampf(absf(velocity.x) / 260.0, 0.0, 1.5) * 0.005
 	vis.bob = 0.0
 	vis.breathe = 0.0
 	vis.tint = Color(0.82, 1.0, 0.7) if in_taint > 0.0 else Color.WHITE
@@ -706,6 +708,7 @@ func _animate(delta: float) -> void:
 			vis.stride = 0.0
 			vis.legs = 0.42
 			vis.leg_lift = 0.75
+			vis.torso_twist = -0.045
 			# legs swinging about the hip shorten vertically: drop the body to keep feet planted
 			var L := 150.0 * vis.hip_frac
 			vis.bob = -L * (1.0 - cos(vis.legs * sin(_step_t))) + absf(cos(_step_t)) * 2.0

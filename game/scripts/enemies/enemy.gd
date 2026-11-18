@@ -249,11 +249,13 @@ func walk_anim(delta: float, speed_ratio: float, rate := 7.0, amp := 0.04) -> vo
 	vis.stride = amp * 0.3 * speed_ratio
 	vis.legs = 0.3 * speed_ratio * clampf(amp / 0.04, 0.5, 1.5)
 	vis.leg_lift = 0.5 * speed_ratio
+	vis.torso_twist = -0.04 * speed_ratio
 	var L := hurt_size.y * vis.hip_frac
 	vis.bob = -L * (1.0 - cos(vis.legs * sin(_bob_t))) + absf(cos(_bob_t)) * 1.5 * speed_ratio
 
 
 func still_anim() -> void:
+	vis.torso_twist = 0.0
 	vis.stride = 0.0
 	vis.legs = 0.0
 	vis.leg_lift = 0.0
