@@ -133,6 +133,12 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 	Fx.slash(global_position + Vector2(0, -hurt_size.y * 0.55), dir, -20.0, 20.0, 18.0, 10.0, 0.12,
 		Color(0.9, 0.85, 0.75), Color(1, 1, 1), 1.0)
 	Sfx.play(_hit_sound(atk), -2.0)
+	vis.jitter = 0.15
+	vis.squash = Vector2(0.9, 1.08)
+	if atk.kind != "hazard":
+		Fx.splat(global_position + Vector2(dir * randf_range(10, 40), 0), 10.0 + atk.damage * 0.6)
+	if atk.damage >= 16.0:
+		Fx.punch(0.025, 0.18)
 	on_hurt(atk)
 	if hp <= 0.0:
 		_die(dir)
@@ -216,6 +222,7 @@ func _die(dir := 0) -> void:
 	Game.kills += 1
 	Sfx.play("enemy_die", -2.0)
 	Fx.ash(global_position + Vector2(0, -hurt_size.y * 0.5), 26)
+	Fx.splat(global_position, 34.0, Color(0.08, 0.05, 0.04, 0.85))
 	Game.hitstop(0.06)
 	var p := player()
 	if p:

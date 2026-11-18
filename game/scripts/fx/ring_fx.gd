@@ -32,11 +32,14 @@ func _draw() -> void:
 	for i in 49:
 		var ang := TAU * i / 48.0
 		pts.append(Vector2(cos(ang) * r, sin(ang) * r * squash_y))
-	draw_polyline(pts, Color(0.05, 0.04, 0.03, a * 0.5), w * 1.6, true)
-	draw_polyline(pts, Color(color.r, color.g, color.b, a), w, true)
+	var ww := w if glyphs == 0 else w * 0.35
+	draw_polyline(pts, Color(0.05, 0.04, 0.03, a * 0.5), ww * 1.6, true)
+	draw_polyline(pts, Color(color.r, color.g, color.b, a * (1.0 if glyphs == 0 else 0.75)), ww, true)
 	if glyphs > 0:
 		for i in glyphs:
 			var ang := TAU * i / glyphs + t * 3.0
 			var p := Vector2(cos(ang) * r, sin(ang) * r * squash_y)
-			draw_circle(p, w * 0.9, Color(0.35, 0.08, 0.06, a))
-			draw_circle(p, w * 0.5, Color(1, 0.85, 0.45, a))
+			var br := clampf(w * 0.55, 3.0, 7.0)
+			draw_circle(p, br + 1.2, Color(0.05, 0.03, 0.02, a * 0.8))
+			draw_circle(p, br, Color(0.36, 0.07, 0.05, a))
+			draw_circle(p + Vector2(-br * 0.35, -br * 0.35), br * 0.35, Color(1.0, 0.82, 0.5, a * 0.9))

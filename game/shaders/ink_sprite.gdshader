@@ -5,6 +5,7 @@ shader_type canvas_item;
 //  - breathe: upper-body vertical stretch
 //  - flash: hit flash, tint: status tint, dissolve: ink-burn death effect
 
+uniform sampler2D src_tex : filter_linear, repeat_disable;
 uniform float time_offset = 0.0;
 uniform float sway = 0.0;        // uv units
 uniform float stride = 0.0;      // uv units
@@ -47,7 +48,7 @@ vec2 rot2(vec2 v, float a) {
 
 // Inverse-mapped two-bone leg: thigh rotates about the hip pivot, shin bends
 // at the knee. side = +1 front leg (toward facing), -1 back leg.
-vec4 leg_sample(sampler2D tex, vec2 uv, vec2 px, float side, float th, float kn) {
+vec4 leg_sample(vec2 uv, vec2 px, float side, float th, float kn) {
 	vec2 P = uv * px;
 	vec2 hip = vec2((split_x + side * hip_w) * px.x, hip_y * px.y);
 	float wy = smoothstep(hip_y - 0.03, hip_y + 0.1, uv.y);
@@ -62,26 +63,26 @@ vec4 leg_sample(sampler2D tex, vec2 uv, vec2 px, float side, float th, float kn)
 	float hx = split_x + side * hip_w;
 	float own = (side > 0.0 ? step(split_x - 0.01, su.x) : step(su.x, split_x + 0.01)) * step(abs(su.x - hx), leg_band);
 	if (su.x < 0.0 || su.x > 1.0 || su.y < 0.0 || su.y > 1.0) return vec4(0.0);
-	vec4 c = texture(tex, su);
+	vec4 c = texture(src_tex, su);
 	c.a *= own;
 	return c;
 }
 
-vec4 rig_sample(sampler2D tex, vec2 uv, vec2 px) {
+vec4 rig_sample(vec2 uv, vec2 px) {
 	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return vec4(0.0);
 	if (legs <= 0.0 || uv.y < hip_y - 0.03) {
-		return texture(tex, uv);
+		return texture(src_tex, uv);
 	}
 	float sw = sin(phase);
 	float cw = cos(phase);
-	vec4 f = leg_sample(tex, uv, px, 1.0, legs * sw, leg_lift * max(0.0, cw));
-	vec4 b = leg_sample(tex, uv, px, -1.0, -legs * sw, leg_lift * max(0.0, -cw));
+	vec4 f = leg_sample(uv, px, 1.0, legs * sw, leg_lift * max(0.0, cw));
+	vec4 b = leg_sample(uv, px, -1.0, -legs * sw, leg_lift * max(0.0, -cw));
 	vec4 o;
 	o.a = f.a + b.a * (1.0 - f.a);
 	o.rgb = (f.rgb * f.a + b.rgb * b.a * (1.0 - f.a)) / max(o.a, 0.001);
 	// pixels outside both leg bands (hanging sword, robe edges) stay rigid
 	float outside = step(leg_band, abs(uv.x - (split_x + hip_w))) * step(leg_band, abs(uv.x - (split_x - hip_w)));
-	vec4 r = texture(tex, uv) * vec4(1.0, 1.0, 1.0, outside);
+	vec4 r = texture(src_tex, uv) * vec4(1.0, 1.0, 1.0, outside);
 	o.rgb = (o.rgb * o.a + r.rgb * r.a * (1.0 - o.a)) / max(o.a + r.a * (1.0 - o.a), 0.001);
 	o.a = o.a + r.a * (1.0 - o.a);
 	return o;
@@ -99,31 +100,31 @@ void fragment() {
 	float up = 1.0 - smoothstep(0.1, 0.6, uv.y);
 	uv.y += breathe * up * sin(t * 2.2);
 	vec2 px = 1.0 / TEXTURE_PIXEL_SIZE;
-	vec4 c = rig_sample(TEXTURE, uv, px);
+	vec4 c = rig_sample(uv, px);
 	// thick ink contour: max alpha of 8 neighbours, drawn behind the sprite
 	if (outline_px > 0.0) {
 		vec2 o = TEXTURE_PIXEL_SIZE * outline_px;
 		float na = 0.0;
-		na = max(na, rig_sample(TEXTURE, uv + vec2(o.x, 0.0), px).a);
-		na = max(na, rig_sample(TEXTURE, uv - vec2(o.x, 0.0), px).a);
-		na = max(na, rig_sample(TEXTURE, uv + vec2(0.0, o.y), px).a);
-		na = max(na, rig_sample(TEXTURE, uv - vec2(0.0, o.y), px).a);
-		na = max(na, rig_sample(TEXTURE, uv + o * 0.7, px).a);
-		na = max(na, rig_sample(TEXTURE, uv - o * 0.7, px).a);
-		na = max(na, rig_sample(TEXTURE, uv + vec2(o.x, -o.y) * 0.7, px).a);
-		na = max(na, rig_sample(TEXTURE, uv + vec2(-o.x, o.y) * 0.7, px).a);
+		na = max(na, rig_sample(uv + vec2(o.x, 0.0), px).a);
+		na = max(na, rig_sample(uv - vec2(o.x, 0.0), px).a);
+		na = max(na, rig_sample(uv + vec2(0.0, o.y), px).a);
+		na = max(na, rig_sample(uv - vec2(0.0, o.y), px).a);
+		na = max(na, rig_sample(uv + o * 0.7, px).a);
+		na = max(na, rig_sample(uv - o * 0.7, px).a);
+		na = max(na, rig_sample(uv + vec2(o.x, -o.y) * 0.7, px).a);
+		na = max(na, rig_sample(uv + vec2(-o.x, o.y) * 0.7, px).a);
 		float oa = clamp(na * 1.4, 0.0, 1.0) * outline_color.a;
 		// pale paper halo just outside the ink line (negative space)
 		float ha = 0.0;
 		if (halo_px > 0.0) {
 			vec2 h = TEXTURE_PIXEL_SIZE * halo_px;
 			float hn = 0.0;
-			hn = max(hn, rig_sample(TEXTURE, uv + vec2(h.x, 0.0), px).a);
-			hn = max(hn, rig_sample(TEXTURE, uv - vec2(h.x, 0.0), px).a);
-			hn = max(hn, rig_sample(TEXTURE, uv + vec2(0.0, h.y), px).a);
-			hn = max(hn, rig_sample(TEXTURE, uv - vec2(0.0, h.y), px).a);
-			hn = max(hn, rig_sample(TEXTURE, uv + h * 0.7, px).a);
-			hn = max(hn, rig_sample(TEXTURE, uv - h * 0.7, px).a);
+			hn = max(hn, rig_sample(uv + vec2(h.x, 0.0), px).a);
+			hn = max(hn, rig_sample(uv - vec2(h.x, 0.0), px).a);
+			hn = max(hn, rig_sample(uv + vec2(0.0, h.y), px).a);
+			hn = max(hn, rig_sample(uv - vec2(0.0, h.y), px).a);
+			hn = max(hn, rig_sample(uv + h * 0.7, px).a);
+			hn = max(hn, rig_sample(uv - h * 0.7, px).a);
 			ha = clamp(hn * 1.2, 0.0, 1.0) * halo_color.a;
 		}
 		vec3 under = mix(halo_color.rgb, outline_color.rgb, step(0.001, oa) * clamp(oa / max(outline_color.a, 0.001), 0.0, 1.0));

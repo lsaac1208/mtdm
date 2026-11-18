@@ -30,6 +30,7 @@ var breathe := 0.0
 var flash := 0.0
 var tint := Color.WHITE
 var dissolve := 0.0
+var jitter := 0.0
 var alpha := 1.0
 var _fade := 0.0
 var _fade_len := 0.0
@@ -74,6 +75,7 @@ func _apply(s: Sprite2D, name_: String) -> void:
 		push_warning("missing pose " + name_)
 		return
 	s.texture = tex(name_)
+	(s.material as ShaderMaterial).set_shader_parameter("src_tex", s.texture)
 	var sc: float = md.scale
 	s.scale = Vector2(sc, sc)
 	s.position = Vector2(-md.foot_x * sc, -md.foot_y * sc)
@@ -102,7 +104,12 @@ func pose_height() -> float:
 func _process(delta: float) -> void:
 	rig.scale = Vector2(facing * squash.x, squash.y) * extra_scale
 	rig.rotation = deg_to_rad(lean) * facing
-	rig.position = Vector2(nudge.x * facing, nudge.y - bob)
+	var jit := Vector2.ZERO
+	if jitter > 0.0:
+		jitter = maxf(0.0, jitter - delta)
+		jit = Vector2(randf_range(-1, 1) * 4.0, randf_range(-1, 1) * 1.5) * (jitter / 0.15)
+	rig.position = Vector2(nudge.x * facing, nudge.y - bob) + jit
+	nudge = nudge.lerp(Vector2.ZERO, minf(1.0, delta * 10.0))
 	if _fade > 0.0:
 		_fade -= delta
 		if _fade <= 0.0:

@@ -92,6 +92,19 @@ static func ash(pos: Vector2, n := 24, color := Color(0.2, 0.18, 0.16, 0.8)) -> 
 	particles(pos, n, color, 90.0, 80.0, Vector2.UP, -60.0, 1.4, 4.0)
 
 
+static func splat(pos: Vector2, size := 18.0, color := Color(0.12, 0.05, 0.04, 0.8)) -> void:
+	var s = preload("res://scripts/fx/ink_splat.gd").new()
+	s.position = pos + Vector2(0, 2)
+	s.size = size
+	s.color = color
+	layer().add_child(s)
+
+
+static func punch(amount := 0.04, dur := 0.22) -> void:
+	if Game.level and is_instance_valid(Game.level) and Game.level.has_method("punch"):
+		Game.level.punch(amount, dur)
+
+
 static func shake(amount: float, dur := 0.2) -> void:
 	if Game.level and is_instance_valid(Game.level) and Game.level.has_method("shake"):
 		Game.level.shake(amount, dur)

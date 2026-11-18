@@ -504,6 +504,7 @@ func _st_skill(delta: float) -> void:
 				r.glyphs = 18
 				Fx.ring(global_position + Vector2(0, -40), 20.0, 190.0, Color(1, 0.95, 0.8, 0.8), 0.35, 6.0, 0.45)
 				Fx.shake(6.0, 0.25)
+				Fx.punch(0.04, 0.3)
 				Game.hitstop(0.08)
 				var hs := {}
 				Combat.strike({"owner": self, "team": team, "rect": Rect2(global_position.x - 210, global_position.y - 210, 420, 230),
@@ -590,6 +591,7 @@ func _parry(atk: Dictionary) -> void:
 	Fx.float_text(global_position + Vector2(0, -175), "弹反", Color(1, 0.88, 0.5), 30)
 	Game.hitstop(0.16, 0.02)
 	Fx.shake(4.0, 0.15)
+	Fx.punch(0.05, 0.25)
 	var o = atk.get("owner")
 	if is_instance_valid(o) and o.has_method("on_parried"):
 		o.on_parried()

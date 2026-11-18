@@ -174,7 +174,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "bot"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "bot"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot"):
 			continue
@@ -789,3 +789,38 @@ func _bot_step(p: Player, dt: float) -> void:
 				_bot_press(d, "attack")
 				_bot_cd = 0.15
 	p.input_override = d
+
+
+
+func t_flow() -> void:
+	# pause-menu restart reloads the level at the current campfire with cleared encounters kept
+	var p := await _fresh_level(1300.0)
+	Game.cleared["e1_village"] = true
+	Game.checkpoint_id = 1
+	Game.args.erase("startx")
+	get_tree().reload_current_scene()
+	await _frames(5)
+	while Game.level == null or not is_instance_valid(Game.level) or Game.level.player == null or Game.level.player == p:
+		await _frames(1)
+	p = Game.level.player
+	var cp1: float = LevelData.CHECKPOINTS[1].x
+	_log("restart_keeps_progress", Game.cleared.has("e1_village") and absf(p.global_position.x - cp1) < 150,
+		"x=%.0f cp1=%.0f" % [p.global_position.x, cp1])
+	# ending -> title -> new run resets the run state
+	Game.finish_demo()
+	await _wait(1.0)
+	Game.to_title()
+	await _wait(1.0)
+	var title_ok := get_tree().current_scene != null and get_tree().current_scene.scene_file_path == Game.TITLE_SCENE
+	Game.args.erase("startx")
+	Game.new_run()
+	await _frames(5)
+	while Game.level == null or not is_instance_valid(Game.level) or Game.level.player == null:
+		await _frames(1)
+	p = Game.level.player
+	_log("new_run_resets_state", title_ok and Game.cleared.is_empty() and Game.checkpoint_id == 0 and Game.deaths == 0
+		and absf(p.global_position.x - LevelData.CHECKPOINTS[0].x) < 150 and Combat.enemies_alive().size() > 0,
+		"cleared=%d cp=%d x=%.0f alive=%d actors=%d" % [Game.cleared.size(), Game.checkpoint_id, p.global_position.x, Combat.enemies_alive().size(), Combat.actors.size()])
+	# no leaked actors from previous scenes
+	var stale := Combat.actors.filter(func(a): return not is_instance_valid(a) or not a.is_inside_tree())
+	_log("no_stale_actors", stale.is_empty(), "stale=%d" % stale.size())

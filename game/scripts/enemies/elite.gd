@@ -248,6 +248,7 @@ func _chop() -> void:
 	Fx.dust(impact, 18)
 	Fx.particles(impact, 16, Color(0.25, 0.2, 0.15), 380.0, 60.0, Vector2.UP, 1200.0, 0.6, 6.0)
 	Fx.shake(9.0, 0.35)
+	Fx.punch(0.035, 0.3)
 	var hs := {}
 	Combat.strike({"owner": self, "team": team, "rect": Rect2(impact.x - 190, impact.y - 34, 380, 36),
 		"damage": 10.0, "poise": 0.0, "knock": 260.0, "dir": facing, "kind": "aoe", "centre": impact,
@@ -285,6 +286,7 @@ func _die(dir := 0) -> void:
 	vis.lean = 22.0
 	Sfx.play("elite_die", 2.0)
 	Fx.shake(10.0, 0.6)
+	Fx.punch(0.08, 0.9)
 	Game.hitstop(0.3, 0.08)
 	Fx.particles(global_position + Vector2(0, -120), 50, Color(0.35, 0.2, 0.15), 380.0, 150.0, Vector2.UP, 900.0, 1.2, 7.0)
 	_dissolve_t = -1.2   # linger longer before burning away

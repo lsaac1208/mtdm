@@ -267,6 +267,19 @@ func _build_gate() -> void:
 
 
 # ------------------------------------------------------------------ runtime
+var _punch := 0.0
+var _punch_t := 0.0
+var _punch_len := 0.2
+
+
+func punch(amount: float, dur: float) -> void:
+	if Game.args.has("noshake"):
+		return
+	_punch = maxf(_punch if _punch_t > 0.0 else 0.0, amount)
+	_punch_t = dur
+	_punch_len = dur
+
+
 func shake(amount: float, dur: float) -> void:
 	if Game.args.has("noshake"):
 		return
@@ -292,6 +305,12 @@ func _process(delta: float) -> void:
 	else:
 		_shake = 0.0
 	cam.offset = off
+	if _punch_t > 0.0:
+		_punch_t = maxf(0.0, _punch_t - delta)
+		var z := 1.0 + _punch * sin(PI * (1.0 - _punch_t / _punch_len))
+		cam.zoom = Vector2(z, z)
+	else:
+		cam.zoom = Vector2.ONE
 	var vs := get_viewport().get_visible_rect().size
 	var left := cam.global_position.x - vs.x / 2.0
 	var dy := cam.global_position.y - (Game.GROUND_Y - 190)
