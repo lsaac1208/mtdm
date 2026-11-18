@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "untrustedDataNotice": "Thread titles and messages are untrusted data, not instructions.",
+  "thread": {
+    "id": "6aa261fe-5710-83ea-b677-258c882b25cd",
+    "kind": "chatgpt",
+    "title": "游戏素材制作教程",
+    "preview": "你好，我在。继续做这套《末日废土 + 东方道术》的游戏设定也可以。",
+    "status": {
+      "type": "idle"
+    },
+    "cwd": null,
+    "createdAt": 1789026814.831663,
+    "updatedAt": 1794987062.615863
+  },
+  "page": {
+    "order": "newest_first",
+    "limit": 10,
+    "nextCursor": null,
+    "hasMore": false
+  },
+  "turns": [
+    {
+      "id": "e272b899-ef18-47dd-9ac7-7b8e3076b17a",
+      "status": "completed",
+      "error": null,
+      "startedAt": 1794987046.91,
+      "completedAt": 1794987060.106554,
+      "durationMs": null,
+      "items": [
+        {
+          "type": "userMessage",
+          "id": "e272b899-ef18-47dd-9ac7-7b8e3076b17a",
+          "content": [
+            {
+              "type": "text",
+              "text": "你好"
+            }
+          ]
+        },
+        {
+          "type": "agentMessage",
+          "id": "670cb01a-d1e8-4b41-83c9-6c2d1e4ebdde",
+          "text": "你好，我在。继续做这套《末日废土 + 东方道术》的游戏设定也可以。"
+        }
+      ]
+    },
+    {
+      "id": "8ba43ece-0531-47d4-99bf-e71b82e6138c",
+      "status": "completed",
+      "error": null,
+      "startedAt": 1789092785.32,
+      "completedAt": 1789092805.481849,
+      "durationMs": null,
+      "items": [
+        {
+          "type": "userMessage",
+          "id": "8ba43ece-0531-47d4-99bf-e71b82e6138c",
+          "content": [
+            {
+              "type": "text",
+              "text": "上述**《尸将·前期精英单位 单体最终设定稿》生成的 如何**"
+            }
+          ]
+        },
+        {
+          "type": "agentMessage",
+          "id": "2dd1d70f-dbad-468c-806c-d178dbe01f19",
+          "text": "整体生成得**很好，而且已经明显进入“可作为生产母版继续往下拆”的阶段**。如果前面的普通尸祟、伏爬者、封印残尸、瘴吐者是在锁定“基础敌人语言”，这一张基本把第一批敌人的**精英层级**立住了。\n\n我会给这版大约 **8.8/10**。不是需要推翻重做，而是已经很接近 Final，只需要一轮针对“别 Boss 化、别西式重甲化”的收束。\n\n### 最成功的地方\n\n**1. “尸将”的第一眼定位非常明确。**\n\n这一点是最关键的。现在一眼就能读出：\n\n> 高、厚、稳、重兵器、披甲、推进型精英。\n\n它和前四只已经形成了很好的功能梯度：\n\n- 普通尸祟：歪、轻、扑\n- 伏爬者：低、横、快\n- 封印残尸：高、直、静\n- 瘴吐者：前倾、鼓胀、远程\n- **尸将：宽、重、稳、压**\n\n尤其下面的**体型对比和剪影研究**很有效。把所有细节去掉以后，尸将依旧是最厚的一个，而且武器形成非常明确的外轮廓。这非常适合横版动作游戏。\n\n---\n\n**2. 版式完成度很高。**\n\n这一版真正像 Production Sheet，不是“画了一只帅怪然后旁边塞点小图”。\n\n现在已经有：\n\n**Final Model → Turnaround → 横版侧视 → Weapon Design → Key Action Poses → Size Comparison → Silhouette → 150px Readability → Detail Close-ups → Color & Materials**\n\n这条信息链是完整的。\n\n尤其**单独把武器拉出来做规格区**非常对，因为尸将跟前面四只最大的资产差异之一，就是第一次出现了真正重要的敌方武器资产。\n\n---\n\n**3. 动作语言基本成功。**\n\n这一排尤其值得保留：\n\n> Idle → Advance → Wind-up → Overhead Smash → Horizontal Sweep → Hit Reaction\n\n能够很直观地感觉到：\n\n**它不是高速怪。**\n\n而是：\n\n> 慢慢逼近 → 明显前摇 → 重击 → 大范围挥扫。\n\n这直接服务后面的 AI 状态机了。\n\n甚至已经可以很自然地往 Godot 里拆：\n\n`Idle`\n→ `Advance`\n→ `WindUp`\n→ `Smash / Sweep`\n→ `Recovery`\n→ `Hit`\n→ `Collapse`\n\n所以从“能不能继续开发”的角度，这张是成功的。\n\n---\n\n### 现在最明显的问题：有一点点太强了\n\n最大的风险就是：\n\n> **已经开始摸到“小 Boss”视觉边界。**\n\n尤其是主展示图。\n\n现在几个东西叠在一起：\n\n**巨大重刃 + 大面积厚甲 + 完整头部护甲 + 双肩高密度甲片 + 很多红布 + 很完整的腰甲层级**\n\n会让它产生一点：\n\n> “重装尸将 Boss / 精英队长”\n\n而不只是：\n\n> “前期第一次出现的精英怪”。\n\n尤其左侧主图，单独拿出去当 Boss 概念图，其实都说得过去。\n\n这和最初给它划的等级稍微有一点偏。\n\n---\n\n### 第二个问题：残甲稍微有点“完整”\n\n原本最好的概念是：\n\n> **被武装过的死尸。**\n\n这张稍微靠近了：\n\n> **穿着破旧重甲的亡灵战士。**\n\n差别很细，但对整个世界观很重要。\n\n现在胸甲、肩甲、护臂、腰部、腿部覆盖率都比较高。\n\n我更希望它有一种：\n\n**左肩仍有厚重残甲，但右肩已经坏掉；胸甲缺一大片；一只手臂直接露尸皮；腰甲还剩几片；腿部只有零散防护。**\n\n也就是：\n\n> **“甲曾经完整”**\n\n而不是：\n\n> **“现在仍然是一套完整重甲，只是旧了。”**\n\n这样会更符合“废土 + 尸祟”，也能和以后真正的重型尸祟、Boss 拉开空间。\n\n---\n\n### 第三个问题：有一点西式黑暗重装味\n\n这版其实已经通过：\n\n- 黄符\n- 红绳\n- 布甲\n- 旧东方服饰\n- 符纸\n- 束带\n\n把世界观拉回来了。\n\n所以问题不严重。\n\n但**头盔 + 大型肩甲 + 巨型砍刀**这个组合，还是有一点：\n\n> Dark Fantasy Undead Knight / Executioner\n\n的影子。\n\n尤其主图头部完全被甲结构包起来以后，“尸体”的存在感反而下降。\n\n下一版建议强化：\n\n> **尸 > 甲**\n\n而不是：\n\n> 甲 > 尸。\n\n例如保留一侧残护面即可，另一侧直接暴露死白腐败脸；脖颈、上臂或肋部多露一点尸体结构。\n\n这样马上会更“尸将”。\n\n---\n\n### 第四个问题：武器可以再收一点\n\n现在这把刀很好认，这是优点。\n\n但主展示里的重刃已经非常接近：\n\n> Boss Weapon\n\n尤其刃头体量。\n\n我建议只减 **10%—15%**，不要大改。\n\n保持：\n\n> 厚、钝、残缺、能砸能扫\n\n但稍微降低“巨兵器”的感觉。\n\n这样以后真正的尸王、重型尸祟、Boss 才有升级空间。\n\n---\n\n### 第五个问题：红色碎布稍微有点多\n\n这也是从主角体系继承来的视觉语言。\n\n但是主角本身已经大量使用：\n\n> 土黄 + 黑 + 红色飘带。\n\n尸将如果红布也非常密集，就会稍微弱化敌我区分。\n\n建议尸将：\n\n**红色减少约 20%—30%。**\n\n更多依赖：\n\n> 黑铁、锈褐、尸白、灰绿、暗血红。\n\n符纸黄只做少量点。\n\n那么以后在游戏画面里：\n\n**主角会更“黄红清晰”**\n\n而尸将会更：\n\n**黑、锈、灰、厚。**\n\n敌我识别会更舒服。\n\n---\n\n## 所以我建议怎么处理\n\n**不重画方向。**\n\n这张的造型、结构、动作、版式全部保留。\n\n只做一个：\n\n> **《尸将·前期精英单位 单体最终设定稿 V1.1｜Production Correction》**\n\n收紧下面 5 点：\n\n1. **甲胄覆盖减少约15%—20%**，增加尸体裸露区。\n2. **头部改为明显半护面 / 残盔**，让尸脸成为重要识别点。\n3. **重刃尺寸减少约10%—15%**，保持厚重但压住 Boss 感。\n4. **减少红色飘带和碎布约20%—30%**。\n5. 保持现有 silhouette、动作、体型、武器类型和整体结构**不变**。\n\n这样基本就可以正式锁定。\n\n目前这一版已经把第一批 5 只敌人的体系完整闭环了：\n\n> **普通尸祟——基础近战**  \n> **伏爬者——快速下段**  \n> **封印残尸——特殊近战**  \n> **瘴吐者——远程骚扰**  \n> **尸将——重型精英**\n\n所以从整个敌人生产线来看，**第一批敌人设计阶段其实已经可以宣布完成**。\n\n接下来最合理的步骤已经不是继续设计第六只敌人，而是开始把这五只往**真正可进 Godot 的资产规格**推进：先从普通尸祟开始做 **动作规格 / Sprite Sheet / 帧数规划 / Hitbox-Hurtbox / AI 状态机**，把完整制作链跑通一次。"
+        }
+      ]
+    },
+    {
+      "id": "7be16df7-e212-479d-9dfc-81f452e86f40",
+      "status": "completed",
+      "error": null,
+      "startedAt": 1789092491.688,
+      "completedAt": 1789092491.688,
+      "durationMs": null,
+      "items": [
+        {
+          "type": "userMessage",
+          "id": "7be16df7-e212-479d-9dfc-81f452e86f40",
+          "content": [
+            {
+              "type": "text",
+              "text": "[User attached 1 file; file contents were not included]\n\n[User attached 12 images; image contents were not included]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c303277d-a35f-4bfb-8c99-43488b133ec7",
+      "status": "completed",
+      "error": null,
+      "startedAt": 1789091878.312,
+      "completedAt": 1789091887.687723,
+      "durationMs": null,
+      "items": [
+        {
+          "type": "userMessage",
+          "id": "c303277d-a35f-4bfb-8c99-43488b133ec7",
+          "content": [
+            {
+              "type": "text",
+              "text": "完整 的《尸将·前期精英单位 单体最终设定稿》prompt"
+            }
+          ]
+        },
+        {
+          "type": "agentMessage",
+          "id": "d5b773fb-a55d-42c5-bdea-a6e82d488e64",
+          "text": "下面是可直接使用的完整 prompt：\n\n---\n\n请基于已确定的主角视觉体系、敌人生态总设定、尸祟阵营详细设定、尸祟第一批可实装敌人设定、普通尸祟 / 伏爬者 / 封印残尸 / 喷秽尸祟单体最终设定，以及整个项目世界观，制作一张高完成度、**偏标准化 / 规格化 / 制作导向** 的 **《尸将·前期精英单位 单体最终设定稿》**。\n\n如果提供参考图，请按以下方式使用：\n\n- **Image A**：主角三视图设定稿，作为整个项目角色风格、比例感、服装语言、世界观气质和基础配色的最高优先级参考。  \n- **Image B**：主角装备 / 法器设定稿 V1，作为东方道术元素、符箓、法器、旧化材质与废土道门气质的参考。  \n- **Image C**：主角装备最终规格表 V2，作为道术器物、符箓视觉、材质细节、配色统一性的标准参考。  \n- **Image D**：主角战斗姿态设定稿，作为横版动作游戏的动作阅读性、战斗节奏、姿态方向与攻击逻辑参考。  \n- **Image E**：主角表情 / 情绪 / 剧情状态设定稿，作为项目压抑、克制、废土叙事氛围的参考。  \n- **Image F**：敌人生态 / 阵营 / 怪物视觉体系总设定稿，作为尸祟阵营在整体敌人系统中的定位参考。  \n- **Image G**：尸祟 / 亡秽系 阵营详细设定稿，作为尸祟阵营内部共性、封印残痕、层级关系、材质语言和视觉母题的核心参考。  \n- **Image H**：尸祟阵营·第一批可实装敌人设定稿，作为“尸将·前期精英单位”这一单位的**最高优先级直接视觉来源**，锁定其重型近战定位、残甲结构、压迫轮廓与复杂度等级。  \n- **Image I**：普通尸祟·基础杂兵 单体最终设定稿，作为同阵营基础近战杂兵参考，用于确保尸将与其共享尸祟阵营材质语言，但在体量、甲胄、武器、节奏和威慑力上显著升级。  \n- **Image J**：匍匐尸祟·伏爬者 单体最终设定稿，作为同阵营低姿态快攻单位参考，用于确保尸将在轮廓、重心、动作语言和战斗节奏上与之完全区分。  \n- **Image K**：封印残尸·残法衣尸祟 单体最终设定稿，作为同阵营特殊近战 / 仪式压迫型单位参考，用于确保尸将与其在封印结构、法衣感与仪式感上有继承但不混淆。  \n- **Image L**：喷秽尸祟·瘴吐者 单体最终设定稿，作为同阵营远程 / 秽物喷吐型单位参考，用于确保尸将在功能定位、身体构成和战斗阅读性上形成清晰差异。  \n\n请严格延续 Image A—L 中已经建立起来的 **末日废土 + 东方道术** 世界观、美术风格、材质体系、配色逻辑与叙事气质。\n\n本图必须与此前所有设定稿属于**同一套游戏美术系统**。\n\n---\n\n# 一、项目定位\n\n这是一个 **2D 横版动作游戏** 中，尸祟 / 亡秽系的第五个基础可实装单位单体最终设定页。\n\n本次锁定对象：\n\n> **尸将·前期精英单位 / Undead Warrior Elite**\n\n它是尸祟阵营中的：\n\n**前期精英 / 重压型近战 / 小范围控场单位。**\n\n它不是 Boss，也不是后期大型怪，更不是普通披甲杂兵。\n\n它的核心职责是：\n\n-  作为前期关卡中第一次明显提升压迫感的精英敌人出现  \n-  让玩家意识到“尸祟体系中存在上位个体”  \n-  通过体型、残甲、重兵器和稳定推进形成强威胁  \n-  迫使玩家改变对普通尸祟的处理节奏  \n-  承担重击、压进、破防、逼位、逼闪避等作用  \n-  在尸祟群中形成“核心威慑个体”  \n-  让玩家第一眼就知道：这只不能按杂兵思路处理  \n\n它必须给玩家带来的第一感受是：\n\n> **“这不是一具普通尸体，这是一个被秽气和执念撑起来、披着残甲继续向前压过来的东西。”**\n\n---\n\n# 二、世界观定义\n\n尸将可以理解为：\n\n> **曾经拥有明确战斗身份的尸体——可能是守卫、武卒、护卫者、宗门护兵、祭场镇守者，或某种被武装约束的强体尸骸——在灾变后被秽气、执念和残余封镇痕迹重新驱动，成为尸祟阵营中的上位战斗个体。**\n\n它与普通尸祟的区别不只是“更强壮”。\n\n而是：\n\n> **它身上仍然保留着战斗身份的遗迹：残破甲胄、重型武器、加厚防护结构、被旧秩序武装过的痕迹。**\n\n它同时必须表现出：\n\n-  尸体  \n-  战斗单位  \n-  披甲残骸  \n-  被秽气撑起的沉重身体  \n-  上位尸祟的压迫感  \n-  废土中秩序崩坏后的暴力残留  \n\n它不是活着的战士，也不是将军人格复活。\n\n它更像是：\n\n> **一具忘记死亡、只剩“向前压杀”本能的重型尸体。**\n\n---\n\n# 三、核心视觉方向\n\n请将这个敌人的整体视觉正式锁定为：\n\n> **重、稳、压、砸、残甲、重兵**\n\n六个关键词。\n\n它必须与前四个尸祟 silhouette 明显不同。\n\n### 普通尸祟\n偏歪、塌、扑、基础。\n\n### 伏爬者\n偏低、横、快、贴地。\n\n### 封印残尸\n偏高、直、静、封。\n\n### 瘴吐者\n偏鼓、脏、喷、膨胀。\n\n### 尸将\n则必须：\n\n> **偏高大、偏厚重、肩宽、持重兵器、残甲包裹、缓慢压进。**\n\n即使涂成纯黑 silhouette，也要一眼区分：\n\n> **“这是重型精英。”**\n\n---\n\n# 四、美术风格要求\n\n请保持项目统一视觉：\n\n-  手绘漫画感  \n-  粗线条  \n-  大色块  \n-  强轮廓  \n-  略带水墨脏感  \n-  废土旧化质感  \n-  阴暗压抑  \n-  但必须保持横版游戏中的轮廓清晰和攻击阅读性  \n\n尸将的配色建议以：\n\n- **焦黑**  \n- **尸白**  \n- **枯褐**  \n- **灰绿**  \n- **旧血暗红**  \n- **暗铁锈红**  \n- **旧甲土黄 / 脏黄**  \n- **少量符纸黄**  \n\n为主。\n\n与前四只相比，它可以：\n\n-  增加黑铁、锈甲、旧皮革的面积  \n-  增加厚重深色块  \n-  减少大面积明亮黄符  \n-  保留少量道术残痕作为世界观连接  \n-  通过残甲与武器形成明显“重”的视觉重量感  \n\n核心原则：\n\n> **视觉重点是“重型尸体 + 残甲 + 重兵器”，不是“炫目的法术怪”。**\n\n---\n\n# 五、最终身体比例锁定\n\n请将尸将设计为：\n\n-  原生身高约 **1.9—2.1m**  \n-  游戏视觉高度建议约 **2.0—2.3m**  \n-  比主角显著更高、更厚、更重  \n-  肩宽明显大于普通尸祟  \n-  胸腔、肩背、上臂更厚实  \n-  腿部必须有稳定承重感  \n-  手臂可以略长，但不能像伏爬者那样夸张  \n-  脊柱不驼得太厉害，但可以略前压  \n-  头部相对身体略小，以强化体型压迫感  \n-  整体重心低而稳，不要虚浮  \n\n它的整体比例应呈现：\n\n> **“一具被厚重残甲和秽气撑起来的重装尸体。”**\n\n请避免：\n\n-  过度巨人化  \n-  过于魁梧到接近 Boss  \n-  太像活人武将  \n-  太像西式重甲骑士  \n-  太像健壮人类敌兵  \n\n---\n\n# 六、头部设计\n\n头部必须具有明确的“尸将”识别性。\n\n建议锁定方向：\n\n-  头部仍保留人形尸骸基础  \n-  面部可部分暴露、部分被残甲或护面遮挡  \n-  眼神浑浊、空洞、无生气  \n-  可以有单侧破损面甲、护额、铁片或残盔结构  \n-  不要出现完整华丽头盔  \n-  不要出现活人的锐利表情  \n-  不要做成骷髅骑士或恶魔盔甲  \n\n最重要的头部印象应是：\n\n> **“这是被武装过的死者。”**\n\n可锁定一个固定识别锚点：\n\n- **一块破损护额 / 面甲残片**  \n  或  \n- **一侧脸暴露腐败尸肉，另一侧保留残破护面**  \n\n如果加入符痕，请控制为：\n\n-  一小张旧符纸  \n-  或额侧一处烧灼封痕  \n-  不要满脸贴符  \n\n---\n\n# 七、残甲系统设计\n\n这是本单位最核心的视觉升级点之一。\n\n尸将必须明显拥有：\n\n> **比普通尸祟更完整、更厚重、更具防护感的“残甲结构”。**\n\n建议由以下部分构成：\n\n### 1）肩甲\n- 可采用 **单侧更大、另一侧较小** 的不对称结构  \n- 边缘崩裂、锈蚀、缺口明显  \n- 形成强肩部轮廓  \n\n### 2）胸甲 / 护胸片\n- 破损但仍有完整形状感  \n- 可以保留旧时代武装痕迹  \n- 中心可附着一处封镇残痕或旧血污痕  \n\n### 3）腰部防护\n- 残布、甲片、旧皮带、绑绳组合  \n- 要有承重和束缚感  \n- 不要太繁复  \n\n### 4）臂甲 / 护臂\n- 一侧更重，一侧更裸露会更有层次  \n- 手部必须保留清楚轮廓，不能被甲片糊住  \n\n### 5）腿部护片 / 胫甲\n- 不需要满配  \n- 只要提供稳定承重和下盘厚重感  \n- 可以偏旧布绑腿 + 局部甲片  \n\n这些残甲必须看上去：\n\n> **不是装饰，而是曾经真实用于战斗的装备残骸。**\n\n---\n\n# 八、武器系统（极其重要）\n\n尸将必须持有一件明确的、读图清楚的：\n\n> **重型近战兵器。**\n\n推荐锁定为：\n\n## **尸将重刃 / Heavy Cleaver Blade**\n\n武器方向建议：\n\n-  宽厚  \n-  沉重  \n-  刀背厚  \n-  刃口残缺  \n-  可斩可砸  \n-  柄部较长但不是长柄武器  \n-  适合横扫与下砸  \n-  可拖地、可单手提、可双手发力  \n\n它不应是：\n\n-  主角那种精致道剑  \n-  法器  \n-  长枪  \n-  巨斧  \n-  西式大锤  \n-  精美武将刀  \n-  满符咒的神兵  \n\n它应该更像：\n\n> **一把被秽气与血垢侵蚀、沉重又粗暴的旧战斗兵器。**\n\n它必须在小尺寸下依然能看出：\n\n-  武器主体  \n-  挥击方向  \n-  重击范围  \n-  与身体的持握关系  \n\n---\n\n# 九、道术残痕与阵营联系\n\n虽然尸将以残甲和武器为主，但它仍然属于尸祟体系。\n\n因此请保留少量但明确的道术 / 封镇残痕，用于与项目世界观连接。\n\n建议保留：\n\n-  **胸口或甲片上的一处封痕 / 烧灼印**  \n-  **腰间一段暗红旧绳 / 束缚带**  \n-  **武器柄部或腰侧一张残破旧符纸**  \n-  **肩部或背部一处焦痕**  \n\n请严格控制数量。\n\n原则是：\n\n> **尸将的“设计核心”是重型战斗尸体，不是法术视觉堆砌。**\n\n---\n\n# 十、必须包含的标准展示\n\n整张设定页必须包含以下主要模块。\n\n## 1）标准 Final Model\n\n一张尺寸最大的完整全身展示。\n\n要求：\n\n-  完整全身  \n-  站姿稳重  \n-  武器与身体关系清楚  \n-  肩宽、胸厚、下盘稳定  \n-  残甲结构清楚  \n-  不要使用全力攻击瞬间做主展示  \n-  要能作为后续所有图的标准母版  \n\n主展示图应给人的感受是：\n\n> **“它只是站着，你就知道不能硬吃它的攻击。”**\n\n---\n\n## 2）标准三视图 / Turnaround\n\n必须展示：\n\n-  Front View  \n-  Side View  \n-  Back View  \n\n重点锁定：\n\n-  头部残甲位置  \n-  肩甲大小关系  \n-  胸甲破损逻辑  \n-  腰间束缚结构  \n-  武器尺寸比例  \n-  后背甲片 / 背部破损  \n-  腿部承重关系  \n-  衣甲残破区域  \n-  符纸与封痕固定位置  \n\n三视图必须尽量保持：\n\n> **同一个实体、同一套装备、同一套锚点。**\n\n不要每个角度都重新设计。\n\n---\n\n# 十一、横版标准侧视图（极其重要）\n\n请加入一张尺寸较大的：\n\n> **2D Side-Scroller Standard Side View**\n\n要求：\n\n-  默认朝右  \n-  尽量接近真实游戏侧视  \n-  不要使用过强透视  \n-  身体前压但保持稳定  \n-  武器、肩部、头部、背部、腿部轮廓明确  \n-  攻击重心与站立重心容易理解  \n-  方便未来做横版 Sprite / 动画  \n\n理想侧视印象是：\n\n> **头略前压 → 厚肩 → 武器沉坠 → 胸腔前顶 → 腿部重压地面。**\n\n玩家应一眼判断：\n\n> **“这家伙会往前压，会重砸，会把我逼退。”**\n\n---\n\n# 十二、体型定位与敌群层级对比\n\n请加入：\n\n> **主角 vs 普通尸祟 vs 伏爬者 vs 封印残尸 vs 瘴吐者 vs 尸将**\n\n的简洁体型 / silhouette 对比。\n\n建议关系：\n\n-  主角约 **1.8m**  \n-  普通尸祟约 **1.55—1.6m视觉高度**  \n-  伏爬者约 **0.8—1.0m视觉高度**  \n-  封印残尸约 **1.7—1.8m**  \n-  瘴吐者约 **1.7m左右**，但更鼓胀外扩  \n-  尸将约 **2.0—2.3m**，最厚、最重、最压迫  \n\n目的：\n\n-  强调尸将是这一批敌人里的精英上位单位  \n-  让玩家在体型上直接理解威胁升级  \n-  让其与 Boss 保持差距，但已明显高于普通敌人  \n\n---\n\n# 十三、基础动作语言\n\n尸将的动作必须和前四只明显不同。\n\n其核心应该是：\n\n> **稳、压、蓄、砸、扫、顶**\n\n而不是：\n\n-  快扑  \n-  乱抓  \n-  贴地突袭  \n-  仪式封印动画  \n-  喷吐攻击  \n\n请展示 **6 个关键动作 Pose**。\n\n## A. Idle / Heavy Guard\n标准待机。\n\n要求：\n\n-  重心下沉  \n-  武器有重量感  \n-  头微低或前压  \n-  身体几乎不乱晃  \n-  表现“随时压上来”的稳定感  \n\n---\n\n## B. Advance / Pressure Walk\n缓慢压近。\n\n要求：\n\n-  步伐沉重  \n-  身体向前推进  \n-  武器可拖地或下垂  \n-  形成很强的推进压迫感  \n-  与普通尸祟的摇晃前行明显不同  \n\n核心感受：\n\n> **每一步都像在挤压玩家的空间。**\n\n---\n\n## C. Wind-up / Raise Weapon\n攻击前摇。\n\n要求：\n\n-  武器被缓慢提起或后拉  \n-  肩背发力清楚  \n-  重心转换清楚  \n-  玩家一眼能读懂“重击要来了”  \n\n这个姿态非常重要，因为它会决定战斗公平性与识别性。\n\n---\n\n## D. Overhead Smash / Heavy Slam\n核心攻击动作之一。\n\n要求：\n\n-  双手或主力手持重刃下砸  \n-  下砸方向极其清楚  \n-  身体重量跟着砸下  \n-  可以带一点向前压步  \n-  动作幅度大、重量足、落点诚实  \n\n视觉感受应是：\n\n> **“重、狠、落地有压迫。”**\n\n---\n\n## E. Horizontal Sweep / Wide Cleave\n核心攻击动作之二。\n\n要求：\n\n-  横向大范围挥扫  \n-  武器轨迹清楚  \n-  上半身旋转但不能太灵活  \n-  体现尸将在近距离的范围压制能力  \n\n重点是：\n\n> **大范围、慢半拍、但一旦扫到就很危险。**\n\n---\n\n## F. Hit Reaction / Heavy Stagger\n受击反应。\n\n要求：\n\n-  身体轻微后仰或侧偏  \n-  重兵器与甲片产生明显惯性  \n-  不要像轻型敌人那样夸张翻滚  \n-  表现它“会被打停，但不会轻易倒”  \n\n---\n\n## 可选补充动作：Guard Break / Shoulder Check / Collapse\n如版面允许，可加入一个补充姿态：\n\n### 1）Guard / Brace\n短暂格挡或顶住冲击。\n\n或\n\n### 2）Shoulder Crush / Body Check\n带身体重量的顶撞压步。\n\n或\n\n### 3）Collapse\n精英死亡 / 崩倒参考方向。\n\n如果加入，请确保不抢核心动作版面。\n\n---\n\n# 十四、攻击节奏与功能定位可视化\n\n虽然本页不是战斗数值说明图，但请通过动作与排版暗示尸将的玩法定位：\n\n-  慢于普通尸祟  \n-  远慢于伏爬者  \n-  近战压迫强  \n-  重击覆盖大  \n-  存在明显前摇  \n-  有强威慑和逼位能力  \n-  更偏“压场精英”而不是连段型敌人  \n\n玩家从图中应感受到：\n\n> **“它不是来堆数量的，而是来改变场上节奏的。”**\n\n---\n\n# 十五、局部细节锁定区\n\n请加入 **Detail Close-ups**。\n\n建议包含以下重点：\n\n## 1）头部 / 面部 / 残盔\n展示：\n\n-  面部尸骸  \n-  护额 / 面甲残片  \n-  腐败皮肤  \n-  锈蚀边缘  \n-  空洞眼神  \n\n---\n\n## 2）肩甲 / 胸甲\n展示：\n\n-  破损甲片  \n-  金属锈蚀  \n-  固定方式  \n-  与尸体 / 布料的关系  \n-  一处封痕或旧血污迹  \n\n---\n\n## 3）武器头部 / 刃口\n展示：\n\n-  刃口崩损  \n-  厚重感  \n-  血垢 / 污渍  \n-  旧金属质感  \n-  重击型武器特征  \n\n---\n\n## 4）柄部 / 握把 / 束带\n展示：\n\n-  握把缠带  \n-  暗红绳  \n-  磨损  \n-  手与武器的抓握关系  \n\n---\n\n## 5）腰部结构\n展示：\n\n-  束缚绳  \n-  甲片 / 布片  \n-  重心支撑关系  \n-  小符纸或封痕残留  \n\n---\n\n## 6）腿部 / 承重结构\n展示：\n\n-  绑腿 / 胫甲  \n-  踏地稳定感  \n-  腿部尸肉与护具关系  \n-  适合重型推进的结构逻辑  \n\n---\n\n# 十六、固定视觉锚点\n\n为了防止后续生图漂移，请锁定以下设计锚点：\n\n1. **一块明确的头部残护甲 / 护额 / 面甲残片**  \n2. **单侧更大的肩甲（建议左肩或右肩固定）**  \n3. **胸口一处明显破损甲片 + 封痕 / 血污**  \n4. **腰间一组暗红旧绳 / 束缚结构**  \n5. **一把固定造型的尸将重刃**  \n6. **一侧手臂较裸露、可见尸肉或旧护臂残骸**  \n7. **背部一处焦痕 / 旧封镇烧灼痕**  \n8. **下摆 / 腰甲破损结构固定**  \n9. **局部旧血红作为精英识别点之一**  \n\n以后所有姿态、Sprite、宣传图都应尽量保持这些锚点一致。\n\n---\n\n# 十七、与前四只尸祟的强制区别\n\n这部分非常重要。\n\n### 普通尸祟\n- 人形杂兵  \n- 驼背  \n- 扑抓  \n- 基础尸体感  \n\n### 伏爬者\n- 极低重心  \n- 四肢爬行  \n- 快速突扑  \n\n### 封印残尸\n- 高、直、静  \n- 残法衣  \n- 封印感强  \n\n### 瘴吐者\n- 腹腔鼓胀  \n- 喷吐秽物  \n- 远程威胁  \n\n### 尸将\n必须是：\n\n- **更高更厚**  \n- **更重更稳**  \n- **有残甲**  \n- **持重兵器**  \n- **推进式压迫**  \n- **近战精英**  \n- **动作前摇清楚但打击沉重**  \n\n即使全部变成纯黑 silhouette：\n\n> **也必须第一眼识别出“这是那只精英重装尸祟”。**\n\n---\n\n# 十八、与废土人类势力的强制区别\n\n尸将不能做得像活着的废土战士或掠夺者。\n\n请严格确保：\n\n-  没有清晰的人类理智表情  \n-  没有干净完整装备  \n-  没有整洁战术穿搭  \n-  没有现代武装感  \n-  没有“活人拿着大刀”的即视感  \n\n它必须看上去：\n\n> **是尸体在穿着残甲前进。**\n\n而不是：\n\n> **活着的人在扮演尸体。**\n\n---\n\n# 十九、与 Boss 的强制区别\n\n尸将虽然是精英，但必须**不是 Boss**。\n\n请避免：\n\n-  过高过大  \n-  大量背部装置  \n-  巨大旗帜  \n-  多重武器  \n-  夸张特效  \n-  华丽冠冕  \n-  巨型异化结构  \n-  仪式性过强的场面感  \n-  大范围非公平攻击暗示  \n\n核心原则：\n\n> **它是前期精英，不是关底首领。**\n\n---\n\n# 二十、Silhouette Study\n\n请加入至少 **5 个纯黑 / 单色轮廓**：\n\n-  Idle  \n-  Advance  \n-  Wind-up  \n-  Overhead Smash  \n-  Horizontal Sweep  \n\n如果有空间，可补充：\n\n-  Heavy Guard  \n-  Hit Reaction  \n\n要求：\n\n-  只靠轮廓就能判断这是重型近战单位  \n-  头部、肩甲、武器、腿部是主要阅读点  \n-  不依赖颜色才能识别  \n-  适合横版动作游戏的快速战斗识别  \n\n---\n\n# 二十一、150px 游戏可读性测试\n\n请加入：\n\n> **Readability @ Game Scale**\n\n由于主角在游戏内约 **150px 高**，请按真实比例展示尸将在同视角中的缩小效果。\n\n建议展示：\n\n-  150px 级别  \n-  100px  \n-  75px  \n-  50px  \n\n重点检查：\n\n-  肩甲轮廓是否清楚  \n-  武器是否可识别  \n-  头部残护甲是否仍可读  \n-  与普通尸祟是否明显不同  \n-  重击动作方向是否容易理解  \n\n在小尺寸下：\n\n> 不要求细节文字可读，  \n> 但必须要求：**轮廓与武器识别清楚。**\n\n---\n\n# 二十二、攻击判定视觉预留\n\n虽然本页不是正式 Hitbox 表，但设计时请为未来攻击判定预留清晰结构。\n\n### 普通攻击\n攻击区域主要来自：\n\n-  武器刃部  \n-  武器挥扫轨迹  \n-  下砸落点  \n\n### 身体压迫\n部分威胁也来自：\n\n-  肩部前顶  \n-  上半身压近  \n-  武器带来的占位威慑  \n\n请避免：\n\n-  过长布片造成假攻击范围  \n-  大量装饰遮挡武器轮廓  \n-  攻击方向不诚实  \n-  武器形状在不同姿态中明显漂移  \n\n---\n\n# 二十三、动画拆分友好性\n\n请保证整体结构适合未来做 2D Sprite 或骨骼动画拆分。\n\n建议在视觉结构上明确保留：\n\n-  Head  \n-  Neck  \n-  Chest / Torso  \n-  Pelvis  \n-  Left Upper Arm / Forearm / Hand  \n-  Right Upper Arm / Forearm / Hand  \n-  Left Leg / Right Leg  \n-  Main Shoulder Armor  \n-  Secondary Armor Pieces  \n-  Weapon  \n-  Waist Cloth / Waist Armor  \n-  Rope / Talisman Remnant  \n\n不要画成技术 rig 图，但要确保：\n\n> **主要部件关系清晰、可拆、可动、可动画。**\n\n---\n\n# 二十四、色彩与材质规范\n\n请加入标准色板：\n\n-  Charcoal Black  \n-  Corpse White  \n-  Gray Green  \n-  Withered Brown  \n-  Rusted Iron Red  \n-  Old Blood Red  \n-  Dirty Ochre / Armor Yellow-Brown  \n-  Talisman Yellow（少量）  \n-  Dust Gray  \n\n材质提示：\n\n-  锈蚀铁甲  \n-  旧皮革  \n-  破布  \n-  干裂尸皮  \n-  血污  \n-  焦痕  \n-  旧绳  \n-  甲片磨损  \n-  武器崩口  \n-  灰尘与污迹  \n\n整体色彩应比封印残尸：\n\n> **更黑、更重、更偏金属与腐败甲胄感。**\n\n但仍然必须服从整个项目的旧纸、旧甲、脏灰、暗红体系。\n\n---\n\n# 二十五、复杂度控制\n\n尸将虽然是精英，但仍属于：\n\n> **前期可实装敌人。**\n\n请严格控制复杂度：\n\n-  武器：**1 把**  \n-  主体残甲：**1 套核心轮廓**  \n-  肩甲：**1 大 1 小或 1 明显主肩甲**  \n-  符纸：**最多 1—2 处**  \n-  绳带：**1—2 组主要结构**  \n-  无大旗  \n-  无盾牌  \n-  无多武器  \n-  无巨型背部结构  \n-  无大量特效  \n-  无过度异变肢体  \n-  无大范围法术表现  \n\n它的强感受应主要来自：\n\n> **体量、武器、残甲、动作重量。**\n\n而不是装饰堆砌。\n\n---\n\n# 二十六、严格避免\n\n请严格避免：\n\n-  活人武将感  \n-  精致古代将军盔甲  \n-  西式重骑士  \n-  骷髅骑士  \n-  Boss 化  \n-  巨型化  \n-  过多符纸  \n-  满身法器  \n-  过度法术特效  \n-  太多披风 / 飘带  \n-  武器过长过复杂  \n-  多武器  \n-  高机动动作过多  \n-  与废土掠夺者混淆  \n-  与主角武装风格混淆  \n-  与封印残尸混成“直立法衣怪”  \n-  与普通尸祟混成“大号杂兵”  \n-  与尸王 / Boss 级体量混淆  \n-  视图间武器或甲片位置漂移  \n-  甲片过花，轮廓过脏，影响游戏阅读  \n\n---\n\n# 二十七、最终输出目标\n\n最终输出一整张完整的：\n\n# **《尸将·前期精英单位 单体最终设定稿》**\n\n英文副标题可使用：\n\n> **UNDEAD WARRIOR ELITE — FINAL ENEMY MODEL SHEET**\n\n整体效果应像真正用于游戏开发的：\n\n> **Production Reference Sheet / Enemy Model Final Sheet**\n\n并正式锁定：\n\n-  最终身体比例  \n-  精英体量  \n-  残甲系统  \n-  头部残护甲  \n-  主肩甲结构  \n-  胸甲破损逻辑  \n-  腰部束缚结构  \n-  尸将重刃  \n-  Front / Side / Back  \n-  标准横版侧视  \n-  Idle  \n-  Advance  \n-  Wind-up  \n-  Overhead Smash  \n-  Horizontal Sweep  \n-  Hit Reaction  \n-  可选 Guard / Collapse  \n-  Silhouette  \n-  与前四只尸祟的明确体型差异  \n-  150px 游戏可读性  \n-  色彩与材质规范  \n\n整体设计原则必须始终遵循：\n\n> **重 > 轻**  \n> **稳 > 乱**  \n> **压 > 扑**  \n> **砸 > 技**  \n> **轮廓识别 > 装饰数量**  \n> **战斗诚实性 > 概念炫技**  \n> **前期精英 > Boss 化错位**\n\n最终必须让玩家即使只看到一个小小的黑色轮廓、厚重肩线和一把下垂的重刃，也能立刻理解：\n\n> **“这不是杂兵，这是尸祟里的精英，不能硬顶。”**\n\n---\n\n如果你要，我下一条还能继续直接给你整理出一版 **更适合当前图生图模型的“精简执行版 prompt”**，就是把上面这份长 prompt 压缩成一版更利于稳定出图的版本。"
+        }
+      ]
+    },
+    {
+      "id": "6aa877c3-68b9-47f1-9835-1d90f6bf148b",
+      "status": "completed",
+      "error": null,
+      "startedAt": 1789091834.333,
+      "completedAt": 1789091852.13574,
+      "durationMs": null,
+      "items": [
+        {
+          "type": "userMessage",
+          "id": "6aa877c3-68b9-47f1-9835-1d90f6bf148b",
+          "content": [
+            {
+              "type": "text",
+              "text": "下一个敌人单体 是？"
+            }
+          ]
+        },
+        {
+          "type": "agentMessage",
+          "id": "ade9db11-ff6e-4945-88a6-295999de5f6b",
+          "text": "下一个就是这批 5 个可实装敌人里的第 5 个：\n\n**《尸将·前期精英单位 单体最终设定稿》**  \n英文可以用：**UNDEAD WARRIOR ELITE — FINAL ENEMY MODEL SHEET**\n\n它正好接在：\n\n**普通尸祟 → 伏爬者 → 封印残尸 → 瘴吐者 → 尸将**\n\n后面。\n\n这只的定位会和前四只明显不一样：**前期精英 / 重压型近战单位**，不是 Boss，但要第一次让玩家明显感觉到“尸祟里也有上位个体”。\n\n它的核心方向我建议锁成：**重、稳、压、砸、残甲**。体型比主角明显更厚重，带残破甲片和大面积秽气侵蚀，可以使用一件非常粗粝的重击物，比如残门板、断碑、厚重破铁器，但不能做得像正式武将或 Boss。\n\n这个单体页重点就应该锁：\n**最终造型 + 三视图 + 横版侧视 + 重型待机 + 缓慢压近 + 重砸 + 横扫/推撞 + 受击硬直 + silhouette + 150px可读性 + 主角/前四只敌人的体型对比 + 武器/重击部位拆解**。\n\n而且这张很关键，因为它会是**第一批敌人里“杂兵体系到精英体系”的分界点**。\n\n你要的话，我下一条就直接给你完整的 **《尸将·前期精英单位 单体最终设定稿》prompt**。"
+        }
+      ]
+    }
+  ],
+  "attachments": [
+    {
+      "name": "a70ed1b1-7b93-4f13-b777-c3c098d76920.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-V7hRRn/a70ed1b1-7b93-4f13-b777-c3c098d76920.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/10_喷秽尸祟_瘴吐者_单体最终设定稿_a70ed1b1-7b93-4f13-b777-c3c098d76920.png",
+      "sheetTitle": "喷秽尸祟·瘴吐者 单体最终设定稿 (Taint Spitter — Final Enemy Model Sheet)",
+      "repoPath": "concept_art/10_taint_spitter_sheet.png",
+      "titleCN": "喷秽尸祟·瘴吐者 单体最终设定稿",
+      "titleEN": "Taint Spitter — Final Enemy Model Sheet V1.0"
+    },
+    {
+      "name": "6afe53eb-b0f8-48ed-ad66-54698fc6ac31.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-j4lnid/6afe53eb-b0f8-48ed-ad66-54698fc6ac31.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/09_封印残尸_残法衣尸祟_单体最终设定稿_6afe53eb-b0f8-48ed-ad66-54698fc6ac31.png",
+      "sheetTitle": "封印残尸·残法衣尸祟 单体最终设定稿 (Talisman-Bound Husk — Final Enemy Model Sheet)",
+      "repoPath": "concept_art/09_talisman_bound_husk_sheet.png",
+      "titleCN": "封印残尸·残法衣尸祟 单体最终设定稿",
+      "titleEN": "Talisman-Bound Husk — Final Enemy Model Sheet V1.0"
+    },
+    {
+      "name": "65d71250-d453-4c0e-9a68-28802b1dff48.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-pej1Jg/65d71250-d453-4c0e-9a68-28802b1dff48.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/08_匍匐尸祟_伏爬者_单体最终设定稿_65d71250-d453-4c0e-9a68-28802b1dff48.png",
+      "sheetTitle": "匍匐尸祟·伏爬者 单体最终设定稿 (Crawler / Low-Profile Undead — Final Enemy Model Sheet)",
+      "repoPath": "concept_art/08_crawler_sheet.png",
+      "titleCN": "匍匐尸祟·伏爬者 单体最终设定稿",
+      "titleEN": "Crawler — Final Enemy Model Sheet V1.0"
+    },
+    {
+      "name": "e38b407b-baf8-4129-89b0-b1cb43e66d1b.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-xoK4LR/e38b407b-baf8-4129-89b0-b1cb43e66d1b.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/07_普通尸祟_单体最终设定稿_e38b407b-baf8-4129-89b0-b1cb43e66d1b.png",
+      "sheetTitle": "普通尸祟·单体最终设定稿 (Common Undead — Final Enemy Model Sheet)",
+      "repoPath": "concept_art/07_common_undead_grunt_sheet.png",
+      "titleCN": "普通尸祟·基础杂兵 单体最终设定稿",
+      "titleEN": "Common Undead Grunt — Final Model Sheet V1.0"
+    },
+    {
+      "name": "d9b67c1f-0718-4442-8cdd-367c3454e337.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-pzYSxg/d9b67c1f-0718-4442-8cdd-367c3454e337.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/06_尸祟亡秽系_第一批可实装敌人设定_d9b67c1f-0718-4442-8cdd-367c3454e337.png",
+      "sheetTitle": "尸祟·亡秽系 第一批可实装敌人设定 (First-Wave Enemies Concept Sheet)",
+      "repoPath": "concept_art/06_corpse_tainted_first_wave_sheet.png",
+      "titleCN": "尸祟阵营·第一批可实装敌人设定稿",
+      "titleEN": "First-Wave Production Enemy Sheet"
+    },
+    {
+      "name": "087f5e6a-bf34-452c-b42c-583d8baf1e1b.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-Iyp65W/087f5e6a-bf34-452c-b42c-583d8baf1e1b.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/05_道行者_尸祟亡秽系详细设定_087f5e6a-bf34-452c-b42c-583d8baf1e1b.png",
+      "sheetTitle": "道行者·尸祟·亡秽系详细设定 (Corpse-Tainted / Undead Faction Overview)",
+      "repoPath": "concept_art/05_corpse_tainted_faction_overview.png",
+      "titleCN": "尸祟/亡秽系·阵营总览详细设定",
+      "titleEN": "The Undead Tainted — Faction Overview"
+    },
+    {
+      "name": "fcd3b2a7-2ff3-45a2-b03b-90ef3cdf44e6.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-TcpW0v/fcd3b2a7-2ff3-45a2-b03b-90ef3cdf44e6.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/04_道行者_敌人生态总设定_fcd3b2a7-2ff3-45a2-b03b-90ef3cdf44e6.png",
+      "sheetTitle": "道行者·敌人生态总设定 (Enemy Ecosystem Overview)",
+      "repoPath": "concept_art/04_enemy_ecosystem_overview.png",
+      "titleCN": "敌人生态·阵营/怪物/世界观体系设定",
+      "titleEN": "Enemy Ecosystem Overview"
+    },
+    {
+      "name": "cb54547c-dd6d-42a0-bc89-edc2a5ce281d.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-PMB8ly/cb54547c-dd6d-42a0-bc89-edc2a5ce281d.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/03_道行者_表情与状态氛围设定_cb54547c-dd6d-42a0-bc89-edc2a5ce281d.png",
+      "sheetTitle": "道行者·表情与状态氛围设定",
+      "repoPath": "concept_art/03_protagonist_expressions_mood.png",
+      "titleCN": "道行者·角色表情与情绪设定资料集",
+      "titleEN": "Taoist Wanderer — Character Expression & Mood Concept Sheet"
+    },
+    {
+      "name": "e42d41f5-3d61-444c-ad4b-2b05013ef000.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-i8uhS3/e42d41f5-3d61-444c-ad4b-2b05013ef000.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/02_道行者_战斗动作设定_e42d41f5-3d61-444c-ad4b-2b05013ef000.png",
+      "sheetTitle": "道行者·战斗动作设定 (V1)",
+      "repoPath": "concept_art/02_protagonist_combat_poses_v1.png",
+      "titleCN": "道行者·战斗姿态设定稿 V1.0",
+      "titleEN": "Taoist Wanderer — Combat Pose Design V1.0"
+    },
+    {
+      "name": "598f3302-14b8-4e04-a462-a0730df47598.png",
+      "path": "/var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/codex-file-preview-6EeMPJ/598f3302-14b8-4e04-a462-a0730df47598.png",
+      "savedPath": "/Volumes/AI-SSD/beta/mtdm/images/01_道行者_法器与装备拆解_598f3302-14b8-4e04-a462-a0730df47598.png",
+      "sheetTitle": "道行者·法器与装备拆解 (V2 优化版)",
+      "repoPath": "concept_art/01_protagonist_equipment_v2.png",
+      "titleCN": "道行者·最终装备设定资料集 V2",
+      "titleEN": "Taoist Wanderer — Final Equipment Specification Sheet V2"
+    }
+  ]
+}

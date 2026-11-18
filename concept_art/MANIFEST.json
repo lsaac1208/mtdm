@@ -1,0 +1,254 @@
+{
+  "project": "道行者 / Taoist Wanderer",
+  "code": "mtdm",
+  "genre": "2D Side-Scrolling Action Game (2D 横版动作游戏)",
+  "core_theme": "末日废土 + 东方道术 (Post-Apocalyptic Wasteland + Eastern Taoist Sorcery)",
+  "baseline_scale": {
+    "protagonist_height_m": 1.8,
+    "protagonist_height_px": 150,
+    "readability_tiers_px": [
+      150,
+      100,
+      75,
+      50
+    ]
+  },
+  "concept_sheets": [
+    {
+      "index": 1,
+      "file": "concept_art/01_protagonist_equipment_v2.png",
+      "original_uuid_file": "598f3302-14b8-4e04-a462-a0730df47598.png",
+      "title_cn": "道行者·最终装备设定资料集 V2",
+      "title_en": "Taoist Wanderer — Final Equipment Specification Sheet V2",
+      "category": "protagonist",
+      "resolution": [
+        1448,
+        1086
+      ],
+      "modules": [
+        "01 道剑 (Taoist Sword: 全装/出鞘/剑鞘 + 握柄缠绳/护手细节/刀身纹路/剑鞘磨损)",
+        "02 阴阳葫芦 (Yin-Yang Gourd: 主视图/侧视图/阴阳纹细节/葫芦塞与绳结)",
+        "03 念珠 (Prayer Beads: 整体视图/珠子细节/金属环饰/流苏结构)",
+        "04 腰间符箓 (Talisman Set: 标准符箓正面与侧面/纸张质感/符文细节)",
+        "05 八卦护符 (Bagua Amulet: 正面/侧面/背面 + 八卦纹细节/铜钱细节)",
+        "装备穿着位置三视图 (Equipment Placement: 正面/侧面/背面)",
+        "腰部装备位置详图 (Waist Equipment Detail)",
+        "重点细节放大 (Key Detail Close-ups)",
+        "标准使用状态参考 (Usage States: 拔剑/抛符/饮葫芦/念珠作法)",
+        "装备配色 (Equipment Color Palette: 土黄/炭黑/朱红/深棕/灰绿/符纸白/铜金)"
+      ]
+    },
+    {
+      "index": 2,
+      "file": "concept_art/02_protagonist_combat_poses_v1.png",
+      "original_uuid_file": "e42d41f5-3d61-444c-ad4b-2b05013ef000.png",
+      "title_cn": "道行者·战斗姿态设定稿 V1.0",
+      "title_en": "Taoist Wanderer — Combat Pose Design V1.0",
+      "category": "protagonist",
+      "resolution": [
+        1536,
+        1024
+      ],
+      "modules": [
+        "01 战斗站姿 (Ready Stance)",
+        "02 拔剑 (Draw Sword)",
+        "03 横斩 (Horizontal Slash)",
+        "04 下劈 (Down Slash)",
+        "05 突刺 (Thrust)",
+        "06 冲刺斩 (Dash Attack)",
+        "07 跳跃攻击 (Jump Attack)",
+        "08 符箓攻击 (Talisman Casting)",
+        "09 阴阳葫芦 (Gourd Skill)",
+        "10 念珠施法 (Prayer Beads - 双阶段)",
+        "11 防御/格挡 (Defense)",
+        "12 受击 (Hit Reaction)",
+        "13 收势/落地 (Recovery)",
+        "动作轮廓参考 (Silhouette Study)",
+        "表情/战斗神态参考 (Expression Reference)",
+        "动作细节 (Action Detail: 脚部重心/飘带动态/袖摆动态)",
+        "法术元素表现 (Effect Elements: 符箓轨迹/葫芦气劲/念珠法阵/剑气轨迹)",
+        "配色参考 (Color Palette)"
+      ]
+    },
+    {
+      "index": 3,
+      "file": "concept_art/03_protagonist_expressions_mood.png",
+      "original_uuid_file": "cb54547c-dd6d-42a0-bc89-edc2a5ce281d.png",
+      "title_cn": "道行者·角色表情与情绪设定资料集",
+      "title_en": "Taoist Wanderer — Character Expression & Mood Concept Sheet",
+      "category": "protagonist",
+      "resolution": [
+        1448,
+        1086
+      ],
+      "modules": [
+        "表情集 10 组 (01 平常冷静 / 02 警惕戒备 / 03 压抑之怒 / 04 专注施法 / 05 忍痛承受 / 06 疲惫喘息 / 07 冷淡疏离 / 08 短暂惊觉 / 09 隐忍的悲伤 / 10 坚定前行)",
+        "眼睛细节与眉口型参考 (Eye Study & Brow/Mouth Reference)",
+        "上半身情绪状态 7 组 (01 静观观察 / 02 战前调息 / 03 战后短暂停歇 / 04 负伤仍要前行 / 05 回忆心绪 / 06 面对邪祟压抑的怒意 / 07 坚定继续前行)",
+        "小剧情·氛围片段 6 组 (01 独行废土 / 02 面对遗物 / 03 夜间小憩 / 04 凝视前路 / 05 沉重的过去 / 06 再次出发)"
+      ]
+    },
+    {
+      "index": 4,
+      "file": "concept_art/04_enemy_ecosystem_overview.png",
+      "original_uuid_file": "fcd3b2a7-2ff3-45a2-b03b-90ef3cdf44e6.png",
+      "title_cn": "敌人生态·阵营/怪物/世界观体系设定",
+      "title_en": "Enemy Ecosystem Overview",
+      "category": "world_and_ecosystem",
+      "resolution": [
+        1536,
+        1024
+      ],
+      "modules": [
+        "01 尸祟·亡秽 (Corpse Tormented: 杂兵/爬行者/秽尸精英/尸将)",
+        "02 邪修·堕道者 (Heretic Cultists: 恶修/符咒师/精英/邪修首领)",
+        "03 畸变兽·污染生物 (Mutated Beasts: 小型兽/群居兽/精英/巨型兽)",
+        "04 废土人类势力 (Wasteland Raiders: 暴徒/射手/重装/头目)",
+        "05 道门异化体 (Taoist Aberrations: 纸人/傀儡/法阵体/残法体)",
+        "06 遗迹守御体 (Ruin Guardians: 石像守卫/机关体/遗迹骑士/古神巨像)",
+        "体型对比（横版游戏比例参考：主角 1.8m 至 Boss 4m+）",
+        "敌人生态关系图 (Faction Relationship)",
+        "主要活动区域 (Main Areas: 废弃城镇/污染荒野/残破道观/地下遗迹)"
+      ]
+    },
+    {
+      "index": 5,
+      "file": "concept_art/05_corpse_tainted_faction_overview.png",
+      "original_uuid_file": "087f5e6a-bf34-452c-b42c-583d8baf1e1b.png",
+      "title_cn": "尸祟/亡秽系·阵营总览详细设定",
+      "title_en": "The Undead Tainted — Faction Overview",
+      "category": "faction_corpse_tainted",
+      "resolution": [
+        1672,
+        941
+      ],
+      "modules": [
+        "核心敌人类型 8 阶 (01 普通尸祟 / 02 匍匐型 / 03 残法衣尸祟 / 04 喷秽体 / 05 尸将 / 06 重型亡秽体 / 07 小BOSS / 08 BOSS 秽骨之王)",
+        "阵营共性特征 (残破布料/失效符箓/秽气侵蚀/束缚与钉/死白腐败肌理)",
+        "局部研究 (头部/手部/躯干/符箓与封印)",
+        "敌人剪影研究 (Silhouette Study)",
+        "体型对比 (Size Comparison: 主角 1.8m 至 BOSS 5m+)",
+        "生态/关卡分布 (荒村废墟/道路边缘/低洼污染区/废弃道观/墓地乱葬岗/封印遗迹/地下空间/祭坛秽源区)",
+        "色彩与材质 (Color & Materials)"
+      ]
+    },
+    {
+      "index": 6,
+      "file": "concept_art/06_corpse_tainted_first_wave_sheet.png",
+      "original_uuid_file": "d9b67c1f-0718-4442-8cdd-367c3454e337.png",
+      "title_cn": "尸祟阵营·第一批可实装敌人设定稿",
+      "title_en": "First-Wave Production Enemy Sheet",
+      "category": "faction_corpse_tainted",
+      "resolution": [
+        1536,
+        1024
+      ],
+      "modules": [
+        "01 普通尸祟·基础杂兵 (Common Undead Grunt)",
+        "02 匍匐尸祟·伏爬者 (Crawler)",
+        "03 封印残尸·残法衣尸祟 (Talisman-Bound Husk)",
+        "04 喷秽尸祟·瘴吐者 (Taint Spitter)",
+        "05 尸将·前期精英单位 (Undead Warrior Elite)",
+        "体型对比与敌人剪影对比",
+        "前期遭遇编组 (Early Encounter Groups A / B / C / D)",
+        "阵营配色 (Faction Color Palette)"
+      ]
+    },
+    {
+      "index": 7,
+      "file": "concept_art/07_common_undead_grunt_sheet.png",
+      "original_uuid_file": "e38b407b-baf8-4129-89b0-b1cb43e66d1b.png",
+      "title_cn": "普通尸祟·基础杂兵 单体最终设定稿",
+      "title_en": "Common Undead Grunt — Final Model Sheet V1.0",
+      "category": "enemy_model_sheet",
+      "resolution": [
+        1672,
+        941
+      ],
+      "modules": [
+        "01 最终形象 (Final Model)",
+        "02 三视图 (Turnaround: 正面/侧面/背面)",
+        "03 战斗表现侧面 (Combat Readability Side View)",
+        "04 体型对比 (Size Comparison: 主角 1.8m vs 普通尸祟 1.5-1.6m)",
+        "05 关键动作 (徘徊游荡/警觉发现/扑击前奏/攻击撕咬)",
+        "06 剪影研究 (Silhouette Study)",
+        "07 细节特写 (头部/肩背道符/手部/破布细节/腐肉肌理)",
+        "08 150px 可读性检查 (150px / 100px / 75px / 50px)",
+        "09 色彩与材质 (Color & Materials)"
+      ]
+    },
+    {
+      "index": 8,
+      "file": "concept_art/08_crawler_sheet.png",
+      "original_uuid_file": "65d71250-d453-4c0e-9a68-28802b1dff48.png",
+      "title_cn": "匍匐尸祟·伏爬者 单体最终设定稿",
+      "title_en": "Crawler — Final Enemy Model Sheet V1.0",
+      "category": "enemy_model_sheet",
+      "resolution": [
+        1536,
+        1024
+      ],
+      "modules": [
+        "01 最终形象 (Final Model)",
+        "02 三视图 (Turnaround)",
+        "03 横版战斗视图 (Side-View Game Readability)",
+        "04 体型对比 (主角 1.8m / 普通尸祟 1.6m / 伏爬者 0.8-1.0m)",
+        "05 基础动作姿态 (待机/警觉/快速爬行/突扑攻击/受击/回撤)",
+        "06 轮廓研究 (Silhouette Study)",
+        "07 局部细节 (头部/手部/背部脊椎/后肢/符纸残片/破布与麻绳)",
+        "08 150px 可读性检查 (100% / 75% / 50%)",
+        "09 攻击判定示意 (Attack Area Reference: 红色主攻击区 vs 蓝色身体受击框)",
+        "10 结构拆分参考 (Parts Breakdown for Animation: 10 部件骨骼拆分)",
+        "11 色彩与材质 (Color & Materials)"
+      ]
+    },
+    {
+      "index": 9,
+      "file": "concept_art/09_talisman_bound_husk_sheet.png",
+      "original_uuid_file": "6afe53eb-b0f8-48ed-ad66-54698fc6ac31.png",
+      "title_cn": "封印残尸·残法衣尸祟 单体最终设定稿",
+      "title_en": "Talisman-Bound Husk — Final Enemy Model Sheet V1.0",
+      "category": "enemy_model_sheet",
+      "resolution": [
+        1448,
+        1086
+      ],
+      "modules": [
+        "01 最终形象 (Final Model)",
+        "02 三视图 (Turnaround)",
+        "03 侧视图（游戏表现）",
+        "04 体型对比 (主角 1.8m / 残法衣尸祟 1.7m / 普通尸祟 1.5m / 匍匐尸祟 0.8-1.0m)",
+        "05 关键动作姿态 (待机·封印之静 / 苏醒·封印崩裂 / 缓步前行 / 挥袖攻击 / 符力溃散 / 受击 / 崩塌·再度沉寂)",
+        "07 细节特写 (面部符箓/法衣破损/胸口封印/断绳束缚/手部细节/背后封痕)",
+        "08 150px 可读性检查 (150px / 100px / 75px / 50px)",
+        "09 色彩与材质 (Color & Materials)",
+        "10 设定备注 (Design Notes)"
+      ]
+    },
+    {
+      "index": 10,
+      "file": "concept_art/10_taint_spitter_sheet.png",
+      "original_uuid_file": "a70ed1b1-7b93-4f13-b777-c3c098d76920.png",
+      "title_cn": "喷秽尸祟·瘴吐者 单体最终设定稿",
+      "title_en": "Taint Spitter — Final Enemy Model Sheet V1.0",
+      "category": "enemy_model_sheet",
+      "resolution": [
+        1536,
+        1024
+      ],
+      "modules": [
+        "01 最终形象 (Final Model)",
+        "02 三视图 (Turnaround)",
+        "03 横版标准侧视图 (Side-View Game Readability)",
+        "04 体型对比 (主角 1.8m / 封印残尸 1.7m / 喷秽尸祟 1.6-1.7m / 普通尸祟 1.55m / 伏爬者 0.8-1.0m)",
+        "05 关键动作姿态 (01 待机 / 02 警觉 / 03 蓄力·膨胀 / 04 喷吐攻击 / 05 恢复 / 06 近身挥击 / 07 受击 / 08 死亡·崩解)",
+        "06 投射物设定 (Projectile Specification: 喷出瞬间/飞行状态/落地爆裂 + 侧面抛物线攻击轨迹)",
+        "07 局部细节 (头部/喉囊常态/喉囊蓄力/胸口与残符/腹部/手爪/背部封痕)",
+        "08 剪影研究 (Silhouette Study)",
+        "09 150px 可读性检查 (150px / 100px / 75px / 50px)",
+        "10 色彩与材质 (Color & Materials)",
+        "11 设计备注 (Design Notes)"
+      ]
+    }
+  ]
+}
