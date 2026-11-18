@@ -98,7 +98,15 @@ func _add_axis(action: String, axis: int, v: float) -> void:
 	InputMap.action_add_event(action, m)
 
 
+var _fps_t := 0.0
+
+
 func _process(delta: float) -> void:
+	if args.has("fpslog"):
+		_fps_t += delta
+		if _fps_t >= 2.0:
+			_fps_t = 0.0
+			print("FPS %d  frame_ms %.1f  objects %d" % [Engine.get_frames_per_second(), 1000.0 / maxf(1.0, Engine.get_frames_per_second()), Performance.get_monitor(Performance.OBJECT_NODE_COUNT)])
 	if running and not get_tree().paused:
 		run_time += delta
 	if _hitstop_until > 0.0 and Time.get_ticks_msec() / 1000.0 >= _hitstop_until:

@@ -57,3 +57,10 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D12 · Scope of the slice
 - One continuous level, 5 zones (荒村废墟 → 道路边缘 → 低洼污染区 → 废弃道观 → 乱葬岗), 4 campfires, 8 encounters using Groups A–D, elite finale, ending screen. No pits/falling deaths, no save files (a run is short; campfire progress persists within a run).
+
+## D13 · Shader leg rig instead of new art (session 2)
+- No new frames can be painted here, so locomotion is produced from the existing pose by an inverse-mapped two-bone leg rig in `ink_sprite.gdshader`: per pose the foot anchor gives the split line and the hip/knee heights come from `hip_frac`; front leg composited over back; pixels outside the leg bands (hanging sword, robe edges) stay rigid; the body drops by `L·(1−cos θ)` so feet stay planted. A `tuck` mode bends both knees for airborne frames.
+- Sampling goes through an explicit `src_tex` uniform (passing `TEXTURE` into helper functions errors on the dummy renderer).
+
+## D14 · Mix safety
+- Master bus gets a compressor (−12 dB, 3:1) and hard limiter (−1 dB); SFX play 3 dB under their nominal level. Verified from a movie-writer recording.

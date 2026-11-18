@@ -21,7 +21,8 @@ uniform float legs = 0.0;          // thigh swing amplitude (radians)
 uniform float leg_lift = 0.0;      // knee bend amplitude (radians)
 uniform float hip_w = 0.05;        // lateral hip pivot offset (uv)
 uniform float foot_v = 0.95;       // uv y of the feet
-uniform float leg_band = 0.13;     // half-width of each leg region (uv)
+uniform float leg_band = 0.13;
+uniform float tuck = 0.0;          // airborne: both thighs forward, knees bent (radians)     // half-width of each leg region (uv)
 uniform float split_x = 0.5;       // uv x between the legs (feet anchor)
 uniform float hip_y = 0.6;         // uv y where the legs start
 uniform float outline_px = 3.5;          // texels
@@ -70,13 +71,13 @@ vec4 leg_sample(vec2 uv, vec2 px, float side, float th, float kn) {
 
 vec4 rig_sample(vec2 uv, vec2 px) {
 	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return vec4(0.0);
-	if (legs <= 0.0 || uv.y < hip_y - 0.03) {
+	if ((legs <= 0.0 && tuck <= 0.0) || uv.y < hip_y - 0.03) {
 		return texture(src_tex, uv);
 	}
 	float sw = sin(phase);
 	float cw = cos(phase);
-	vec4 f = leg_sample(uv, px, 1.0, legs * sw, leg_lift * max(0.0, cw));
-	vec4 b = leg_sample(uv, px, -1.0, -legs * sw, leg_lift * max(0.0, -cw));
+	vec4 f = leg_sample(uv, px, 1.0, legs * sw + tuck * 0.55, leg_lift * max(0.0, cw) + tuck * 1.4);
+	vec4 b = leg_sample(uv, px, -1.0, -legs * sw + tuck * 0.15, leg_lift * max(0.0, -cw) + tuck * 1.1);
 	vec4 o;
 	o.a = f.a + b.a * (1.0 - f.a);
 	o.rgb = (f.rgb * f.a + b.rgb * b.a * (1.0 - f.a)) / max(o.a, 0.001);

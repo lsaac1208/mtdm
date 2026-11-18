@@ -671,6 +671,7 @@ func _animate(delta: float) -> void:
 	vis.stride = 0.0
 	vis.legs = 0.0
 	vis.leg_lift = 0.0
+	vis.tuck = 0.0
 	vis.bob = 0.0
 	vis.breathe = 0.0
 	vis.tint = Color(0.82, 1.0, 0.7) if in_taint > 0.0 else Color.WHITE
@@ -694,8 +695,12 @@ func _animate(delta: float) -> void:
 				Sfx.play("step", -18.0, 0.15)
 				Fx.dust(global_position + Vector2(-10 * facing, 0), 2, Vector2(-facing, -0.5))
 		"air":
-			vis.set_pose("hero_07_jump", 0.08)
-			target_lean = clampf(velocity.y / 90.0, -6.0, 8.0)
+			# plain jump: ready pose with knees drawn up (jump-attack keeps pose 07)
+			vis.set_pose("hero_01_ready", 0.06)
+			var rise := clampf(-velocity.y / 760.0, -1.0, 1.0)
+			vis.tuck = 0.55 + 0.25 * rise
+			vis.bob = 0.0
+			target_lean = clampf(velocity.y / 90.0, -6.0, 8.0) + 4.0
 		"land", "dead":
 			vis.set_pose("hero_13_recovery", 0.04)
 		"attack":

@@ -158,6 +158,17 @@ func _run() -> void:
 			await _frames(2)
 		get_tree().quit()
 		return
+	if only == "jumpcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(600.0)
+		await _wait(0.6)
+		await press(p, "jump", {"jump": true, "move_right": true})
+		hold(p, {"jump": true, "move_right": true})
+		for i in 6:
+			await _frames(5)
+			await _shot("j%d" % i)
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)
