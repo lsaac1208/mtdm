@@ -26,6 +26,17 @@ func _ready() -> void:
 	ambience = AudioStreamPlayer.new()
 	ambience.volume_db = -14.0
 	add_child(ambience)
+	# master bus safety: soft compression + hard limiter so stacked hits never clip
+	if AudioServer.get_bus_effect_count(0) == 0:
+		var comp := AudioEffectCompressor.new()
+		comp.threshold = -12.0
+		comp.ratio = 3.0
+		comp.attack_us = 2000.0
+		comp.release_ms = 120.0
+		AudioServer.add_bus_effect(0, comp)
+		var lim := AudioEffectHardLimiter.new()
+		lim.ceiling_db = -1.0
+		AudioServer.add_bus_effect(0, lim)
 	if Game.args.has("mute"):
 		AudioServer.set_bus_mute(0, true)
 
@@ -53,7 +64,7 @@ func play(name_: String, vol_db := 0.0, pitch_var := 0.08, pitch := 1.0) -> void
 	var p := _players[_next]
 	_next = (_next + 1) % POOL
 	p.stream = s
-	p.volume_db = vol_db
+	p.volume_db = vol_db - 3.0
 	p.pitch_scale = pitch * randf_range(1.0 - pitch_var, 1.0 + pitch_var)
 	p.play()
 

@@ -116,6 +116,11 @@ def mask_from(draw_fn, w, h, ss=2):
 
 
 def save(arr, name):
+    if name in ("far", "mid", "near", "fore"):
+        # texture_repeat + linear filtering would bleed the bottom row onto the top edge
+        arr = arr.copy()
+        arr[:2, :, 3] = 0
+        arr[-2:, :, 3] = 0
     Image.fromarray(arr).save(os.path.join(OUT, name + ".png"), optimize=True)
     print("wrote", name, arr.shape[1], "x", arr.shape[0])
 
@@ -379,45 +384,94 @@ def foreground(w=2048, h=200):
 
 
 def ground(w=512, h=512):
+    """Tileable earth: dusty surface band, dry-brush strata, embedded stones, dark depths."""
     n = fbm(h, w, 64, 40, 5, True)
     n2 = fbm(h, w, 12, 41, 3, True)
-    top = hexc("#5a4a3a"); deep = hexc("#1d1714")
     Y = np.linspace(0, 1, h)[:, None]
-    col = top + (deep - top) * np.clip(Y * 1.6, 0, 1)[..., None]
-    col = col * (0.8 + 0.35 * n[..., None]) * (0.9 + 0.2 * n2[..., None])
-    # strata streaks
-    s = value_noise(h, w, 4, 42, True)
-    s = ndi.uniform_filter1d(s, 31, axis=1)
-    col *= (0.9 + 0.2 * s)[..., None]
-    # pebbles
-    for _ in range(140):
-        cx, cy = rng.integers(0, w), rng.integers(30, h)
-        rr = rng.uniform(2, 6)
-        Yg, Xg = np.ogrid[0:h, 0:w]
-        dd = ((Xg - cx) % w) ** 2 + (Yg - cy) ** 2
-        pm = dd < rr * rr
-        col[pm] = col[pm] * 0.6 + hexc("#8a7a66") * 0.4 * (1 - cy / h)
-    # ink top edge + grass, first 20 px
+    top = hexc("#7a6a54"); mid_c = hexc("#4a3d31"); deep = hexc("#1c1714")
+    k = np.clip(Y / 0.12, 0, 1)
+    col = top + (mid_c - top) * k[..., None]
+    k2 = np.clip((Y - 0.12) / 0.55, 0, 1)
+    col = col + (deep - col) * k2[..., None]
+    col = col * (0.82 + 0.3 * n[..., None]) * (0.92 + 0.16 * n2[..., None])
+    # horizontal dry-brush strata
+    s = value_noise(h, w, 3, 42, True)
+    s = ndi.uniform_filter1d(s, 61, axis=1)
+    strata = np.clip((s - 0.55) * 5, 0, 1) * (Y > 0.08)
+    col = col * (1 - 0.35 * strata[..., None])
     edge_y = 12 + 4 * ridge_1d(w, 0, 1.0, 64, 43, 3)
     Yi = np.arange(h)[:, None]
     above = Yi < edge_y[None, :]
-    col[above] = 0
-    line = (Yi >= edge_y[None, :]) & (Yi < edge_y[None, :] + 4)
-    col[line] = INK
     alpha = np.where(above, 0, 255).astype(np.float32)
-    rgba = np.dstack([col.clip(0, 255), alpha]).astype(np.uint8)
-    im = Image.fromarray(rgba)
+    im = Image.fromarray(np.dstack([col.clip(0, 255), alpha]).astype(np.uint8))
     d = ImageDraw.Draw(im)
-    rr = random.Random(44)
-    for _ in range(90):
+    rr = random.Random(45)
+    # embedded stones (wrap-aware: draw twice when near the seam)
+    for _ in range(34):
+        x = rr.uniform(0, w); y = rr.uniform(40, h * 0.6)
+        rw = rr.uniform(3, 10) * (1.2 - y / h); rh = rw * rr.uniform(0.4, 0.7)
+        base_c = col[min(int(y), h - 1), int(x) % w]
+        f = rr.uniform(1.08, 1.25)
+        fill = tuple(int(min(255, v * f)) for v in base_c) + (255,)
+        edge = tuple(int(v * 0.55) for v in base_c) + (255,)
+        for ox in (0, -w, w):
+            d.ellipse([x + ox - rw, y - rh, x + ox + rw, y + rh], fill=fill, outline=edge, width=1)
+    # surface cracks
+    for _ in range(40):
+        x = rr.uniform(0, w); y = edge_y[int(x) % w] + rr.uniform(6, 30)
+        pts = [(x, y)]
+        for _ in range(rr.randint(2, 4)):
+            x += rr.uniform(6, 18); y += rr.uniform(-3, 4)
+            pts.append((x, y))
+        for ox in (0, -w):
+            d.line([(p[0] + ox, p[1]) for p in pts], fill=(30, 25, 21, 255), width=2)
+    # ink top edge + grass tufts
+    for x in range(w):
+        ey = edge_y[x]
+        d.line([(x, ey), (x, ey + 3)], fill=(24, 21, 19, 255))
+    for _ in range(110):
         x = rr.uniform(0, w)
         ey = edge_y[int(x) % w]
-        for _ in range(rr.randint(2, 5)):
-            ln = rr.uniform(6, 18)
+        for _ in range(rr.randint(2, 6)):
+            ln = rr.uniform(6, 20)
             ang = -math.pi / 2 + rr.uniform(-0.7, 0.7)
-            c = tuple(int(v) for v in (hexc("#2a2418") * rr.uniform(0.8, 1.4)).clip(0, 255)) + (255,)
+            c = tuple(int(v) for v in (hexc("#2a2418") * rr.uniform(0.8, 1.5)).clip(0, 255)) + (255,)
             d.line([(x, ey + 2), (x + math.cos(ang) * ln, ey + 2 + math.sin(ang) * ln)], fill=c, width=2)
     save(np.asarray(im), "ground")
+
+
+def debris(w=2048, h=90):
+    """Tileable strip of surface clutter laid along the ground line."""
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    rr = random.Random(77)
+    base = h - 14
+    x = 10.0
+    while x < w - 60:
+        k = rr.random()
+        if k < 0.3:   # rock
+            rw, rh = rr.uniform(10, 26), rr.uniform(6, 16)
+            g = rr.randint(70, 110)
+            d.ellipse([x, base - rh * 1.6, x + rw * 2, base + 4], fill=(g, g - 6, g - 14, 255), outline=(20, 18, 16, 255), width=2)
+        elif k < 0.45:  # broken roof tile
+            tw = rr.uniform(16, 30)
+            d.polygon([(x, base + 2), (x + 4, base - 8), (x + tw, base - 10), (x + tw - 3, base + 2)], fill=(64, 58, 54, 255), outline=(20, 18, 16, 255))
+            d.line([(x + tw * 0.4, base - 9), (x + tw * 0.45, base + 1)], fill=(30, 27, 24, 255), width=1)
+        elif k < 0.55:  # bone
+            ln = rr.uniform(18, 34)
+            d.line([(x, base - 2), (x + ln, base - 6)], fill=(197, 191, 179, 255), width=5)
+            for ex, ey in ((x, base - 2), (x + ln, base - 6)):
+                d.ellipse([ex - 4, ey - 4, ex + 4, ey + 4], fill=(197, 191, 179, 255), outline=(30, 27, 24, 255))
+        elif k < 0.63:  # torn talisman scrap
+            d.polygon([(x, base), (x + 4, base - 22), (x + 14, base - 20), (x + 12, base)], fill=(201, 164, 73, 255), outline=(40, 30, 20, 255))
+            d.line([(x + 8, base - 18), (x + 8, base - 3)], fill=(124, 35, 29, 255), width=2)
+        elif k < 0.85:  # weed clump
+            for _ in range(rr.randint(4, 9)):
+                ln = rr.uniform(10, 34)
+                ang = -math.pi / 2 + rr.uniform(-0.8, 0.8)
+                d.line([(x, base + 2), (x + math.cos(ang) * ln, base + 2 + math.sin(ang) * ln)], fill=(36, 32, 22, 255), width=2)
+        x += rr.uniform(40, 160)
+    save(np.asarray(im), "debris")
 
 
 # ---------------------------------------------------------------- props
@@ -617,6 +671,7 @@ if __name__ == "__main__":
     ruins_layer(2048, 520, "near", "#2c2622", 61, 1.3, ["house", "tree", "wall", "gap", "pagoda", "tree", "tower", "gap"], 512, 1.15, 0.95, mist=0.3)
     foreground()
     ground()
+    debris()
     make_props()
     title_bg()
     os.makedirs(os.path.join(OUT, "..", "ui"), exist_ok=True)

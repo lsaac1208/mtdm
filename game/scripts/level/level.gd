@@ -174,6 +174,17 @@ func _build_ground() -> void:
 			poly.color = Color(0.2, 0.17, 0.14)
 		poly.z_index = 1
 		add_child(poly)
+		var dt := _tex("debris")
+		if dt:
+			var deb := Sprite2D.new()
+			deb.texture = dt
+			deb.centered = false
+			deb.region_enabled = true
+			deb.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+			deb.region_rect = Rect2(0, 0, g[1] - g[0], dt.get_height())
+			deb.position = Vector2(g[0], g[2] - dt.get_height() + 22)
+			deb.z_index = 1
+			add_child(deb)
 
 
 func _build_platforms() -> void:
