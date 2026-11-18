@@ -50,6 +50,18 @@ def extract(entry, sheets_root):
     else:
         keep_ids = [i + 1 for i, s in enumerate(sizes) if s >= entry.get("min_area", 60)]
     m = np.isin(lab, keep_ids)
+    # drop the painted ground-shadow strokes under the feet (light, desaturated)
+    lab_c = cv2.cvtColor(rgb, cv2.COLOR_RGB2LAB).astype(np.int32)
+    Lc = lab_c[..., 0]
+    chc = np.hypot(lab_c[..., 1] - 128, lab_c[..., 2] - 128)
+    ys_m = np.nonzero(m.any(axis=1))[0]
+    if len(ys_m):
+        y_bot = ys_m.max()
+        band0 = max(0, y_bot - int((y_bot - ys_m.min()) * entry.get("shadow_band", 0.07)))
+        smear = np.zeros_like(m)
+        smear[band0:y_bot + 1] = (Lc[band0:y_bot + 1] > 120) & (chc[band0:y_bot + 1] < 18)
+        m &= ~smear
+        m = ndi.binary_opening(m, iterations=1) | (m & ndi.binary_erosion(m, iterations=1))
     for (bx0, by0, bx1, by1) in entry.get("erase", []):   # sheet coords
         m[max(0, by0 - y0):max(0, by1 - y0), max(0, bx0 - x0):max(0, bx1 - x0)] = False
     # soft edge

@@ -16,6 +16,10 @@ uniform vec4 tint : source_color = vec4(1.0);
 uniform float dissolve = 0.0;
 uniform vec4 burn_color : source_color = vec4(0.85, 0.35, 0.12, 1.0);
 uniform float alpha_mul = 1.0;
+uniform float legs = 0.0;          // scissor stride amplitude (uv units)
+uniform float leg_lift = 0.0;      // foot lift (uv units)
+uniform float split_x = 0.5;       // uv x between the legs (feet anchor)
+uniform float hip_y = 0.6;         // uv y where the legs start
 uniform float outline_px = 3.5;          // texels
 uniform vec4 outline_color : source_color = vec4(0.06, 0.05, 0.04, 0.9);
 
@@ -38,6 +42,16 @@ void fragment() {
 	uv.x += sway * low * sin(t * 6.0 + uv.y * 14.0 + uv.x * 5.0);
 	// stride: alternate lower-body shear, feet move most
 	uv.x += stride * low * low * sin(phase);
+	// scissor legs: front/back halves of the lower body swing in opposition
+	if (legs > 0.0) {
+		float w = smoothstep(hip_y, 1.0, UV.y);
+		float s = smoothstep(split_x - 0.035, split_x + 0.035, UV.x);
+		float sw = sin(phase);
+		float off = mix(-sw, sw, s) * legs;
+		float lift = mix(max(0.0, -cos(phase)), max(0.0, cos(phase)), s) * leg_lift;
+		uv.x -= off * w;
+		uv.y += lift * w * w;
+	}
 	// breathing: stretch upper body slightly
 	float up = 1.0 - smoothstep(0.1, 0.6, uv.y);
 	uv.y += breathe * up * sin(t * 2.2);

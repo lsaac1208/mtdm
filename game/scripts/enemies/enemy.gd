@@ -231,10 +231,14 @@ func melee(r: Rect2, dmg: float, knock: float, extra := {}) -> Array:
 func walk_anim(delta: float, speed_ratio: float, rate := 7.0, amp := 0.04) -> void:
 	_bob_t += delta * rate * speed_ratio
 	vis.phase = _bob_t
-	vis.stride = amp * speed_ratio
-	vis.bob = absf(sin(_bob_t)) * 3.0 * speed_ratio
+	vis.stride = amp * 0.3 * speed_ratio
+	vis.legs = amp * 1.4 * speed_ratio
+	vis.leg_lift = amp * 0.6 * speed_ratio
+	vis.bob = absf(cos(_bob_t)) * 3.0 * speed_ratio
 
 
 func still_anim() -> void:
 	vis.stride = 0.0
+	vis.legs = 0.0
+	vis.leg_lift = 0.0
 	vis.bob = 0.0

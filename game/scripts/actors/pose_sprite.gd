@@ -22,6 +22,9 @@ var nudge := Vector2.ZERO  # px, x forward
 var extra_scale := 1.0
 var sway := 0.004
 var stride := 0.0
+var legs := 0.0
+var leg_lift := 0.0
+var hip_y := 0.6
 var phase := 0.0
 var breathe := 0.0
 var flash := 0.0
@@ -115,6 +118,12 @@ func _set_params(s: Sprite2D, a: float) -> void:
 	var m: ShaderMaterial = s.material
 	m.set_shader_parameter("sway", sway)
 	m.set_shader_parameter("stride", stride)
+	m.set_shader_parameter("legs", legs)
+	m.set_shader_parameter("leg_lift", leg_lift)
+	m.set_shader_parameter("hip_y", hip_y)
+	var md := meta(pose)
+	if not md.is_empty():
+		m.set_shader_parameter("split_x", md.foot_x / md.w)
 	m.set_shader_parameter("phase", phase)
 	m.set_shader_parameter("breathe", breathe)
 	m.set_shader_parameter("flash", flash)

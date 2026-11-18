@@ -81,6 +81,7 @@ func _ready() -> void:
 	super._ready()
 	vis.set_pose("hero_01_ready", 0.0)
 	vis.sway = 0.005
+	vis.hip_y = 0.6
 	Game.player = self
 
 
@@ -667,6 +668,8 @@ func _animate(delta: float) -> void:
 	vis.squash = vis.squash.lerp(Vector2.ONE, minf(1.0, delta * 12.0))
 	var target_lean := 0.0
 	vis.stride = 0.0
+	vis.legs = 0.0
+	vis.leg_lift = 0.0
 	vis.bob = 0.0
 	vis.breathe = 0.0
 	vis.tint = Color(0.82, 1.0, 0.7) if in_taint > 0.0 else Color.WHITE
@@ -679,8 +682,10 @@ func _animate(delta: float) -> void:
 			vis.set_pose("hero_01_ready", 0.08)
 			_step_t += delta * 11.0 * _speed_mul()
 			vis.phase = _step_t
-			vis.stride = 0.05
-			vis.bob = absf(sin(_step_t)) * 5.0
+			vis.stride = 0.0
+			vis.legs = 0.075
+			vis.leg_lift = 0.035
+			vis.bob = absf(cos(_step_t)) * 5.0
 			target_lean = 7.0
 			if int(_step_t / PI) != int((_step_t - delta * 11.0) / PI):
 				Sfx.play("step", -18.0, 0.15)

@@ -93,6 +93,19 @@ func _run() -> void:
 		await _shot("ending")
 		get_tree().quit()
 		return
+	if only == "runcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(500.0)
+		await _wait(0.6)
+		var g := await spawn("grunt", 1150.0)
+		hold(p, {"move_right": true})
+		await _wait(0.5)
+		for i in 8:
+			await _shot("run%d" % i)
+			await _frames(3)
+		hold(p, {})
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)
