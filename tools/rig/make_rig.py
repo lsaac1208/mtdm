@@ -72,17 +72,21 @@ for name, z, poly, bones in D.PARTS:
     if name in getattr(D, "EXTEND", {}):
         ext = poly_mask(D.EXTEND[name]) & ~m
         # hidden thigh under the skirt: synthesize trouser fabric by repeating the
-        # visible band just below the hem (mirrored vertically so it tiles)
+        # visible opaque band just below the hem without pulling background pixels
         ys, xs = np.nonzero(m)
         top = ys.min()
-        band = img[top + 2:top + 14, :, :3].astype(np.float32)
+        band_rgb = img[top + 2:top + 14, :, :3].astype(np.float32)
+        band_a = img[top + 2:top + 14, :, 3] > 60
+        valid_ext = np.zeros_like(ext)
         src = img[..., :3].copy()
         ey, ex = np.nonzero(ext)
         for y, x in zip(ey, ex):
-            k = (top - y) % (2 * band.shape[0])
-            k = k if k < band.shape[0] else 2 * band.shape[0] - 1 - k
-            src[y, x] = (band[k, x] * 0.9).astype(np.uint8)
-        m = m | ext
+            k = (top - y) % (2 * band_rgb.shape[0])
+            k = k if k < band_rgb.shape[0] else 2 * band_rgb.shape[0] - 1 - k
+            if band_a[k, x]:
+                src[y, x] = (band_rgb[k, x] * 0.88).astype(np.uint8)
+                valid_ext[y, x] = True
+        m = m | valid_ext
     layers[name] = (m, src, z, bones)
 
 bones_px = {n: (np.array(h, float), np.array(t, float)) for n, (p, h, t) in D.BONES.items()}

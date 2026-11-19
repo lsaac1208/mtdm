@@ -1,0 +1,226 @@
+{
+ "actor": "husk",
+ "target_h": 144.0,
+ "clips": {
+  "walk": {
+   "fps": 5.5,
+   "loop": true,
+   "frames": [
+    {
+     "file": "husk_walk_sheet_c00.png",
+     "w": 234,
+     "h": 304,
+     "body_h": 286.4,
+     "foot_x": 120.45,
+     "foot_y": 295.02,
+     "scale": 0.5,
+     "boots": [
+      [
+       -40.5,
+       0.0
+      ],
+      [
+       42.5,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "husk_walk_sheet_c01.png",
+     "w": 192,
+     "h": 304,
+     "body_h": 287.0,
+     "foot_x": 103.46,
+     "foot_y": 295.02,
+     "scale": 0.5,
+     "boots": [
+      [
+       -14.7,
+       0.0
+      ],
+      [
+       26.5,
+       -4.2
+      ]
+     ]
+    },
+    {
+     "file": "husk_walk_sheet_c02.png",
+     "w": 174,
+     "h": 310,
+     "body_h": 292.9,
+     "foot_x": 99.53,
+     "foot_y": 301.56,
+     "scale": 0.5,
+     "boots": [
+      [
+       -18.6,
+       -0.3
+      ],
+      [
+       -7.5,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "husk_walk_sheet_c03.png",
+     "w": 223,
+     "h": 306,
+     "body_h": 288.3,
+     "foot_x": 108.03,
+     "foot_y": 296.33,
+     "scale": 0.5,
+     "boots": [
+      [
+       -41.8,
+       0.0
+      ],
+      [
+       43.5,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "husk_walk_sheet_c04.png",
+     "w": 172,
+     "h": 305,
+     "body_h": 287.7,
+     "foot_x": 103.46,
+     "foot_y": 295.67,
+     "scale": 0.5,
+     "boots": [
+      [
+       -32.0,
+       -0.3
+      ],
+      [
+       18.3,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "husk_walk_sheet_c05.png",
+     "w": 173,
+     "h": 311,
+     "body_h": 294.2,
+     "foot_x": 92.99,
+     "foot_y": 302.21,
+     "scale": 0.5,
+     "boots": [
+      [
+       -18.3,
+       -0.3
+      ],
+      [
+       -6.5,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "idle": {
+   "fps": 3.0,
+   "loop": true,
+   "frames": [
+    {
+     "file": "husk_combat_sheet_c00.png",
+     "w": 125,
+     "h": 302,
+     "body_h": 285.9,
+     "foot_x": 69.65,
+     "foot_y": 293.88,
+     "scale": 0.5,
+     "boots": [
+      [
+       -9.1,
+       0.0
+      ],
+      [
+       11.2,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "awaken": {
+   "fps": 5.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "husk_combat_sheet_c01.png",
+     "w": 217,
+     "h": 307,
+     "body_h": 290.1,
+     "foot_x": 111.96,
+     "foot_y": 298.12,
+     "scale": 0.5,
+     "boots": [
+      [
+       -19.6,
+       0.0
+      ],
+      [
+       25.7,
+       -2.1
+      ]
+     ]
+    }
+   ]
+  },
+  "windup": {
+   "fps": 5.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "husk_combat_sheet_c02.png",
+     "w": 283,
+     "h": 283,
+     "body_h": 265.9,
+     "foot_x": 158.5,
+     "foot_y": 274.54,
+     "scale": 0.5,
+     "boots": [
+      [
+       -55.6,
+       0.0
+      ],
+      [
+       48.1,
+       -2.7
+      ]
+     ]
+    }
+   ]
+  },
+  "hit": {
+   "fps": 6.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "husk_combat_sheet_c03.png",
+     "w": 263,
+     "h": 298,
+     "body_h": 280.4,
+     "foot_x": 124.65,
+     "foot_y": 288.44,
+     "scale": 0.5,
+     "boots": [
+      [
+       -36.3,
+       0.0
+      ],
+      [
+       53.5,
+       -2.1
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

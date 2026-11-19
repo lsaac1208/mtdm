@@ -4,20 +4,20 @@
     "plate": "with",
     "measurements": {
       "100": {
-        "pixels": 17933,
-        "contrast": 74.2
+        "pixels": 16565,
+        "contrast": 63.4
       },
       "67": {
-        "pixels": 8032,
-        "contrast": 73.2
+        "pixels": 7508,
+        "contrast": 61.6
       },
       "50": {
-        "pixels": 4525,
-        "contrast": 71.9
+        "pixels": 4210,
+        "contrast": 60.5
       },
       "33": {
-        "pixels": 2014,
-        "contrast": 69.7
+        "pixels": 1857,
+        "contrast": 58.5
       }
     },
     "pass": true
@@ -27,20 +27,20 @@
     "plate": "hero",
     "measurements": {
       "100": {
-        "pixels": 7841,
-        "contrast": 69.7
+        "pixels": 8414,
+        "contrast": 57.3
       },
       "67": {
-        "pixels": 3548,
-        "contrast": 68.5
+        "pixels": 3794,
+        "contrast": 55.6
       },
       "50": {
-        "pixels": 1992,
-        "contrast": 67.5
+        "pixels": 2134,
+        "contrast": 54.3
       },
       "33": {
-        "pixels": 885,
-        "contrast": 65.9
+        "pixels": 935,
+        "contrast": 52.5
       }
     },
     "pass": true
@@ -50,158 +50,158 @@
     "plate": "enemy",
     "measurements": {
       "100": {
-        "pixels": 10092,
-        "contrast": 77.7
+        "pixels": 8151,
+        "contrast": 69.5
       },
       "67": {
-        "pixels": 4484,
-        "contrast": 76.9
+        "pixels": 3714,
+        "contrast": 67.7
       },
       "50": {
-        "pixels": 2533,
-        "contrast": 75.3
-      },
-      "33": {
-        "pixels": 1129,
-        "contrast": 72.6
-      }
-    },
-    "pass": true
-  },
-  {
-    "zone": "road",
-    "plate": "with",
-    "measurements": {
-      "100": {
-        "pixels": 11559,
-        "contrast": 74.9
-      },
-      "67": {
-        "pixels": 5182,
-        "contrast": 74.3
-      },
-      "50": {
-        "pixels": 2898,
-        "contrast": 73.6
-      },
-      "33": {
-        "pixels": 1283,
-        "contrast": 71.9
-      }
-    },
-    "pass": true
-  },
-  {
-    "zone": "road",
-    "plate": "hero",
-    "measurements": {
-      "100": {
-        "pixels": 7749,
-        "contrast": 70.9
-      },
-      "67": {
-        "pixels": 3492,
-        "contrast": 69.8
-      },
-      "50": {
-        "pixels": 1953,
-        "contrast": 69.1
-      },
-      "33": {
-        "pixels": 863,
-        "contrast": 67.5
-      }
-    },
-    "pass": true
-  },
-  {
-    "zone": "road",
-    "plate": "enemy",
-    "measurements": {
-      "100": {
-        "pixels": 3810,
-        "contrast": 83.0
-      },
-      "67": {
-        "pixels": 1690,
-        "contrast": 83.4
-      },
-      "50": {
-        "pixels": 945,
-        "contrast": 82.9
-      },
-      "33": {
-        "pixels": 420,
-        "contrast": 81.0
-      }
-    },
-    "pass": true
-  },
-  {
-    "zone": "lowland",
-    "plate": "with",
-    "measurements": {
-      "100": {
-        "pixels": 17820,
-        "contrast": 66.3
-      },
-      "67": {
-        "pixels": 7956,
-        "contrast": 65.4
-      },
-      "50": {
-        "pixels": 4476,
-        "contrast": 64.3
-      },
-      "33": {
-        "pixels": 1980,
-        "contrast": 62.6
-      }
-    },
-    "pass": true
-  },
-  {
-    "zone": "lowland",
-    "plate": "hero",
-    "measurements": {
-      "100": {
-        "pixels": 7987,
-        "contrast": 62.1
-      },
-      "67": {
-        "pixels": 3540,
-        "contrast": 62.0
-      },
-      "50": {
-        "pixels": 1988,
-        "contrast": 61.2
-      },
-      "33": {
-        "pixels": 884,
-        "contrast": 59.6
-      }
-    },
-    "pass": true
-  },
-  {
-    "zone": "lowland",
-    "plate": "enemy",
-    "measurements": {
-      "100": {
-        "pixels": 9833,
-        "contrast": 69.6
-      },
-      "67": {
-        "pixels": 4416,
-        "contrast": 68.1
-      },
-      "50": {
-        "pixels": 2488,
+        "pixels": 2076,
         "contrast": 66.8
       },
       "33": {
-        "pixels": 1096,
-        "contrast": 65.1
+        "pixels": 922,
+        "contrast": 64.5
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "road",
+    "plate": "with",
+    "measurements": {
+      "100": {
+        "pixels": 12981,
+        "contrast": 62.1
+      },
+      "67": {
+        "pixels": 5913,
+        "contrast": 60.4
+      },
+      "50": {
+        "pixels": 3329,
+        "contrast": 59.3
+      },
+      "33": {
+        "pixels": 1476,
+        "contrast": 57.6
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "road",
+    "plate": "hero",
+    "measurements": {
+      "100": {
+        "pixels": 8254,
+        "contrast": 59.3
+      },
+      "67": {
+        "pixels": 3730,
+        "contrast": 57.7
+      },
+      "50": {
+        "pixels": 2097,
+        "contrast": 56.5
+      },
+      "33": {
+        "pixels": 926,
+        "contrast": 54.8
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "road",
+    "plate": "enemy",
+    "measurements": {
+      "100": {
+        "pixels": 4727,
+        "contrast": 66.9
+      },
+      "67": {
+        "pixels": 2183,
+        "contrast": 65.0
+      },
+      "50": {
+        "pixels": 1232,
+        "contrast": 64.0
+      },
+      "33": {
+        "pixels": 550,
+        "contrast": 62.3
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "lowland",
+    "plate": "with",
+    "measurements": {
+      "100": {
+        "pixels": 16429,
+        "contrast": 51.8
+      },
+      "67": {
+        "pixels": 7453,
+        "contrast": 50.1
+      },
+      "50": {
+        "pixels": 4194,
+        "contrast": 49.0
+      },
+      "33": {
+        "pixels": 1856,
+        "contrast": 47.3
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "lowland",
+    "plate": "hero",
+    "measurements": {
+      "100": {
+        "pixels": 8591,
+        "contrast": 51.4
+      },
+      "67": {
+        "pixels": 3892,
+        "contrast": 49.7
+      },
+      "50": {
+        "pixels": 2179,
+        "contrast": 48.7
+      },
+      "33": {
+        "pixels": 959,
+        "contrast": 47.1
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "lowland",
+    "plate": "enemy",
+    "measurements": {
+      "100": {
+        "pixels": 7838,
+        "contrast": 52.2
+      },
+      "67": {
+        "pixels": 3561,
+        "contrast": 50.6
+      },
+      "50": {
+        "pixels": 2015,
+        "contrast": 49.2
+      },
+      "33": {
+        "pixels": 897,
+        "contrast": 47.6
       }
     },
     "pass": true
@@ -211,20 +211,20 @@
     "plate": "with",
     "measurements": {
       "100": {
-        "pixels": 19580,
-        "contrast": 78.9
+        "pixels": 16331,
+        "contrast": 62.5
       },
       "67": {
-        "pixels": 8798,
-        "contrast": 78.3
+        "pixels": 7394,
+        "contrast": 60.8
       },
       "50": {
-        "pixels": 4937,
-        "contrast": 77.4
+        "pixels": 4133,
+        "contrast": 60.0
       },
       "33": {
-        "pixels": 2205,
-        "contrast": 75.2
+        "pixels": 1818,
+        "contrast": 58.5
       }
     },
     "pass": true
@@ -234,20 +234,20 @@
     "plate": "hero",
     "measurements": {
       "100": {
-        "pixels": 7792,
-        "contrast": 72.0
+        "pixels": 8517,
+        "contrast": 59.8
       },
       "67": {
-        "pixels": 3521,
-        "contrast": 70.7
+        "pixels": 3852,
+        "contrast": 58.0
       },
       "50": {
-        "pixels": 1974,
-        "contrast": 69.8
+        "pixels": 2164,
+        "contrast": 56.9
       },
       "33": {
-        "pixels": 875,
-        "contrast": 68.0
+        "pixels": 950,
+        "contrast": 55.2
       }
     },
     "pass": true
@@ -257,20 +257,20 @@
     "plate": "enemy",
     "measurements": {
       "100": {
-        "pixels": 11788,
-        "contrast": 83.4
+        "pixels": 7814,
+        "contrast": 65.4
       },
       "67": {
-        "pixels": 5277,
-        "contrast": 83.4
+        "pixels": 3542,
+        "contrast": 63.9
       },
       "50": {
-        "pixels": 2963,
-        "contrast": 82.5
+        "pixels": 1969,
+        "contrast": 63.4
       },
       "33": {
-        "pixels": 1330,
-        "contrast": 79.9
+        "pixels": 868,
+        "contrast": 62.0
       }
     },
     "pass": true
@@ -280,20 +280,20 @@
     "plate": "with",
     "measurements": {
       "100": {
-        "pixels": 27229,
-        "contrast": 80.1
+        "pixels": 25266,
+        "contrast": 69.1
       },
       "67": {
-        "pixels": 12230,
-        "contrast": 79.5
+        "pixels": 11450,
+        "contrast": 68.1
       },
       "50": {
-        "pixels": 6850,
-        "contrast": 78.8
+        "pixels": 6420,
+        "contrast": 67.4
       },
       "33": {
-        "pixels": 3037,
-        "contrast": 77.3
+        "pixels": 2835,
+        "contrast": 66.3
       }
     },
     "pass": true
@@ -303,20 +303,20 @@
     "plate": "hero",
     "measurements": {
       "100": {
-        "pixels": 8044,
-        "contrast": 64.6
+        "pixels": 8614,
+        "contrast": 54.5
       },
       "67": {
-        "pixels": 3596,
-        "contrast": 64.3
+        "pixels": 3913,
+        "contrast": 52.9
       },
       "50": {
-        "pixels": 2017,
-        "contrast": 63.5
+        "pixels": 2196,
+        "contrast": 52.0
       },
       "33": {
-        "pixels": 901,
-        "contrast": 61.8
+        "pixels": 969,
+        "contrast": 50.7
       }
     },
     "pass": true
@@ -326,20 +326,20 @@
     "plate": "enemy",
     "measurements": {
       "100": {
-        "pixels": 19185,
-        "contrast": 86.6
+        "pixels": 16652,
+        "contrast": 76.7
       },
       "67": {
-        "pixels": 8634,
-        "contrast": 85.8
+        "pixels": 7537,
+        "contrast": 75.9
       },
       "50": {
-        "pixels": 4833,
-        "contrast": 85.2
+        "pixels": 4224,
+        "contrast": 75.4
       },
       "33": {
-        "pixels": 2136,
-        "contrast": 83.8
+        "pixels": 1866,
+        "contrast": 74.3
       }
     },
     "pass": true

@@ -258,13 +258,16 @@ func _chop() -> void:
 	velocity.x = facing * 160.0
 	Sfx.play("elite_chop", 2.0)
 	Fx.slash(global_position + Vector2(70 * facing, -110), facing, -120.0, 85.0, 110.0, 40.0, 0.28,
-		Color(0.42, 0.12, 0.08), Color(0.95, 0.85, 0.7), 1.0)
+		Color(0.48, 0.12, 0.08), Color(0.98, 0.90, 0.76), 1.0,
+		"cleave", Color(0.92, 0.56, 0.24), 0.06)
 	# ground shock (震地): low band around the impact point; jump over it
 	var impact := global_position + Vector2(120 * facing, 0)
+	Fx.ground_slam(impact, facing, 1.35)
 	Fx.ring(impact + Vector2(0, -4), 10.0, 150.0, Color(0.55, 0.45, 0.32, 0.9), 0.5, 14.0, 0.18)
 	Fx.dust(impact, 18)
 	Fx.particles(impact, 16, Color(0.25, 0.2, 0.15), 380.0, 60.0, Vector2.UP, 1200.0, 0.6, 6.0)
 	Fx.shake(9.0, 0.35)
+	Fx.kick(Vector2(0.0, 9.0), 0.16)
 	Fx.punch(0.035, 0.3)
 	var hs := {}
 	Combat.strike({"owner": self, "team": team, "rect": Rect2(impact.x - 150, impact.y - 34, 300, 36),
@@ -279,8 +282,10 @@ func _sweep() -> void:
 	velocity.x = facing * 140.0
 	Sfx.play("elite_sweep", 1.0)
 	Fx.slash(global_position + Vector2(40 * facing, -88), facing, 170.0, 5.0, 135.0, 52.0, 0.32,
-		Color(0.48, 0.12, 0.08), Color(0.97, 0.88, 0.72), 0.45)
+		Color(0.52, 0.13, 0.08), Color(0.98, 0.90, 0.76), 0.45,
+		"cleave", Color(0.94, 0.58, 0.26), -0.10)
 	Fx.shake(5.0, 0.2)
+	Fx.kick(Vector2(facing * 6.0, 0.0), 0.12)
 
 
 func _roar() -> void:

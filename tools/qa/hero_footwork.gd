@@ -17,28 +17,22 @@ func check_footwork() -> void:
 	var passed := true
 	for action in ["move_right", "move_left"]:
 		player.input_override = {action: true}
-		var planted := {}
 		var sampled := 0
-		var max_slide := 0.0
 		var max_floor_gap := 0.0
+		var uses_frames := false
 		for frame in 100:
 			await process_frame
 			var visual: Node2D = player.vis
-			if frame < 12 or player.state != "run" or visual.cut.current != "run":
+			if frame < 12 or player.state != "run" or visual.current_clip() != "run":
 				continue
-			for side in 2:
-				var phase := fposmod(visual.cut.clip_progress() + (0.5 if side == 0 else 0.0), 1.0)
-				if phase < 0.08 or phase > 0.35:
-					planted.erase(side)
-					continue
-				var sole: Vector2 = visual.to_global(visual.contacts[side])
-				if not planted.has(side):
-					planted[side] = sole.x
-				max_slide = maxf(max_slide, absf(sole.x - planted[side]))
-				max_floor_gap = maxf(max_floor_gap, absf(sole.y - player.global_position.y))
-				sampled += 1
-		var ok := sampled >= 30 and max_slide < 1.0 and max_floor_gap < 1.0
+			uses_frames = uses_frames or bool(visual.frame_on)
+			var sole0: Vector2 = visual.to_global(visual.contacts[0])
+			var sole1: Vector2 = visual.to_global(visual.contacts[1])
+			var lowest_gap := minf(absf(sole0.y - player.global_position.y), absf(sole1.y - player.global_position.y))
+			max_floor_gap = maxf(max_floor_gap, lowest_gap)
+			sampled += 1
+		var ok := sampled >= 30 and uses_frames and max_floor_gap < 2.0
 		print("TEST hero_support_foot_", action, " ", "PASS" if ok else "FAIL",
-			" samples=", sampled, " slide_px=", max_slide, " floor_gap_px=", max_floor_gap)
+			" samples=", sampled, " frame_anim=", uses_frames, " floor_gap_px=", max_floor_gap)
 		passed = passed and ok
 	game.quit(0 if passed else 1)

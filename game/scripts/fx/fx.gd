@@ -6,6 +6,7 @@ extends RefCounted
 
 const SlashFx := preload("res://scripts/fx/slash_fx.gd")
 const RingFx := preload("res://scripts/fx/ring_fx.gd")
+const HitFx := preload("res://scripts/fx/hit_fx.gd")
 
 const C_CINNABAR := Color(0.70, 0.13, 0.09)
 const C_GOLD := Color(1.0, 0.78, 0.32)
@@ -21,7 +22,8 @@ static func layer() -> Node:
 
 
 static func slash(pos: Vector2, facing: int, a0: float, a1: float, radius: float, width: float,
-		life := 0.2, rim := C_CINNABAR, core := Color(1, 0.97, 0.9), squash := 1.0) -> Node2D:
+		life := 0.2, rim := C_CINNABAR, core := Color(1, 0.97, 0.9), squash := 1.0,
+		style := "arc", accent := C_GOLD, tilt := 0.0, length := 165.0) -> Node2D:
 	var s := SlashFx.new()
 	s.position = pos
 	s.facing = facing
@@ -33,8 +35,64 @@ static func slash(pos: Vector2, facing: int, a0: float, a1: float, radius: float
 	s.rim = rim
 	s.core = core
 	s.squash_y = squash
+	s.style = style
+	s.accent = accent
+	s.tilt = tilt
+	s.length = length
 	layer().add_child(s)
 	return s
+
+
+static func hit_impact(pos: Vector2, dir: int, tag := "slash1", heavy := false,
+		col := C_CINNABAR, accent := C_GOLD) -> Node2D:
+	var h := HitFx.new()
+	h.mode = "hit"
+	h.position = pos
+	h.dir = dir if dir != 0 else 1
+	h.heavy = heavy
+	h.color = col
+	h.accent = accent
+	h.life = 0.20 if heavy else 0.15
+	match tag:
+		"slash2", "down":
+			h.cut_angle = 1.08
+		"slash3":
+			h.cut_angle = -0.06
+		"dash_attack":
+			h.cut_angle = -0.14
+		"jump_attack":
+			h.cut_angle = 0.72
+		_:
+			h.cut_angle = -0.32
+	layer().add_child(h)
+	return h
+
+
+static func blade_glint(pos: Vector2, dir := 1, col := C_GOLD, size := 22.0) -> Node2D:
+	var h := HitFx.new()
+	h.mode = "glint"
+	h.position = pos
+	h.dir = dir
+	h.accent = col
+	h.size = size
+	h.life = 0.13
+	layer().add_child(h)
+	return h
+
+
+static func ground_slam(pos: Vector2, facing := 1, power := 1.0) -> void:
+	var h := HitFx.new()
+	h.mode = "slam"
+	h.position = pos
+	h.dir = facing
+	h.size = power
+	h.life = 0.34
+	layer().add_child(h)
+	Sfx.play("ground_slam", -5.0 + (power - 1.0) * 3.5, 0.04)
+	dust(pos + Vector2(-18.0 * power, -2.0), int(roundf(6 * power)), Vector2(-0.85, -0.45))
+	dust(pos + Vector2(18.0 * power, -2.0), int(roundf(6 * power)), Vector2(0.85, -0.45))
+	particles(pos + Vector2(0, -4), int(roundf(8 * power)), Color(0.28, 0.22, 0.17, 0.92),
+		240.0 * power, 65.0, Vector2.UP, 980.0, 0.42, 4.5)
 
 
 static func ring(pos: Vector2, r0: float, r1: float, color: Color, life := 0.4, width := 10.0, squash := 0.35) -> Node2D:
@@ -181,6 +239,59 @@ static func shake(amount: float, dur := 0.2) -> void:
 		Game.level.shake(amount, dur)
 
 
+static func kick(vec: Vector2, dur := 0.11) -> void:
+	if Game.level and is_instance_valid(Game.level) and Game.level.has_method("kick"):
+		Game.level.kick(vec, dur)
+
+
+static func damage_number(pos: Vector2, amount: float, dir := 1, style := "normal") -> void:
+	var l := Label.new()
+	l.text = str(maxi(1, int(roundf(amount))))
+	var font_sz := 24
+	var col := Color(0.97, 0.93, 0.84)
+	var outline := Color(0.08, 0.05, 0.04)
+	match style:
+		"heavy":
+			font_sz = 31
+			col = Color(1.0, 0.78, 0.34)
+			outline = Color(0.32, 0.07, 0.04)
+		"finisher":
+			font_sz = 37
+			col = Color(1.0, 0.46, 0.22)
+			outline = Color(0.18, 0.03, 0.02)
+		"talisman":
+			font_sz = 26
+			col = Color(1.0, 0.86, 0.48)
+			outline = Color(0.26, 0.10, 0.04)
+		"armor":
+			font_sz = 22
+			col = Color(0.84, 0.82, 0.78)
+			outline = Color(0.10, 0.09, 0.08)
+	l.add_theme_font_size_override("font_size", font_sz)
+	l.add_theme_color_override("font_color", col)
+	l.add_theme_color_override("font_outline_color", outline)
+	l.add_theme_constant_override("outline_size", 6 if style == "normal" else 7)
+	var jitter_x := randf_range(-10.0, 10.0)
+	var jitter_y := randf_range(-8.0, 8.0)
+	l.size = Vector2(120, 46)
+	l.pivot_offset = Vector2(60, 23)
+	l.position = pos + Vector2(-60.0 + jitter_x, -23.0 + jitter_y)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.scale = Vector2.ONE * (1.55 if style == "finisher" else 1.38)
+	l.z_index = 32
+	layer().add_child(l)
+	var drift_x := float(dir if dir != 0 else 1) * randf_range(16.0, 34.0)
+	var rise_y := 42.0 if style != "finisher" else 56.0
+	var tw := l.create_tween()
+	tw.set_ignore_time_scale(true)
+	tw.tween_property(l, "scale", Vector2.ONE, 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(l, "position:x", l.position.x + drift_x, 0.62).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(l, "position:y", l.position.y - rise_y, 0.34).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "position:y", l.position.y - rise_y + 12.0, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(l, "modulate:a", 0.0, 0.28)
+	tw.tween_callback(l.queue_free)
+
+
 static func float_text(pos: Vector2, text: String, color: Color, size := 26) -> void:
 	var l := Label.new()
 	l.text = text
@@ -194,6 +305,7 @@ static func float_text(pos: Vector2, text: String, color: Color, size := 26) -> 
 	l.z_index = 30
 	layer().add_child(l)
 	var tw := l.create_tween()
+	tw.set_ignore_time_scale(true)
 	tw.tween_property(l, "position:y", l.position.y - 46, 0.8).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(l, "modulate:a", 0.0, 0.8).set_delay(0.35)
 	tw.tween_callback(l.queue_free)

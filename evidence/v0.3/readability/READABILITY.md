@@ -4,18 +4,18 @@ Godot renders four plates without advancing simulation. Pixels with an RGB chann
 
 | Zone | Figure | Pixels at 33% | Contrast at 33% | Result |
 | --- | --- | ---: | ---: | --- |
-| village | with | 2014 | 69.7 | PASS |
-| village | hero | 885 | 65.9 | PASS |
-| village | grunt | 1129 | 72.6 | PASS |
-| road | with | 1283 | 71.9 | PASS |
-| road | hero | 863 | 67.5 | PASS |
-| road | crawler | 420 | 81.0 | PASS |
-| lowland | with | 1980 | 62.6 | PASS |
-| lowland | hero | 884 | 59.6 | PASS |
-| lowland | spitter | 1096 | 65.1 | PASS |
-| temple | with | 2205 | 75.2 | PASS |
-| temple | hero | 875 | 68.0 | PASS |
-| temple | husk | 1330 | 79.9 | PASS |
-| burial | with | 3037 | 77.3 | PASS |
-| burial | hero | 901 | 61.8 | PASS |
-| burial | elite | 2136 | 83.8 | PASS |
+| village | with | 1857 | 58.5 | PASS |
+| village | hero | 935 | 52.5 | PASS |
+| village | grunt | 922 | 64.5 | PASS |
+| road | with | 1476 | 57.6 | PASS |
+| road | hero | 926 | 54.8 | PASS |
+| road | crawler | 550 | 62.3 | PASS |
+| lowland | with | 1856 | 47.3 | PASS |
+| lowland | hero | 959 | 47.1 | PASS |
+| lowland | spitter | 897 | 47.6 | PASS |
+| temple | with | 1818 | 58.5 | PASS |
+| temple | hero | 950 | 55.2 | PASS |
+| temple | husk | 868 | 62.0 | PASS |
+| burial | with | 2835 | 66.3 | PASS |
+| burial | hero | 969 | 50.7 | PASS |
+| burial | elite | 1866 | 74.3 | PASS |

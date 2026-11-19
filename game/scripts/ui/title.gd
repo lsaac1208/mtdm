@@ -2,7 +2,26 @@ extends Control
 ## Title screen: ink-wash dusk, the Wanderer on the ridge, brush title.
 
 const BRUSH_FONT := preload("res://assets/fonts/MaShanZheng-subset.ttf")
-var hero: PoseSprite
+const HERO_VISUAL := preload("res://scripts/actors/hero_visual.gd")
+const TITLE_LIGHT := {
+	"key_dir": Vector3(0.58, -0.56, 0.59),
+	"key": Color(1.18, 0.96, 0.76),
+	"shadow": Color(0.58, 0.52, 0.52),
+	"rim": Color(1.30, 0.92, 0.58),
+	"rim_str": 0.46,
+	"bounce": Color(0.88, 0.72, 0.54),
+	"bounce_str": 0.22,
+	"haze": Color(0.88, 0.76, 0.60, 0.10),
+	"soil": Color(0.52, 0.40, 0.30),
+	"shadow_lean": -0.52,
+	"point_dir": Vector3(0.0, 0.0, 1.0),
+	"point_color": Color(1.0, 0.58, 0.22),
+	"point_strength": 0.0,
+}
+var hero: RigVisual
+var shadow_node: Node2D
+var motes_node: Node2D
+var _motes: Array = []
 var t := 0.0
 var menu: VBoxContainer
 var help: Label
@@ -21,14 +40,34 @@ func _ready() -> void:
 	sky.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(sky)
 	var holder := Node2D.new()
+	holder.position = Vector2(904, 598)
 	add_child(holder)
-	hero = PoseSprite.new()
-	hero.extra_scale = 2.3
-	hero.sway = 0.008
-	hero.breathe = 0.004
+	shadow_node = Node2D.new()
+	shadow_node.draw.connect(_draw_shadow)
+	holder.add_child(shadow_node)
+	hero = HERO_VISUAL.new()
+	hero.extra_scale = 2.02
+	hero.facing = -1
+	hero.sway = 0.009
+	hero.breathe = 0.003
+	hero.light_override = TITLE_LIGHT
 	holder.add_child(hero)
-	hero.set_pose("hero_01_ready", 0.0)
-	holder.position = Vector2(930, 640)
+	hero.play_clip.call_deferred("idle", 0.0, true)
+	motes_node = Node2D.new()
+	motes_node.draw.connect(_draw_motes)
+	add_child(motes_node)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 90317
+	for i in 22:
+		_motes.append({
+			"x": rng.randf_range(440.0, 1280.0),
+			"y": rng.randf_range(90.0, 660.0),
+			"vx": rng.randf_range(-20.0, -7.0),
+			"vy": rng.randf_range(3.0, 11.0),
+			"r": rng.randf_range(1.6, 3.6),
+			"ph": rng.randf_range(0.0, TAU),
+			"leaf": i < 7,
+		})
 	var title := Label.new()
 	title.text = "道行者"
 	title.add_theme_font_override("font", BRUSH_FONT)
@@ -85,6 +124,59 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	t += delta
+	for m in _motes:
+		m.x += m.vx * delta
+		m.y += (m.vy + sin(t * 1.5 + m.ph) * 6.0) * delta
+		if m.x < 400.0:
+			m.x = 1295.0
+		if m.y > 680.0:
+			m.y = 90.0
+	shadow_node.queue_redraw()
+	motes_node.queue_redraw()
+
+
+func _draw_shadow() -> void:
+	if hero == null:
+		return
+	var lean: float = float(TITLE_LIGHT.shadow_lean)
+	var sc := hero.extra_scale
+	shadow_node.draw_set_transform(Vector2(lean * 22.0 * sc, 3.0), 0.0, Vector2(1.0, 0.20))
+	shadow_node.draw_circle(Vector2.ZERO, 44.0 * sc * 0.62, Color(0.14, 0.09, 0.07, 0.20))
+	shadow_node.draw_set_transform(Vector2(0.0, 2.0), 0.0, Vector2(1.0, 0.22))
+	shadow_node.draw_circle(Vector2.ZERO, 32.0 * sc, Color(0.10, 0.07, 0.05, 0.22))
+	var contacts := hero.boot_contacts()
+	var drawn: Array[float] = []
+	for foot in contacts:
+		var fx: float = float(foot.x)
+		var dup := false
+		for prev_x in drawn:
+			if absf(fx - prev_x) < 10.0 * sc:
+				dup = true
+				break
+		if dup:
+			continue
+		drawn.append(fx)
+		shadow_node.draw_set_transform(Vector2(fx + lean * 2.0, 1.5), 0.0, Vector2(1.0, 0.26))
+		shadow_node.draw_circle(Vector2.ZERO, 13.5 * sc, Color(0.07, 0.05, 0.04, 0.42))
+	shadow_node.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_motes() -> void:
+	for m in _motes:
+		var mr: float = float(m.r)
+		var mph: float = float(m.ph)
+		var mx: float = float(m.x)
+		var my: float = float(m.y)
+		var pulse := 0.55 + 0.45 * sin(t * 2.0 + mph)
+		if bool(m.leaf):
+			var ang: float = t * 1.2 + mph
+			var dir := Vector2(cos(ang), sin(ang))
+			var side := Vector2(-dir.y, dir.x) * (mr * 0.55)
+			var p := Vector2(mx, my)
+			var pts := PackedVector2Array([p + dir * mr * 1.9, p + side, p - dir * mr * 1.9, p - side])
+			motes_node.draw_colored_polygon(pts, Color(0.64, 0.30, 0.16, 0.46 * pulse))
+		else:
+			motes_node.draw_circle(Vector2(mx, my), mr * 0.65, Color(1.0, 0.88, 0.68, 0.32 * pulse))
 
 
 func _start() -> void:

@@ -9,7 +9,23 @@ const META_PATH := "res://assets/sprites/sprites_meta.json"
 const SHADER := preload("res://shaders/ink_sprite.gdshader")
 static var _meta := {}
 static var _tex := {}
+static var _norm := {}
 static var _rig := {}
+const DEFAULT_LIGHT := {
+	"key_dir": Vector3(0.62, -0.64, 0.45),
+	"key": Color(1.10, 1.02, 0.89),
+	"shadow": Color(0.68, 0.64, 0.60),
+	"rim": Color(1.16, 1.02, 0.80),
+	"rim_str": 0.28,
+	"bounce": Color(0.86, 0.72, 0.54),
+	"bounce_str": 0.16,
+	"haze": Color(0.76, 0.66, 0.54, 0.12),
+	"soil": Color(0.52, 0.42, 0.32),
+	"shadow_lean": -0.38,
+	"point_dir": Vector3(0.0, 0.0, 1.0),
+	"point_color": Color(1.0, 0.58, 0.22),
+	"point_strength": 0.0,
+}
 var arm_rot := [0.0, 0.0]
 var arm_off := [Vector2.ZERO, Vector2.ZERO]
 
@@ -39,9 +55,16 @@ var dissolve := 0.0
 var jitter := 0.0
 var alpha := 1.0
 var painted_mul := 1.0
+var air_height := 0.0
+var _light: Dictionary = DEFAULT_LIGHT
+var light_override: Dictionary = {}
 var _fade := 0.0
 var _fade_len := 0.0
 var _toff := randf() * 10.0
+var _jitter_len := 0.14
+var _jitter_amp := 6.0
+var _jitter_dir := 1.0
+var _jit_off := Vector2.ZERO
 
 
 static func meta(name_: String) -> Dictionary:
@@ -64,6 +87,42 @@ static func tex(name_: String) -> Texture2D:
 	return _tex[name_]
 
 
+static func normal_tex(name_: String) -> Texture2D:
+	if not _norm.has(name_):
+		var path := "res://assets/sprites/%s_n.png" % name_
+		_norm[name_] = load(path) if ResourceLoader.exists(path) else null
+	return _norm[name_]
+
+
+static func apply_light_uniforms(m: ShaderMaterial, light: Dictionary) -> void:
+	m.set_shader_parameter("key_dir", light.get("key_dir", DEFAULT_LIGHT.key_dir))
+	m.set_shader_parameter("key_color", light.get("key", DEFAULT_LIGHT.key))
+	m.set_shader_parameter("shadow_color", light.get("shadow", DEFAULT_LIGHT.shadow))
+	m.set_shader_parameter("rim_color", light.get("rim", DEFAULT_LIGHT.rim))
+	m.set_shader_parameter("rim_strength", float(light.get("rim_str", DEFAULT_LIGHT.rim_str)))
+	m.set_shader_parameter("bounce_color", light.get("bounce", DEFAULT_LIGHT.bounce))
+	m.set_shader_parameter("bounce_strength", float(light.get("bounce_str", DEFAULT_LIGHT.bounce_str)))
+	m.set_shader_parameter("haze_color", light.get("haze", DEFAULT_LIGHT.haze))
+	m.set_shader_parameter("soil_color", light.get("soil", DEFAULT_LIGHT.soil))
+	m.set_shader_parameter("point_dir", light.get("point_dir", DEFAULT_LIGHT.point_dir))
+	m.set_shader_parameter("point_color", light.get("point_color", DEFAULT_LIGHT.point_color))
+	m.set_shader_parameter("point_strength", float(light.get("point_strength", 0.0)))
+
+
+func sample_light() -> Dictionary:
+	if not light_override.is_empty():
+		_light = light_override
+	elif Game.level != null and is_instance_valid(Game.level) and Game.level.has_method("zone_light"):
+		_light = Game.level.zone_light(global_position)
+	else:
+		_light = DEFAULT_LIGHT
+	return _light
+
+
+func current_light() -> Dictionary:
+	return _light
+
+
 func _init() -> void:
 	rig = Node2D.new()
 	add_child(rig)
@@ -77,6 +136,8 @@ func _make_sprite() -> Sprite2D:
 	var m := ShaderMaterial.new()
 	m.shader = SHADER
 	m.set_shader_parameter("time_offset", _toff)
+	m.set_shader_parameter("outline_px", 0.0)
+	m.set_shader_parameter("halo_px", 0.0)
 	s.material = m
 	rig.add_child(s)
 	s.visible = false
@@ -89,7 +150,14 @@ func _apply(s: Sprite2D, name_: String) -> void:
 		push_warning("missing pose " + name_)
 		return
 	s.texture = tex(name_)
-	(s.material as ShaderMaterial).set_shader_parameter("src_tex", s.texture)
+	var m: ShaderMaterial = s.material
+	m.set_shader_parameter("src_tex", s.texture)
+	var nt := normal_tex(name_)
+	if nt != null:
+		m.set_shader_parameter("normal_tex", nt)
+		m.set_shader_parameter("use_normal", 1.0)
+	else:
+		m.set_shader_parameter("use_normal", 0.0)
 	var sc: float = md.scale
 	s.scale = Vector2(sc, sc)
 	s.position = Vector2(-md.foot_x * sc, -md.foot_y * sc)
@@ -115,13 +183,27 @@ func pose_height() -> float:
 	return md.get("body_h", 0.0) * md.get("scale", 1.0)
 
 
+func hit_shake(dir: int, amp := 7.0, dur := 0.14) -> void:
+	_jitter_amp = maxf(_jitter_amp if jitter > 0.0 else 0.0, amp)
+	jitter = maxf(jitter, dur)
+	_jitter_len = maxf(dur, 0.04)
+	_jitter_dir = float(dir if dir != 0 else 1)
+
+
 func _process(delta: float) -> void:
+	sample_light()
+	var udt := Game.unscaled_delta(delta)
 	rig.scale = Vector2(facing * squash.x, squash.y) * extra_scale
 	rig.rotation = deg_to_rad(lean) * facing
 	var jit := Vector2.ZERO
 	if jitter > 0.0:
-		jitter = maxf(0.0, jitter - delta)
-		jit = Vector2(randf_range(-1, 1) * 4.0, randf_range(-1, 1) * 1.5) * (jitter / 0.15)
+		jitter = maxf(0.0, jitter - udt)
+		var decay := clampf(jitter / maxf(_jitter_len, 0.001), 0.0, 1.0)
+		var osc := sin(jitter * 98.0)
+		jit = Vector2(_jitter_dir * osc * _jitter_amp * decay, randf_range(-1.0, 1.0) * 1.6 * decay)
+		if jitter <= 0.0:
+			_jitter_amp = 6.0
+	_jit_off = jit
 	rig.position = Vector2(nudge.x * facing, nudge.y - bob) + jit
 	nudge = nudge.lerp(Vector2.ZERO, minf(1.0, delta * 10.0))
 	if _fade > 0.0:
@@ -132,11 +214,13 @@ func _process(delta: float) -> void:
 	_set_params(cur, alpha * painted_mul * (1.0 - fa * 0.5))
 	if prev.visible:
 		_set_params(prev, alpha * painted_mul * fa)
-	flash = maxf(0.0, flash - delta * 6.0)
+	flash = maxf(0.0, flash - udt * 6.5)
 
 
 func _set_params(s: Sprite2D, a: float) -> void:
 	var m: ShaderMaterial = s.material
+	m.set_shader_parameter("facing_sign", float(facing))
+	m.set_shader_parameter("air_height", air_height)
 	m.set_shader_parameter("sway", sway)
 	m.set_shader_parameter("stride", stride)
 	m.set_shader_parameter("legs", legs)
@@ -166,3 +250,4 @@ func _set_params(s: Sprite2D, a: float) -> void:
 	m.set_shader_parameter("tint", tint)
 	m.set_shader_parameter("dissolve", dissolve)
 	m.set_shader_parameter("alpha_mul", a)
+	apply_light_uniforms(m, _light)

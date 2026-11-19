@@ -1,11 +1,16 @@
 shader_type canvas_item;
-// Procedural secondary motion for pose sprites cut from the concept sheets.
-//  - sway: robe / rag hem flutter that grows toward the bottom of the sprite
-//  - stride: lower-body shear that alternates with `phase` (walk / shamble)
-//  - breathe: upper-body vertical stretch
-//  - flash: hit flash, tint: status tint, dissolve: ink-burn death effect
+// Volumetric ink-wash character shader for hand-painted animation frames and
+// combat pose sprites. Combines baked 2.5D sculpted normal/thickness/cavity
+// maps with per-zone directional sunlight/moonlight, light-facing Fresnel rim,
+// ground bounce, nearby campfire/seal/taint point lighting, ground-contact AO,
+// and zone atmospheric shadow-floor integration so characters sit inside the
+// painted scene rather than reading like flat pasted paper cutouts.
 
 uniform sampler2D src_tex : filter_linear, repeat_disable;
+uniform sampler2D normal_tex : filter_linear, repeat_disable;
+uniform float use_normal = 0.0;
+uniform float facing_sign = 1.0;
+uniform float air_height = 0.0;
 uniform float time_offset = 0.0;
 uniform float sway = 0.0;        // uv units
 uniform float stride = 0.0;      // uv units
@@ -33,10 +38,27 @@ uniform float torso_twist = 0.0;  // upper-body counter-rotation about the hips 
 uniform float ribbon = 0.0;       // head ribbon / hair flutter (uv units)          // airborne: both thighs forward, knees bent (radians)     // half-width of each leg region (uv)
 uniform float split_x = 0.5;       // uv x between the legs (feet anchor)
 uniform float hip_y = 0.6;         // uv y where the legs start
-uniform float outline_px = 3.5;          // texels
-uniform vec4 outline_color : source_color = vec4(0.06, 0.05, 0.04, 0.9);
-uniform float halo_px = 9.0;
-uniform vec4 halo_color : source_color = vec4(0.88, 0.82, 0.70, 0.22);
+uniform float outline_px = 0.0;
+uniform vec4 outline_color : source_color = vec4(0.14, 0.11, 0.09, 0.30);
+uniform float halo_px = 0.0;
+uniform vec4 halo_color : source_color = vec4(0.0, 0.0, 0.0, 0.0);
+
+// Per-zone 2.5D environmental lighting & atmospheric perspective
+uniform vec3 key_dir = vec3(0.62, -0.64, 0.45);
+uniform vec3 key_color : source_color = vec3(1.10, 1.02, 0.89);
+uniform vec3 shadow_color : source_color = vec3(0.68, 0.64, 0.60);
+uniform vec3 rim_color : source_color = vec3(1.16, 1.02, 0.80);
+uniform float rim_strength = 0.28;
+uniform vec3 bounce_color : source_color = vec3(0.86, 0.72, 0.54);
+uniform float bounce_strength = 0.16;
+uniform vec4 haze_color : source_color = vec4(0.76, 0.66, 0.54, 0.13);
+uniform vec3 soil_color : source_color = vec3(0.52, 0.42, 0.32);
+uniform float ground_ao = 0.24;
+
+// Nearby dynamic light (campfires, arena talisman barriers, taint pools)
+uniform vec3 point_dir = vec3(0.0, 0.0, 1.0);
+uniform vec3 point_color : source_color = vec3(1.0, 0.58, 0.22);
+uniform float point_strength = 0.0;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -192,7 +214,54 @@ void fragment() {
 	vec2 px = 1.0 / TEXTURE_PIXEL_SIZE;
 	vec4 c = rig_sample(uv, px);
 	float figure_a = c.a;
-	// thick ink contour: max alpha of 8 neighbours, drawn behind the sprite
+	// 2.5D sculptural form lighting, directional rim, ground AO & zone atmosphere
+	if (figure_a > 0.01) {
+		vec3 N = vec3(0.0, -0.15, 0.98);
+		float thick = 0.7;
+		float cav_ao = 1.0;
+		if (use_normal > 0.5) {
+			vec4 nm = texture(normal_tex, clamp(uv, vec2(0.0), vec2(1.0)));
+			float nx = (nm.r * 2.0 - 1.0) * facing_sign;
+			float ny = nm.g * 2.0 - 1.0;
+			float nz = sqrt(max(0.08, 1.0 - clamp(nx * nx + ny * ny, 0.0, 0.92)));
+			N = normalize(vec3(nx, ny, nz));
+			thick = nm.b;
+			cav_ao = nm.a;
+		}
+		vec3 L = normalize(key_dir);
+		float ndotl = dot(N, L) * 0.5 + 0.5;
+		float lit_w = smoothstep(0.16, 0.88, ndotl);
+		// Sculpted key/shadow colour wrap + painted fold crevice occlusion
+		vec3 shade = mix(shadow_color, key_color, lit_w);
+		shade *= mix(0.84, 1.04, cav_ao);
+		// Upward warm/mire ground bounce on downward-facing planes near the floor
+		float near_ground = 1.0 - clamp(air_height / 145.0, 0.0, 1.0);
+		float bounce_w = smoothstep(-0.05, 0.85, N.y) * bounce_strength * near_ground;
+		shade += bounce_color * bounce_w;
+		// Dynamic campfire / talisman seal / taint pool light
+		if (point_strength > 0.001) {
+			vec3 PL = normalize(point_dir);
+			float p_ndotl = max(0.0, dot(N, PL) * 0.62 + 0.38);
+			float p_edge = smoothstep(0.74, 0.08, thick);
+			shade += point_color * point_strength * (p_ndotl * 0.44 + p_edge * max(0.0, dot(N.xy, PL.xy)) * 0.58);
+		}
+		c.rgb *= shade;
+		// Light-facing directional rim (separates figure in depth with zero sticker border)
+		float edge_w = smoothstep(0.60, 0.06, thick) * smoothstep(0.05, 0.35, figure_a);
+		float rim_facing = smoothstep(-0.10, 0.72, dot(normalize(N.xy + vec2(0.0001)), normalize(L.xy + vec2(0.0001))));
+		float luma_c = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+		c.rgb += rim_color * (edge_w * rim_facing * rim_strength * (0.48 + 0.52 * luma_c));
+		// Ground contact AO + faint soil dust kiss on boots/hem
+		float foot_contact = smoothstep(foot_v - 0.15, foot_v, UV.y) * (1.0 - clamp(air_height / 40.0, 0.0, 1.0));
+		c.rgb *= 1.0 - foot_contact * ground_ao;
+		c.rgb = mix(c.rgb, soil_color * 0.74, foot_contact * foot_contact * 0.15);
+		// Atmospheric perspective: lift deepest ink blacks softly into zone air
+		float haze_amt = haze_color.a;
+		vec3 dark_floor = haze_color.rgb * 0.34;
+		c.rgb = mix(c.rgb, max(c.rgb, dark_floor), haze_amt * 0.85);
+		c.rgb = mix(c.rgb, haze_color.rgb, haze_amt * 0.22);
+	}
+	// Optional legacy contour (disabled by default: outline_px = 0.0)
 	if (outline_px > 0.0 && c.a < 0.99) {
 		vec2 o = TEXTURE_PIXEL_SIZE * outline_px;
 		float na = 0.0;

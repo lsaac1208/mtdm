@@ -1,13 +1,15 @@
 shader_type canvas_item;
-// Post-composite look for a CanvasGroup-hosted cut-out rig: ink contour, pale
-// paper halo, hit flash, status tint, ink-burn dissolve. Operates on the
-// group's rendered contents so joints and overlapping parts read as one figure.
+// Post-composite look for fallback CanvasGroup-hosted cut-out rigs.
+// Defaults to zero sticker outline / zero pale halo with zone atmospheric
+// shadow-floor integration.
 
 uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;
-uniform float outline_px = 2.2;
-uniform vec4 outline_color : source_color = vec4(0.06, 0.05, 0.04, 0.92);
-uniform float halo_px = 5.5;
-uniform vec4 halo_color : source_color = vec4(0.88, 0.82, 0.70, 0.22);
+uniform float outline_px = 0.0;
+uniform vec4 outline_color : source_color = vec4(0.14, 0.11, 0.09, 0.30);
+uniform float halo_px = 0.0;
+uniform vec4 halo_color : source_color = vec4(0.0, 0.0, 0.0, 0.0);
+uniform vec4 haze_color : source_color = vec4(0.76, 0.66, 0.54, 0.13);
+uniform vec3 key_tint : source_color = vec3(1.0, 0.98, 0.95);
 uniform float flash = 0.0;
 uniform vec4 flash_color : source_color = vec4(1.0, 0.96, 0.88, 1.0);
 uniform vec4 tint : source_color = vec4(1.0);
@@ -26,24 +28,37 @@ void fragment() {
 	// un-premultiply what the group buffer holds
 	if (c.a > 0.0001) c.rgb /= c.a;
 	float figure_a = c.a;
-	vec2 o = SCREEN_PIXEL_SIZE * outline_px;
-	float na = 0.0;
-	na = max(na, textureLod(screen_texture, SCREEN_UV + vec2(o.x, 0.0), 0.0).a);
-	na = max(na, textureLod(screen_texture, SCREEN_UV - vec2(o.x, 0.0), 0.0).a);
-	na = max(na, textureLod(screen_texture, SCREEN_UV + vec2(0.0, o.y), 0.0).a);
-	na = max(na, textureLod(screen_texture, SCREEN_UV - vec2(0.0, o.y), 0.0).a);
-	vec2 h = SCREEN_PIXEL_SIZE * halo_px;
-	float hn = na;
-	hn = max(hn, textureLod(screen_texture, SCREEN_UV + h * 0.7, 0.0).a);
-	hn = max(hn, textureLod(screen_texture, SCREEN_UV - h * 0.7, 0.0).a);
-	hn = max(hn, textureLod(screen_texture, SCREEN_UV + vec2(h.x, -h.y) * 0.7, 0.0).a);
-	hn = max(hn, textureLod(screen_texture, SCREEN_UV + vec2(-h.x, h.y) * 0.7, 0.0).a);
-	float oa = clamp(na * 1.4, 0.0, 1.0) * outline_color.a;
-	float ha = clamp(hn * 1.2, 0.0, 1.0) * halo_color.a;
-	vec3 under = mix(halo_color.rgb, outline_color.rgb, step(0.001, oa));
-	float ua = max(oa, ha);
-	c.rgb = mix(under, c.rgb, c.a);
-	c.a = max(c.a, ua);
+	if (figure_a > 0.01) {
+		c.rgb *= key_tint;
+		vec3 dark_floor = haze_color.rgb * 0.34;
+		c.rgb = mix(c.rgb, max(c.rgb, dark_floor), haze_color.a * 0.85);
+		c.rgb = mix(c.rgb, haze_color.rgb, haze_color.a * 0.22);
+	}
+	if (outline_px > 0.0 || halo_px > 0.0) {
+		vec2 o = SCREEN_PIXEL_SIZE * outline_px;
+		float na = 0.0;
+		if (outline_px > 0.0) {
+			na = max(na, textureLod(screen_texture, SCREEN_UV + vec2(o.x, 0.0), 0.0).a);
+			na = max(na, textureLod(screen_texture, SCREEN_UV - vec2(o.x, 0.0), 0.0).a);
+			na = max(na, textureLod(screen_texture, SCREEN_UV + vec2(0.0, o.y), 0.0).a);
+			na = max(na, textureLod(screen_texture, SCREEN_UV - vec2(0.0, o.y), 0.0).a);
+		}
+		float hn = 0.0;
+		if (halo_px > 0.0) {
+			vec2 h = SCREEN_PIXEL_SIZE * halo_px;
+			hn = na;
+			hn = max(hn, textureLod(screen_texture, SCREEN_UV + h * 0.7, 0.0).a);
+			hn = max(hn, textureLod(screen_texture, SCREEN_UV - h * 0.7, 0.0).a);
+			hn = max(hn, textureLod(screen_texture, SCREEN_UV + vec2(h.x, -h.y) * 0.7, 0.0).a);
+			hn = max(hn, textureLod(screen_texture, SCREEN_UV + vec2(-h.x, h.y) * 0.7, 0.0).a);
+		}
+		float oa = clamp(na * 1.4, 0.0, 1.0) * outline_color.a;
+		float ha = clamp(hn * 1.2, 0.0, 1.0) * halo_color.a;
+		vec3 under = mix(halo_color.rgb, outline_color.rgb, step(0.001, oa));
+		float ua = max(oa, ha);
+		c.rgb = mix(under, c.rgb, c.a);
+		c.a = max(c.a, ua);
+	}
 	c.rgb = mix(c.rgb, flash_color.rgb, flash * figure_a);
 	c *= tint;
 	if (dissolve > 0.0) {

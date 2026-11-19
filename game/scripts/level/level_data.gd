@@ -7,11 +7,16 @@ extends RefCounted
 const LENGTH := 11300.0
 
 const ZONES := [
-	{"x": 0.0, "cn": "荒村废墟", "en": "Ruined Village", "tint": Color(1.0, 0.93, 0.82), "fog": Color(0.85, 0.72, 0.55, 0.16), "music": "music_wander", "amb": "amb_village", "motes": [Color(0.95, 0.82, 0.55, 0.5), -12.0, 6.0]},
-	{"x": 2350.0, "cn": "道路边缘", "en": "Road's Edge", "tint": Color(0.86, 0.86, 0.84), "fog": Color(0.7, 0.68, 0.62, 0.2), "music": "music_wander", "amb": "amb_wind", "motes": [Color(0.55, 0.53, 0.5, 0.55), 25.0, 9.0]},
-	{"x": 4350.0, "cn": "低洼污染区", "en": "Tainted Lowland", "tint": Color(0.78, 0.86, 0.68), "fog": Color(0.45, 0.6, 0.25, 0.26), "music": "music_taint", "amb": "amb_lowland", "motes": [Color(0.7, 0.9, 0.3, 0.6), -30.0, 7.0]},
-	{"x": 6550.0, "cn": "废弃道观", "en": "Abandoned Temple", "tint": Color(0.95, 0.8, 0.7), "fog": Color(0.55, 0.3, 0.2, 0.2), "music": "music_temple", "amb": "amb_temple", "motes": [Color(1.0, 0.6, 0.25, 0.75), -35.0, 5.0]},
-	{"x": 8550.0, "cn": "乱葬岗", "en": "Burial Mound", "tint": Color(0.7, 0.72, 0.85), "fog": Color(0.3, 0.32, 0.45, 0.28), "music": "music_temple", "amb": "amb_burial", "motes": [Color(0.6, 0.6, 0.62, 0.6), 30.0, 10.0]},
+	{"x": 0.0, "cn": "荒村废墟", "en": "Ruined Village", "tint": Color(1.0, 0.93, 0.82), "fog": Color(0.85, 0.72, 0.55, 0.16), "music": "music_wander", "amb": "amb_village", "motes": [Color(0.95, 0.82, 0.55, 0.5), -12.0, 6.0],
+		"light": {"key_dir": Vector3(0.62, -0.64, 0.45), "key": Color(1.10, 1.02, 0.89), "shadow": Color(0.68, 0.64, 0.60), "rim": Color(1.16, 1.02, 0.80), "rim_str": 0.28, "bounce": Color(0.86, 0.72, 0.54), "bounce_str": 0.16, "haze": Color(0.76, 0.66, 0.54, 0.13), "soil": Color(0.52, 0.42, 0.32), "shadow_lean": -0.40}},
+	{"x": 2350.0, "cn": "道路边缘", "en": "Road's Edge", "tint": Color(0.86, 0.86, 0.84), "fog": Color(0.7, 0.68, 0.62, 0.2), "music": "music_wander", "amb": "amb_wind", "motes": [Color(0.55, 0.53, 0.5, 0.55), 25.0, 9.0],
+		"light": {"key_dir": Vector3(0.36, -0.78, 0.51), "key": Color(0.99, 0.98, 0.95), "shadow": Color(0.64, 0.66, 0.68), "rim": Color(0.96, 0.97, 0.98), "rim_str": 0.25, "bounce": Color(0.68, 0.66, 0.62), "bounce_str": 0.13, "haze": Color(0.68, 0.67, 0.63, 0.15), "soil": Color(0.45, 0.43, 0.39), "shadow_lean": -0.22}},
+	{"x": 4350.0, "cn": "低洼污染区", "en": "Tainted Lowland", "tint": Color(0.78, 0.86, 0.68), "fog": Color(0.45, 0.6, 0.25, 0.26), "music": "music_taint", "amb": "amb_lowland", "motes": [Color(0.7, 0.9, 0.3, 0.6), -30.0, 7.0],
+		"light": {"key_dir": Vector3(0.42, -0.74, 0.52), "key": Color(0.96, 1.03, 0.88), "shadow": Color(0.58, 0.66, 0.58), "rim": Color(0.86, 1.04, 0.78), "rim_str": 0.30, "bounce": Color(0.52, 0.86, 0.36), "bounce_str": 0.20, "haze": Color(0.56, 0.64, 0.50, 0.16), "soil": Color(0.36, 0.42, 0.30), "shadow_lean": -0.26}},
+	{"x": 6550.0, "cn": "废弃道观", "en": "Abandoned Temple", "tint": Color(0.95, 0.8, 0.7), "fog": Color(0.55, 0.3, 0.2, 0.2), "music": "music_temple", "amb": "amb_temple", "motes": [Color(1.0, 0.6, 0.25, 0.75), -35.0, 5.0],
+		"light": {"key_dir": Vector3(0.54, -0.66, 0.52), "key": Color(1.12, 0.94, 0.78), "shadow": Color(0.58, 0.52, 0.54), "rim": Color(1.20, 0.80, 0.48), "rim_str": 0.32, "bounce": Color(0.84, 0.48, 0.30), "bounce_str": 0.18, "haze": Color(0.60, 0.45, 0.38, 0.15), "soil": Color(0.40, 0.30, 0.26), "shadow_lean": -0.34}},
+	{"x": 8550.0, "cn": "乱葬岗", "en": "Burial Mound", "tint": Color(0.7, 0.72, 0.85), "fog": Color(0.3, 0.32, 0.45, 0.28), "music": "music_temple", "amb": "amb_burial", "motes": [Color(0.6, 0.6, 0.62, 0.6), 30.0, 10.0],
+		"light": {"key_dir": Vector3(-0.44, -0.74, 0.51), "key": Color(0.94, 0.98, 1.09), "shadow": Color(0.58, 0.62, 0.74), "rim": Color(0.88, 0.96, 1.18), "rim_str": 0.34, "bounce": Color(0.52, 0.56, 0.68), "bounce_str": 0.15, "haze": Color(0.54, 0.58, 0.70, 0.18), "soil": Color(0.34, 0.35, 0.42), "shadow_lean": 0.30}},
 ]
 
 # Solid ground pieces: [x0, x1, top_y]. Gaps between pieces don't exist in

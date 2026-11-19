@@ -27,9 +27,9 @@ static func for_type(t: String) -> Dictionary:
 static func pose_map(t: String) -> Dictionary:
 	match t:
 		"grunt":
-			return {"grunt_idle": "walk", "grunt_walk": "walk", "grunt_alert": "alert", "grunt_windup": "windup"}
+			return {"grunt_idle": "walk", "grunt_walk": "walk", "grunt_alert": "alert", "grunt_windup": "windup", "grunt_attack": "attack"}
 		"elite":
-			return {"elite_main": "walk", "elite_idle": "idle"}
+			return {"elite_main": "walk", "elite_idle": "idle", "elite_attack": "chop"}
 		"spitter":
 			return {"spitter_idle": "walk", "spitter_side": "walk", "spitter_detect": "alert", "spitter_windup": "windup",
 				"spitter_recover": "recover", "spitter_hit": "hit"}

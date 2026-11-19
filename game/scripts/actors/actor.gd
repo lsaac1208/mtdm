@@ -91,16 +91,39 @@ func face_toward(x: float) -> void:
 
 
 func _draw() -> void:
-	# soft ink blob shadow at the feet (hidden while airborne)
-	if dead and vis.dissolve > 0.6:
+	if vis == null or (dead and vis.dissolve > 0.6):
 		return
-	var a := 0.32 if is_on_floor() else 0.12
-	var pts := PackedVector2Array()
-	for i in 20:
-		var ang := TAU * i / 20.0
-		pts.append(Vector2(cos(ang) * shadow_w * 0.5, sin(ang) * 6.0 - 1.0))
-	draw_colored_polygon(pts, Color(0.05, 0.04, 0.03, a))
+	var floor_y := 0.0 if is_on_floor() else maxf(0.0, Game.GROUND_Y - global_position.y)
+	var lift := clampf(floor_y / 180.0, 0.0, 1.0)
+	var fade := 1.0 - vis.dissolve
+	var lean_x := float(vis.current_light().get("shadow_lean", -0.35))
+	var soil: Color = vis.current_light().get("soil", Color(0.20, 0.16, 0.13))
+	var shadow_col := Color(soil.r * 0.16, soil.g * 0.14, soil.b * 0.15, 1.0)
+	var r := shadow_w * 0.55
+	# Directional cast shadow grounded to the painted terrain
+	draw_set_transform(Vector2(lean_x * lerpf(r * 0.65, r * 1.1, lift), floor_y + 1.0), 0.0, Vector2(1.22 + lift * 0.3, 0.15))
+	draw_circle(Vector2.ZERO, r * 1.18, Color(shadow_col.r, shadow_col.g, shadow_col.b, lerpf(0.24, 0.06, lift) * fade), true, -1.0, true)
+	# Tight under-body contact occlusion pool
+	draw_set_transform(Vector2(lean_x * 5.0, floor_y - 0.5), 0.0, Vector2(1.0 + lift * 0.2, 0.14))
+	draw_circle(Vector2.ZERO, r * 0.92, Color(shadow_col.r, shadow_col.g, shadow_col.b, lerpf(0.36, 0.08, lift) * fade), true, -1.0, true)
+	if is_on_floor() and vis is RigVisual:
+		var boots: Array = (vis as RigVisual).boot_contacts()
+		var last_fx := 1e9
+		for foot: Vector2 in boots:
+			if absf(foot.x - last_fx) < 16.0:
+				continue
+			last_fx = foot.x
+			var pressure := 1.0 - smoothstep(2.0, 18.0, absf(foot.y))
+			draw_set_transform(Vector2(foot.x, -0.5), 0.0, Vector2(1.0, 0.22))
+			draw_circle(Vector2.ZERO, maxf(10.0, shadow_w * 0.20), Color(0.05, 0.04, 0.035, 0.44 * pressure * fade), true, -1.0, true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _process(_delta: float) -> void:
+	queue_redraw()
 
 
 func _physics_process(_delta: float) -> void:
+	if vis != null:
+		vis.air_height = 0.0 if is_on_floor() else maxf(0.0, Game.GROUND_Y - global_position.y)
 	queue_redraw()

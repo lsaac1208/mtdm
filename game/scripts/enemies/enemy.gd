@@ -172,16 +172,32 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 	var dir: int = atk.dir
 	if atk.kind == "aoe" and atk.has("centre"):
 		dir = 1 if global_position.x >= atk.centre.x else -1
-	Fx.material_hit(global_position + Vector2(0, -hurt_size.y * 0.55), dir, hit_material, atk.damage >= 16.0)
-	Fx.slash(global_position + Vector2(0, -hurt_size.y * 0.55), dir, -20.0, 20.0, 18.0, 10.0, 0.12,
-		Color(0.9, 0.85, 0.75), Color(1, 1, 1), 1.0)
+	var tag: String = String(atk.get("tag", "slash1"))
+	var heavy: bool = atk.damage >= 16.0 or tag in ["slash3", "down", "beads"]
+	var hit_pos := global_position + Vector2(-dir * hurt_size.x * 0.22, -hurt_size.y * 0.56)
+	var impact_col := Fx.C_GOLD if tag in ["talisman", "beads"] else Fx.C_CINNABAR
+	Fx.material_hit(hit_pos, dir, hit_material, heavy)
+	if atk.kind != "hazard":
+		Fx.hit_impact(hit_pos, dir, tag, heavy, impact_col, Fx.C_GOLD)
 	Sfx.play(_hit_sound(atk), -2.0)
-	vis.jitter = 0.15
-	vis.squash = Vector2(0.9, 1.08)
+	vis.hit_shake(dir, 9.5 if heavy else 6.2, 0.16 if heavy else 0.12)
+	vis.squash = Vector2(0.84, 1.14) if heavy else Vector2(0.90, 1.09)
 	if atk.kind != "hazard":
 		Fx.splat(global_position + Vector2(dir * randf_range(10, 40), 0), 10.0 + atk.damage * 0.6)
 	if atk.damage >= 16.0:
 		Fx.punch(0.025, 0.18)
+	var armored_hit: bool = hp > 0.0 and (uninterruptible_states.has(state) or (armored_states.has(state) and poise - float(atk.poise) > 0.0))
+	if atk.kind != "hazard" and atk.damage >= 1.0:
+		var num_style := "normal"
+		if hp <= 0.0 or tag in ["slash3", "beads"]:
+			num_style = "finisher"
+		elif tag == "talisman":
+			num_style = "talisman"
+		elif armored_hit:
+			num_style = "armor"
+		elif atk.damage >= 14.0:
+			num_style = "heavy"
+		Fx.damage_number(global_position + Vector2(0.0, -hurt_size.y - 12.0), atk.damage, dir, num_style)
 	on_hurt(atk)
 	if hp <= 0.0:
 		_die(dir)
@@ -202,7 +218,10 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 
 
 func _hit_sound(atk: Dictionary) -> String:
-	return "hit_flesh" if atk.kind != "aoe" else "hit_heavy"
+	var tag: String = String(atk.get("tag", ""))
+	if atk.kind == "aoe" or float(atk.damage) >= 16.0 or tag in ["slash3", "down", "beads"]:
+		return "hit_heavy"
+	return "hit_flesh"
 
 
 ## Low-poise units stagger on every hit (spec: 普攻即硬直).
@@ -286,6 +305,9 @@ func melee(r: Rect2, dmg: float, knock: float, extra := {}) -> Array:
 
 
 func walk_anim(delta: float, speed_ratio: float, rate := 7.0, amp := 0.04) -> void:
+	if vis is RigVisual and (vis as RigVisual).frame_on:
+		vis.bob = 0.0
+		return
 	_bob_t += delta * rate * speed_ratio
 	vis.phase = _bob_t
 	vis.stride = amp * 0.3 * speed_ratio

@@ -198,6 +198,16 @@ func _process(delta: float) -> void:
 	_mat.set_shader_parameter("alpha_mul", alpha)
 
 
+func apply_light(light: Dictionary) -> void:
+	if _mat == null or light.is_empty():
+		return
+	var key: Color = light.get("key", Color.WHITE)
+	var sh: Color = light.get("shadow", Color(0.75, 0.72, 0.68))
+	var avg := key.lerp(sh, 0.28)
+	_mat.set_shader_parameter("key_tint", avg)
+	_mat.set_shader_parameter("haze_color", light.get("haze", Color(0.76, 0.66, 0.54, 0.12)))
+
+
 func _update_springs(delta: float) -> void:
 	if delta <= 0.0:
 		return

@@ -1,0 +1,420 @@
+{
+ "actor": "elite",
+ "target_h": 182.0,
+ "clips": {
+  "walk": {
+   "fps": 5.5,
+   "loop": true,
+   "frames": [
+    {
+     "file": "elite_walk_sheet_c00.png",
+     "w": 416,
+     "h": 384,
+     "body_h": 365.2,
+     "foot_x": 222.66,
+     "foot_y": 374.08,
+     "scale": 0.5,
+     "boots": [
+      [
+       -86.1,
+       -2.5
+      ],
+      [
+       77.0,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "elite_walk_sheet_c01.png",
+     "w": 355,
+     "h": 375,
+     "body_h": 356.9,
+     "foot_x": 209.34,
+     "foot_y": 365.76,
+     "scale": 0.5,
+     "boots": [
+      [
+       -81.5,
+       -1.2
+      ],
+      [
+       50.8,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "elite_walk_sheet_c02.png",
+     "w": 383,
+     "h": 389,
+     "body_h": 371.9,
+     "foot_x": 226.82,
+     "foot_y": 379.9,
+     "scale": 0.5,
+     "boots": [
+      [
+       -48.3,
+       -0.4
+      ],
+      [
+       -25.4,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "elite_walk_sheet_c03.png",
+     "w": 425,
+     "h": 382,
+     "body_h": 364.4,
+     "foot_x": 236.8,
+     "foot_y": 373.25,
+     "scale": 0.5,
+     "boots": [
+      [
+       -54.5,
+       -2.1
+      ],
+      [
+       74.9,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "elite_walk_sheet_c04.png",
+     "w": 335,
+     "h": 375,
+     "body_h": 358.6,
+     "foot_x": 211.84,
+     "foot_y": 366.59,
+     "scale": 0.5,
+     "boots": [
+      [
+       -32.0,
+       -2.5
+      ],
+      [
+       36.6,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "elite_walk_sheet_c05.png",
+     "w": 386,
+     "h": 380,
+     "body_h": 363.6,
+     "foot_x": 235.14,
+     "foot_y": 371.58,
+     "scale": 0.5,
+     "boots": [
+      [
+       -35.4,
+       -0.4
+      ],
+      [
+       -19.1,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "idle": {
+   "fps": 3.0,
+   "loop": true,
+   "frames": [
+    {
+     "file": "elite_walk_sheet_c01.png",
+     "w": 355,
+     "h": 375,
+     "body_h": 356.9,
+     "foot_x": 209.34,
+     "foot_y": 365.76,
+     "scale": 0.5,
+     "boots": [
+      [
+       -81.5,
+       -1.2
+      ],
+      [
+       50.8,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "windup_chop": {
+   "fps": 2.8,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c00.png",
+     "w": 359,
+     "h": 456,
+     "body_h": 438.4,
+     "foot_x": 166.43,
+     "foot_y": 447.33,
+     "scale": 0.5,
+     "boots": [
+      [
+       -68.0,
+       0.0
+      ],
+      [
+       65.6,
+       -0.5
+      ]
+     ]
+    },
+    {
+     "file": "elite_combat_sheet_c01.png",
+     "w": 372,
+     "h": 497,
+     "body_h": 479.2,
+     "foot_x": 187.81,
+     "foot_y": 488.15,
+     "scale": 0.5,
+     "boots": [
+      [
+       -53.0,
+       0.0
+      ],
+      [
+       70.0,
+       -0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "chop": {
+   "fps": 6.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c02.png",
+     "w": 516,
+     "h": 329,
+     "body_h": 311.0,
+     "foot_x": 232.52,
+     "foot_y": 320.0,
+     "scale": 0.5,
+     "boots": [
+      [
+       -92.8,
+       0.0
+      ],
+      [
+       115.2,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "recover_chop": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c02.png",
+     "w": 516,
+     "h": 329,
+     "body_h": 311.0,
+     "foot_x": 232.52,
+     "foot_y": 320.0,
+     "scale": 0.5,
+     "boots": [
+      [
+       -92.8,
+       0.0
+      ],
+      [
+       115.2,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "windup_sweep": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c03.png",
+     "w": 421,
+     "h": 381,
+     "body_h": 364.5,
+     "foot_x": 244.19,
+     "foot_y": 372.49,
+     "scale": 0.5,
+     "boots": [
+      [
+       -78.2,
+       0.0
+      ],
+      [
+       68.0,
+       -0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "sweep": {
+   "fps": 6.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c04.png",
+     "w": 555,
+     "h": 381,
+     "body_h": 363.5,
+     "foot_x": 239.33,
+     "foot_y": 372.49,
+     "scale": 0.5,
+     "boots": [
+      [
+       -105.0,
+       0.0
+      ],
+      [
+       38.9,
+       -0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "recover_sweep": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c04.png",
+     "w": 555,
+     "h": 381,
+     "body_h": 363.5,
+     "foot_x": 239.33,
+     "foot_y": 372.49,
+     "scale": 0.5,
+     "boots": [
+      [
+       -105.0,
+       0.0
+      ],
+      [
+       38.9,
+       -0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "kneel": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c05.png",
+     "w": 380,
+     "h": 349,
+     "body_h": 330.5,
+     "foot_x": 203.36,
+     "foot_y": 339.44,
+     "scale": 0.5,
+     "boots": [
+      [
+       -68.0,
+       0.0
+      ],
+      [
+       53.9,
+       -1.9
+      ]
+     ]
+    }
+   ]
+  },
+  "recoil": {
+   "fps": 5.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c03.png",
+     "w": 421,
+     "h": 381,
+     "body_h": 364.5,
+     "foot_x": 244.19,
+     "foot_y": 372.49,
+     "scale": 0.5,
+     "boots": [
+      [
+       -78.2,
+       0.0
+      ],
+      [
+       68.0,
+       -0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "roar": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c01.png",
+     "w": 372,
+     "h": 497,
+     "body_h": 479.2,
+     "foot_x": 187.81,
+     "foot_y": 488.15,
+     "scale": 0.5,
+     "boots": [
+      [
+       -53.0,
+       0.0
+      ],
+      [
+       70.0,
+       -0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "dead": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_combat_sheet_c05.png",
+     "w": 380,
+     "h": 349,
+     "body_h": 330.5,
+     "foot_x": 203.36,
+     "foot_y": 339.44,
+     "scale": 0.5,
+     "boots": [
+      [
+       -68.0,
+       0.0
+      ],
+      [
+       53.9,
+       -1.9
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

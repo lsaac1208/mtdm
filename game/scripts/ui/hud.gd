@@ -10,6 +10,9 @@ var hp_disp := 1.0
 var hp_lag := 1.0
 var qi_disp := 0.4
 var boss_lag := 1.0
+var combo_disp := 0
+var combo_pop := 0.0
+var combo_alpha := 0.0
 var hint_label: Label
 var hint_panel: Panel
 var hint_t := 0.0
@@ -148,6 +151,13 @@ func _label(font: Font, size: int, col: Color) -> Label:
 func bind(p: Player) -> void:
 	player = p
 	p.died.connect(_on_player_died)
+	p.combo_changed.connect(_on_combo)
+
+
+func _on_combo(count: int) -> void:
+	if count > combo_disp and count >= 2:
+		combo_pop = 1.0
+	combo_disp = count
 
 
 func _on_boss(b) -> void:
@@ -186,11 +196,15 @@ func _on_zone(cn: String, en: String) -> void:
 
 
 func _process(delta: float) -> void:
+	var udt := Game.unscaled_delta(delta)
 	if player and is_instance_valid(player):
 		var target := player.hp / player.max_hp
 		hp_disp = lerpf(hp_disp, target, minf(1.0, delta * 14.0))
 		hp_lag = maxf(target, hp_lag - delta * 0.35) if hp_lag > target else target
 		qi_disp = lerpf(qi_disp, player.qi / player.MAX_QI, minf(1.0, delta * 10.0))
+		var want_combo := 1.0 if player.combo_hits >= 2 else 0.0
+		combo_alpha = lerpf(combo_alpha, want_combo, minf(1.0, udt * 12.0))
+		combo_pop = maxf(0.0, combo_pop - udt * 5.5)
 	if boss and is_instance_valid(boss):
 		var bt: float = maxf(0.0, boss.hp) / boss.max_hp
 		boss_lag = maxf(bt, boss_lag - delta * 0.25)
@@ -272,6 +286,32 @@ func _draw_hud() -> void:
 		var pf: float = clampf(boss.poise / boss.max_poise, 0.0, 1.0)
 		ci.draw_rect(Rect2(x0, y0 + 22, w * pf, 5), Color(0.85, 0.75, 0.55, 0.85))
 		ci.draw_string(f, Vector2(x0 + w + 8, y0 + 30), "甲", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.85, 0.75, 0.55))
+	if combo_alpha > 0.02 and combo_disp >= 2:
+		_draw_combo(ci)
+
+
+func _draw_combo(ci: Control) -> void:
+	var vs := ci.size
+	var cx := vs.x - 122.0
+	var cy := 132.0
+	var a := combo_alpha
+	var pop := 1.0 + 0.28 * sin(combo_pop * PI * 0.5)
+	var num_sz := int(roundf(58.0 * pop))
+	var num_txt := str(combo_disp)
+	var num_col := Color(1.0, 0.78, 0.34, a) if combo_disp < 6 else Color(0.96, 0.36, 0.18, a)
+	var ink_bg := PackedVector2Array([
+		Vector2(cx - 58.0, cy - 34.0), Vector2(cx + 88.0, cy - 38.0),
+		Vector2(cx + 76.0, cy + 20.0), Vector2(cx - 46.0, cy + 24.0),
+	])
+	ci.draw_colored_polygon(ink_bg, Color(0.07, 0.05, 0.05, 0.68 * a))
+	ci.draw_string_outline(BRUSH_FONT, Vector2(cx - 52.0, cy + 12.0), num_txt, HORIZONTAL_ALIGNMENT_RIGHT, 84.0, num_sz, 7, Color(0.06, 0.04, 0.04, 0.92 * a))
+	ci.draw_string(BRUSH_FONT, Vector2(cx - 52.0, cy + 12.0), num_txt, HORIZONTAL_ALIGNMENT_RIGHT, 84.0, num_sz, num_col)
+	ci.draw_string_outline(BRUSH_FONT, Vector2(cx + 36.0, cy + 6.0), "连斩", HORIZONTAL_ALIGNMENT_LEFT, -1, 24, 5, Color(0.06, 0.04, 0.04, 0.88 * a))
+	ci.draw_string(BRUSH_FONT, Vector2(cx + 36.0, cy + 6.0), "连斩", HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(0.96, 0.90, 0.76, a))
+	var frac := clampf(player.combo_timer / player.COMBO_WINDOW, 0.0, 1.0)
+	var bar_w := 118.0
+	ci.draw_rect(Rect2(cx - 42.0, cy + 22.0, bar_w, 4.0), Color(0.12, 0.09, 0.08, 0.72 * a))
+	ci.draw_rect(Rect2(cx - 42.0, cy + 22.0, bar_w * frac, 4.0), Color(num_col.r, num_col.g, num_col.b, 0.92 * a))
 
 
 func _skill(pos: Vector2, action: String, name_: String, ready: bool) -> void:

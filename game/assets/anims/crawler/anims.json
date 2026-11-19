@@ -1,0 +1,201 @@
+{
+ "actor": "crawler",
+ "target_h": 54.0,
+ "clips": {
+  "walk": {
+   "fps": 12.0,
+   "loop": true,
+   "frames": [
+    {
+     "file": "crawler_crawl_sheet_c00.png",
+     "w": 294,
+     "h": 114,
+     "body_h": 97.3,
+     "foot_x": 137.92,
+     "foot_y": 105.34,
+     "scale": 0.5,
+     "boots": [
+      [
+       -56.9,
+       -3.0
+      ],
+      [
+       27.4,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "crawler_crawl_sheet_c01.png",
+     "w": 193,
+     "h": 131,
+     "body_h": 115.0,
+     "foot_x": 104.13,
+     "foot_y": 123.04,
+     "scale": 0.5,
+     "boots": [
+      [
+       -21.3,
+       -4.0
+      ],
+      [
+       25.1,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "crawler_crawl_sheet_c02.png",
+     "w": 209,
+     "h": 127,
+     "body_h": 109.8,
+     "foot_x": 104.54,
+     "foot_y": 118.21,
+     "scale": 0.5,
+     "boots": [
+      [
+       -37.8,
+       -3.8
+      ],
+      [
+       22.5,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "crawler_crawl_sheet_c03.png",
+     "w": 290,
+     "h": 111,
+     "body_h": 93.7,
+     "foot_x": 139.73,
+     "foot_y": 102.12,
+     "scale": 0.5,
+     "boots": [
+      [
+       10.6,
+       0.0
+      ],
+      [
+       59.8,
+       -1.0
+      ]
+     ]
+    },
+    {
+     "file": "crawler_crawl_sheet_c04.png",
+     "w": 184,
+     "h": 131,
+     "body_h": 114.2,
+     "foot_x": 96.89,
+     "foot_y": 122.64,
+     "scale": 0.5,
+     "boots": [
+      [
+       -27.6,
+       0.0
+      ],
+      [
+       24.3,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "crawler_crawl_sheet_c05.png",
+     "w": 198,
+     "h": 123,
+     "body_h": 106.2,
+     "foot_x": 99.71,
+     "foot_y": 114.19,
+     "scale": 0.5,
+     "boots": [
+      [
+       -28.2,
+       0.0
+      ],
+      [
+       13.3,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "idle": {
+   "fps": 4.0,
+   "loop": true,
+   "frames": [
+    {
+     "file": "crawler_crawl_sheet_c01.png",
+     "w": 193,
+     "h": 131,
+     "body_h": 115.0,
+     "foot_x": 104.13,
+     "foot_y": 123.04,
+     "scale": 0.5,
+     "boots": [
+      [
+       -21.3,
+       -4.0
+      ],
+      [
+       25.1,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "prep": {
+   "fps": 8.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "crawler_crawl_sheet_c02.png",
+     "w": 209,
+     "h": 127,
+     "body_h": 109.8,
+     "foot_x": 104.54,
+     "foot_y": 118.21,
+     "scale": 0.5,
+     "boots": [
+      [
+       -37.8,
+       -3.8
+      ],
+      [
+       22.5,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "alert": {
+   "fps": 8.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "crawler_crawl_sheet_c01.png",
+     "w": 193,
+     "h": 131,
+     "body_h": 115.0,
+     "foot_x": 104.13,
+     "foot_y": 123.04,
+     "scale": 0.5,
+     "boots": [
+      [
+       -21.3,
+       -4.0
+      ],
+      [
+       25.1,
+       0.0
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

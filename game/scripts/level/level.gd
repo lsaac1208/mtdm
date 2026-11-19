@@ -35,6 +35,120 @@ func zone_weights(x: float) -> Array:
 		w[i] = minf(w[i], t0)
 	return w
 
+
+## Smoothly blended directional 2.5D character lighting for `world_pos`,
+## combining the interpolated zone palette with the strongest nearby dynamic
+## light source (flickering campfire, active talisman barrier, or taint mire).
+func zone_light(world_pos: Vector2) -> Dictionary:
+	var w: Array = zone_weights(world_pos.x)
+	var key_dir := Vector3.ZERO
+	var key := Color(0, 0, 0, 1)
+	var shadow := Color(0, 0, 0, 1)
+	var rim := Color(0, 0, 0, 1)
+	var bounce := Color(0, 0, 0, 1)
+	var haze := Color(0, 0, 0, 0)
+	var soil := Color(0, 0, 0, 1)
+	var rim_str := 0.0
+	var bounce_str := 0.0
+	var shadow_lean := 0.0
+	var wsum := 0.0
+	for i in LevelData.ZONES.size():
+		var wi: float = w[i]
+		if wi <= 0.0001:
+			continue
+		var ld: Dictionary = LevelData.ZONES[i].light
+		key_dir += (ld.key_dir as Vector3) * wi
+		key += (ld.key as Color) * wi
+		shadow += (ld.shadow as Color) * wi
+		rim += (ld.rim as Color) * wi
+		bounce += (ld.bounce as Color) * wi
+		haze += (ld.haze as Color) * wi
+		soil += (ld.soil as Color) * wi
+		rim_str += float(ld.rim_str) * wi
+		bounce_str += float(ld.bounce_str) * wi
+		shadow_lean += float(ld.shadow_lean) * wi
+		wsum += wi
+	if wsum > 0.0001:
+		key_dir /= wsum
+		key /= wsum
+		shadow /= wsum
+		rim /= wsum
+		bounce /= wsum
+		haze /= wsum
+		soil /= wsum
+		rim_str /= wsum
+		bounce_str /= wsum
+		shadow_lean /= wsum
+	else:
+		key_dir = Vector3(0.62, -0.64, 0.45)
+	key.a = 1.0
+	shadow.a = 1.0
+	rim.a = 1.0
+	bounce.a = 1.0
+	soil.a = 1.0
+
+	var chest := world_pos + Vector2(0.0, -72.0)
+	var pt_dir := Vector3(0.0, 0.0, 1.0)
+	var pt_col := Color(1.0, 0.58, 0.22)
+	var pt_str := 0.0
+	for cp in checkpoints:
+		if not is_instance_valid(cp):
+			continue
+		var fire_pos: Vector2 = cp.global_position + Vector2(0.0, -24.0)
+		var d: Vector2 = fire_pos - chest
+		var dist := d.length()
+		if dist < 340.0:
+			var flick := 0.88 + 0.12 * sin(cp.t * 11.5) * sin(cp.t * 6.7)
+			var f := pow(1.0 - dist / 340.0, 1.65) * 0.92 * flick
+			if f > pt_str:
+				pt_str = f
+				pt_col = Color(1.0, 0.58, 0.22)
+				pt_dir = Vector3(d.x, d.y, 110.0).normalized()
+	for enc in encounters:
+		if not is_instance_valid(enc) or enc.state != "active":
+			continue
+		for bar in enc.barriers:
+			if not is_instance_valid(bar):
+				continue
+			var bpos: Vector2 = bar.global_position + Vector2(0.0, -90.0)
+			var d: Vector2 = bpos - chest
+			var dist := d.length()
+			if dist < 260.0:
+				var pulse := 0.82 + 0.18 * sin(bar.t * 5.0)
+				var f := pow(1.0 - dist / 260.0, 1.8) * 0.58 * pulse
+				if f > pt_str:
+					pt_str = f
+					pt_col = Color(1.0, 0.80, 0.36)
+					pt_dir = Vector3(d.x, d.y, 120.0).normalized()
+	for pd in get_tree().get_nodes_in_group("taint_puddle"):
+		if not is_instance_valid(pd):
+			continue
+		var max_r: float = pd.radius + 115.0
+		var d: Vector2 = (pd.global_position + Vector2(0.0, -8.0)) - chest
+		var dist := d.length()
+		if dist < max_r:
+			var f := pow(1.0 - dist / max_r, 1.7) * 0.52
+			if f > pt_str:
+				pt_str = f
+				pt_col = Color(0.54, 0.96, 0.28)
+				pt_dir = Vector3(d.x, d.y, 90.0).normalized()
+
+	return {
+		"key_dir": key_dir.normalized(),
+		"key": key,
+		"shadow": shadow,
+		"rim": rim,
+		"rim_str": rim_str,
+		"bounce": bounce,
+		"bounce_str": bounce_str,
+		"haze": haze,
+		"soil": soil,
+		"shadow_lean": shadow_lean,
+		"point_dir": pt_dir,
+		"point_color": pt_col,
+		"point_strength": pt_str,
+	}
+
 var player: Player
 var cam: Camera2D
 var encounters: Array = []
@@ -51,6 +165,10 @@ var _ending := false
 var _sign_shown := {}
 var _cam_x := 0.0
 var _cam_y := 0.0
+var _cam_look := 110.0
+var _kick := Vector2.ZERO
+var _kick_t := 0.0
+var _kick_len := 0.11
 
 
 func _ready() -> void:
@@ -98,11 +216,16 @@ func _ready() -> void:
 		enc.setup(e)
 		encounters.append(enc)
 	cam = Camera2D.new()
+	cam.process_callback = Camera2D.CAMERA2D_PROCESS_PHYSICS
 	cam.position_smoothing_enabled = false
 	add_child(cam)
 	cam.make_current()
 	_cam_x = player.position.x
 	_cam_y = Game.GROUND_Y - 190
+	_cam_look = player.facing * 110.0
+	cam.global_position = Vector2(_cam_x, _cam_y)
+	cam.reset_physics_interpolation()
+	player.reset_physics_interpolation()
 	_build_motes()
 	_build_overlay()
 	hud = Hud.new()
@@ -251,6 +374,14 @@ func shake(amount: float, dur: float) -> void:
 	_shake_t = maxf(_shake_t, dur)
 
 
+func kick(vec: Vector2, dur := 0.11) -> void:
+	if Game.args.has("noshake") or Game.shake_scale <= 0.0:
+		return
+	_kick = vec * Game.shake_scale
+	_kick_t = dur
+	_kick_len = maxf(dur, 0.01)
+
+
 func _physics_process(delta: float) -> void:
 	if player == null:
 		return
@@ -262,21 +393,36 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
-	_shake_t = maxf(0.0, _shake_t - delta)
+	var udt := Game.unscaled_delta(delta)
+	if Game.args.has("noshake") or Game.shake_scale <= 0.0:
+		_shake = 0.0
+		_shake_t = 0.0
+		_kick = Vector2.ZERO
+		_kick_t = 0.0
+		_punch = 0.0
+		_punch_t = 0.0
+	_shake_t = maxf(0.0, _shake_t - udt)
 	var off := Vector2.ZERO
 	if _shake_t > 0.0:
 		off = Vector2(randf_range(-1, 1), randf_range(-1, 1)) * _shake
 	else:
 		_shake = 0.0
+	if _kick_t > 0.0:
+		_kick_t = maxf(0.0, _kick_t - udt)
+		var kk := sin(PI * clampf(1.0 - _kick_t / _kick_len, 0.0, 1.0))
+		off += _kick * kk
+	else:
+		_kick = Vector2.ZERO
 	cam.offset = off
 	if _punch_t > 0.0:
-		_punch_t = maxf(0.0, _punch_t - delta)
+		_punch_t = maxf(0.0, _punch_t - udt)
 		var z := 1.0 + _punch * sin(PI * (1.0 - _punch_t / _punch_len))
 		cam.zoom = Vector2(z, z)
 	else:
 		cam.zoom = Vector2.ONE
 	var vs := get_viewport().get_visible_rect().size
-	route_art.follow(cam.global_position, vs, zone_weights(cam.global_position.x))
+	var cpos := cam.get_screen_center_position()
+	route_art.follow(cpos, vs, zone_weights(cpos.x))
 
 
 func _update_camera(delta: float) -> void:
@@ -292,11 +438,12 @@ func _update_camera(delta: float) -> void:
 				var m := (lo + hi) / 2.0
 				lo = m
 				hi = m
-	var look := player.facing * 110.0
-	var tx := clampf(player.global_position.x + look, lo, hi)
-	_cam_x = lerpf(_cam_x, tx, minf(1.0, delta * 4.0))
-	var ty := minf(Game.GROUND_Y - 190.0, player.global_position.y - 150.0)
-	_cam_y = lerpf(_cam_y, ty, minf(1.0, delta * 3.0))
+	var ppos := player.global_position
+	_cam_look = lerpf(_cam_look, player.facing * 110.0, 1.0 - exp(-5.5 * delta))
+	var tx := clampf(ppos.x + _cam_look, lo, hi)
+	_cam_x = lerpf(_cam_x, tx, 1.0 - exp(-6.5 * delta))
+	var ty := minf(Game.GROUND_Y - 190.0, ppos.y - 150.0)
+	_cam_y = lerpf(_cam_y, ty, 1.0 - exp(-4.8 * delta))
 	cam.global_position = Vector2(_cam_x, _cam_y)
 	if motes:
 		motes.global_position = cam.global_position
@@ -366,7 +513,11 @@ func _on_player_died() -> void:
 	Game.boss_changed.emit(null)
 	var cpx: float = LevelData.CHECKPOINTS[Game.checkpoint_id].x
 	player.respawn_at(Vector2(cpx + 50.0, Game.GROUND_Y - 4))
+	player.reset_physics_interpolation()
 	_cam_x = player.global_position.x
+	_cam_look = player.facing * 110.0
+	cam.global_position = Vector2(_cam_x, _cam_y)
+	cam.reset_physics_interpolation()
 	await hud.fade_in(0.6)
 	Game.show_hint("篝火余温尚在……再来。", 3.0)
 	_respawning = false

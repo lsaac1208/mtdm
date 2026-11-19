@@ -13,7 +13,7 @@ const PAINTED_FEET := {
 	"hero_thrust_load": Vector2(-46, 74), "hero_strike_settle": Vector2(-45, 68),
 }
 var on_ground := true
-var contacts := [Vector2.ZERO, Vector2.ZERO]
+var contacts := [Vector2(-24.0, 0.0), Vector2(28.0, 0.0)]
 var _planted_x := {}
 var _last_gait := ""
 var _last_facing := 1
@@ -22,16 +22,15 @@ var _last_facing := 1
 func _ready() -> void:
 	super._ready()
 	cut.set_process(false)
-	# The painter supplied a variable brush edge. Keep the post outline narrow
-	# enough to pick out the figure in shadow, with no external paper halo.
+	# Rely on 2.5D sculpted lighting, directional rim, and atmospheric shading
+	# instead of flat sticker outlines or pale halos.
 	for sprite in [cur, prev]:
 		var ink: ShaderMaterial = sprite.material
-		ink.set_shader_parameter("outline_px", 1.1)
-		ink.set_shader_parameter("outline_color", Color(0.16, 0.12, 0.11, 0.36))
+		ink.set_shader_parameter("outline_px", 0.0)
 		ink.set_shader_parameter("halo_px", 0.0)
 	var ink_rig: ShaderMaterial = cut.material
-	ink_rig.set_shader_parameter("outline_px", 0.6)
-	ink_rig.set_shader_parameter("outline_color", Color(0.16, 0.12, 0.11, 0.36))
+	ink_rig.set_shader_parameter("outline_px", 0.0)
+	ink_rig.set_shader_parameter("halo_px", 0.0)
 	ink_rig.set_shader_parameter("halo_color", Color.TRANSPARENT)
 
 
@@ -46,13 +45,23 @@ func set_pose(name_: String, _fade := 0.0) -> void:
 func _process(delta: float) -> void:
 	_w = 1.0 if rig_on else 0.0
 	super._process(delta)
-	cut._process(delta)
 	if not rig_on:
 		_planted_x.clear()
 		var feet: Vector2 = PAINTED_FEET.get(pose, Vector2(-21, 23))
 		contacts[0] = Vector2(feet.x * facing, 0)
 		contacts[1] = Vector2(feet.y * facing, 0)
 		return
+	if frame_on and frames != null:
+		_planted_x.clear()
+		var bs := boot_contacts()
+		if bs.size() >= 2:
+			contacts[0] = bs[0]
+			contacts[1] = bs[1]
+		else:
+			contacts[0] = Vector2(-18.0 * facing, 0.0)
+			contacts[1] = Vector2(18.0 * facing, 0.0)
+		return
+	cut._process(delta)
 	var gait := cut.current
 	if gait != _last_gait or facing != _last_facing:
 		_planted_x.clear()

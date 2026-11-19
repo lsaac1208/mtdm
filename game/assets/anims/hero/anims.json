@@ -1,0 +1,592 @@
+{
+ "actor": "hero",
+ "target_h": 152.0,
+ "clips": {
+  "run": {
+   "fps": 13.5,
+   "loop": true,
+   "frames": [
+    {
+     "file": "hero_run_sheet_c00.png",
+     "w": 324,
+     "h": 318,
+     "body_h": 300.9,
+     "foot_x": 158.07,
+     "foot_y": 308.91,
+     "scale": 0.5,
+     "boots": [
+      [
+       53.8,
+       0.0
+      ],
+      [
+       71.6,
+       -1.5
+      ]
+     ]
+    },
+    {
+     "file": "hero_run_sheet_c01.png",
+     "w": 270,
+     "h": 315,
+     "body_h": 297.8,
+     "foot_x": 157.29,
+     "foot_y": 305.81,
+     "scale": 0.5,
+     "boots": [
+      [
+       6.6,
+       -0.4
+      ],
+      [
+       22.4,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_run_sheet_c02.png",
+     "w": 260,
+     "h": 322,
+     "body_h": 305.5,
+     "foot_x": 156.52,
+     "foot_y": 313.55,
+     "scale": 0.5,
+     "boots": [
+      [
+       -34.8,
+       -0.8
+      ],
+      [
+       -20.1,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_run_sheet_c03.png",
+     "w": 281,
+     "h": 329,
+     "body_h": 311.7,
+     "foot_x": 170.44,
+     "foot_y": 319.74,
+     "scale": 0.5,
+     "boots": [
+      [
+       -55.7,
+       0.0
+      ],
+      [
+       -49.5,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_run_sheet_c04.png",
+     "w": 322,
+     "h": 318,
+     "body_h": 300.1,
+     "foot_x": 158.07,
+     "foot_y": 308.91,
+     "scale": 0.5,
+     "boots": [
+      [
+       51.8,
+       0.0
+      ],
+      [
+       70.6,
+       -1.2
+      ]
+     ]
+    },
+    {
+     "file": "hero_run_sheet_c05.png",
+     "w": 269,
+     "h": 319,
+     "body_h": 302.5,
+     "foot_x": 158.84,
+     "foot_y": 310.45,
+     "scale": 0.5,
+     "boots": [
+      [
+       0.4,
+       -0.4
+      ],
+      [
+       16.2,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_run_sheet_c06.png",
+     "w": 267,
+     "h": 327,
+     "body_h": 309.4,
+     "foot_x": 157.29,
+     "foot_y": 317.41,
+     "scale": 0.5,
+     "boots": [
+      [
+       -35.6,
+       -0.8
+      ],
+      [
+       -21.7,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_run_sheet_c07.png",
+     "w": 280,
+     "h": 327,
+     "body_h": 309.4,
+     "foot_x": 169.67,
+     "foot_y": 318.19,
+     "scale": 0.5,
+     "boots": [
+      [
+       -56.5,
+       0.0
+      ],
+      [
+       -50.3,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "walk": {
+   "fps": 8.5,
+   "loop": true,
+   "frames": [
+    {
+     "file": "hero_walk_sheet_c00.png",
+     "w": 250,
+     "h": 318,
+     "body_h": 300.7,
+     "foot_x": 123.84,
+     "foot_y": 308.65,
+     "scale": 0.5,
+     "boots": [
+      [
+       -32.5,
+       -2.7
+      ],
+      [
+       50.2,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_walk_sheet_c01.png",
+     "w": 205,
+     "h": 321,
+     "body_h": 304.0,
+     "foot_x": 113.13,
+     "foot_y": 312.0,
+     "scale": 0.5,
+     "boots": [
+      [
+       8.7,
+       -0.3
+      ],
+      [
+       23.4,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_walk_sheet_c02.png",
+     "w": 205,
+     "h": 318,
+     "body_h": 300.7,
+     "foot_x": 117.15,
+     "foot_y": 309.32,
+     "scale": 0.5,
+     "boots": [
+      [
+       -16.1,
+       -0.3
+      ],
+      [
+       1.0,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_walk_sheet_c03.png",
+     "w": 242,
+     "h": 324,
+     "body_h": 307.3,
+     "foot_x": 119.15,
+     "foot_y": 315.35,
+     "scale": 0.5,
+     "boots": [
+      [
+       -33.1,
+       -5.4
+      ],
+      [
+       49.2,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_walk_sheet_c04.png",
+     "w": 201,
+     "h": 322,
+     "body_h": 305.3,
+     "foot_x": 117.15,
+     "foot_y": 313.34,
+     "scale": 0.5,
+     "boots": [
+      [
+       0.7,
+       -0.3
+      ],
+      [
+       15.1,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_walk_sheet_c05.png",
+     "w": 226,
+     "h": 321,
+     "body_h": 304.0,
+     "foot_x": 130.54,
+     "foot_y": 312.0,
+     "scale": 0.5,
+     "boots": [
+      [
+       -32.1,
+       -0.3
+      ],
+      [
+       -17.1,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "jump": {
+   "fps": 10.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "hero_jump_sheet_c00_air.png",
+     "w": 249,
+     "h": 302,
+     "body_h": 284.7,
+     "foot_x": 142.59,
+     "foot_y": 294.44,
+     "scale": 0.5,
+     "boots": [
+      [
+       -62.9,
+       -0.5
+      ],
+      [
+       33.5,
+       -11.0
+      ]
+     ]
+    },
+    {
+     "file": "hero_jump_sheet_c01_air.png",
+     "w": 247,
+     "h": 326,
+     "body_h": 309.1,
+     "foot_x": 140.56,
+     "foot_y": 293.76,
+     "scale": 0.5,
+     "boots": [
+      [
+       -51.4,
+       11.7
+      ],
+      [
+       -44.3,
+       10.6
+      ]
+     ]
+    },
+    {
+     "file": "hero_jump_sheet_c02_air.png",
+     "w": 254,
+     "h": 260,
+     "body_h": 243.5,
+     "foot_x": 154.76,
+     "foot_y": 293.76,
+     "scale": 0.5,
+     "boots": [
+      [
+       -22.7,
+       -21.1
+      ],
+      [
+       1.9,
+       -28.6
+      ]
+     ]
+    }
+   ]
+  },
+  "fall": {
+   "fps": 10.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "hero_jump_sheet_c02_air.png",
+     "w": 254,
+     "h": 260,
+     "body_h": 243.5,
+     "foot_x": 154.76,
+     "foot_y": 293.76,
+     "scale": 0.5,
+     "boots": [
+      [
+       -22.7,
+       -21.1
+      ],
+      [
+       1.9,
+       -28.6
+      ]
+     ]
+    },
+    {
+     "file": "hero_jump_sheet_c03_air.png",
+     "w": 282,
+     "h": 327,
+     "body_h": 310.4,
+     "foot_x": 141.91,
+     "foot_y": 293.76,
+     "scale": 0.5,
+     "boots": [
+      [
+       45.7,
+       10.3
+      ],
+      [
+       59.5,
+       12.3
+      ]
+     ]
+    },
+    {
+     "file": "hero_jump_sheet_c04_air.png",
+     "w": 247,
+     "h": 317,
+     "body_h": 298.9,
+     "foot_x": 142.59,
+     "foot_y": 294.44,
+     "scale": 0.5,
+     "boots": [
+      [
+       -7.8,
+       6.6
+      ],
+      [
+       11.2,
+       6.6
+      ]
+     ]
+    }
+   ]
+  },
+  "land": {
+   "fps": 10.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "hero_jump_sheet_c05.png",
+     "w": 271,
+     "h": 282,
+     "body_h": 265.1,
+     "foot_x": 162.87,
+     "foot_y": 273.11,
+     "scale": 0.5,
+     "boots": [
+      [
+       -42.6,
+       0.0
+      ],
+      [
+       36.2,
+       -4.1
+      ]
+     ]
+    }
+   ]
+  },
+  "idle": {
+   "fps": 3.2,
+   "loop": true,
+   "frames": [
+    {
+     "file": "hero_idle_react_sheet_c00.png",
+     "w": 253,
+     "h": 321,
+     "body_h": 304.0,
+     "foot_x": 100.82,
+     "foot_y": 312.62,
+     "scale": 0.5,
+     "boots": [
+      [
+       -27.7,
+       0.0
+      ],
+      [
+       38.3,
+       -0.9
+      ]
+     ]
+    },
+    {
+     "file": "hero_idle_react_sheet_c01.png",
+     "w": 268,
+     "h": 322,
+     "body_h": 304.6,
+     "foot_x": 110.16,
+     "foot_y": 313.25,
+     "scale": 0.5,
+     "boots": [
+      [
+       -24.9,
+       0.0
+      ],
+      [
+       40.5,
+       -0.3
+      ]
+     ]
+    },
+    {
+     "file": "hero_idle_react_sheet_c02.png",
+     "w": 256,
+     "h": 315,
+     "body_h": 298.4,
+     "foot_x": 103.93,
+     "foot_y": 306.39,
+     "scale": 0.5,
+     "boots": [
+      [
+       -24.0,
+       0.0
+      ],
+      [
+       41.7,
+       -0.6
+      ]
+     ]
+    },
+    {
+     "file": "hero_idle_react_sheet_c01.png",
+     "w": 268,
+     "h": 322,
+     "body_h": 304.6,
+     "foot_x": 110.16,
+     "foot_y": 313.25,
+     "scale": 0.5,
+     "boots": [
+      [
+       -24.9,
+       0.0
+      ],
+      [
+       40.5,
+       -0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "block": {
+   "fps": 8.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "hero_idle_react_sheet_c03.png",
+     "w": 272,
+     "h": 291,
+     "body_h": 274.7,
+     "foot_x": 117.02,
+     "foot_y": 282.72,
+     "scale": 0.5,
+     "boots": [
+      [
+       -47.0,
+       0.0
+      ],
+      [
+       63.5,
+       -1.9
+      ]
+     ]
+    }
+   ]
+  },
+  "hit": {
+   "fps": 8.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "hero_idle_react_sheet_c04.png",
+     "w": 293,
+     "h": 292,
+     "body_h": 274.1,
+     "foot_x": 163.11,
+     "foot_y": 282.72,
+     "scale": 0.5,
+     "boots": [
+      [
+       -32.4,
+       0.0
+      ],
+      [
+       31.5,
+       -9.3
+      ]
+     ]
+    }
+   ]
+  },
+  "dead": {
+   "fps": 8.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "hero_idle_react_sheet_c05.png",
+     "w": 380,
+     "h": 146,
+     "body_h": 129.0,
+     "foot_x": 185.54,
+     "foot_y": 136.95,
+     "scale": 0.5,
+     "boots": [
+      [
+       -12.8,
+       0.0
+      ],
+      [
+       41.1,
+       -2.2
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

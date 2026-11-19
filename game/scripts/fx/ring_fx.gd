@@ -16,7 +16,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	t += delta
+	t += Game.unscaled_delta(delta)
 	if t >= life:
 		queue_free()
 		return
@@ -35,6 +35,8 @@ func _draw() -> void:
 	var ww := w if glyphs == 0 else w * 0.35
 	draw_polyline(pts, Color(0.05, 0.04, 0.03, a * 0.5), ww * 1.6, true)
 	draw_polyline(pts, Color(color.r, color.g, color.b, a * (1.0 if glyphs == 0 else 0.75)), ww, true)
+	if glyphs == 0 and k < 0.65:
+		draw_polyline(pts, Color(1.0, 0.98, 0.92, a * 0.65 * (1.0 - k / 0.65)), maxf(1.2, ww * 0.32), true)
 	if glyphs > 0:
 		for i in glyphs:
 			var ang := TAU * i / glyphs + t * 3.0

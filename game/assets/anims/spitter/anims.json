@@ -1,0 +1,251 @@
+{
+ "actor": "spitter",
+ "target_h": 138.0,
+ "clips": {
+  "walk": {
+   "fps": 6.5,
+   "loop": true,
+   "frames": [
+    {
+     "file": "spitter_walk_sheet_c00.png",
+     "w": 283,
+     "h": 289,
+     "body_h": 272.6,
+     "foot_x": 148.03,
+     "foot_y": 280.62,
+     "scale": 0.5,
+     "boots": [
+      [
+       -60.5,
+       -0.3
+      ],
+      [
+       49.4,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "spitter_walk_sheet_c01.png",
+     "w": 259,
+     "h": 268,
+     "body_h": 250.3,
+     "foot_x": 142.62,
+     "foot_y": 258.97,
+     "scale": 0.5,
+     "boots": [
+      [
+       -52.3,
+       -1.7
+      ],
+      [
+       24.0,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "spitter_walk_sheet_c02.png",
+     "w": 230,
+     "h": 297,
+     "body_h": 279.4,
+     "foot_x": 120.97,
+     "foot_y": 288.06,
+     "scale": 0.5,
+     "boots": [
+      [
+       -47.7,
+       0.0
+      ],
+      [
+       -5.4,
+       -1.0
+      ]
+     ]
+    },
+    {
+     "file": "spitter_walk_sheet_c03.png",
+     "w": 283,
+     "h": 298,
+     "body_h": 280.7,
+     "foot_x": 156.82,
+     "foot_y": 288.74,
+     "scale": 0.5,
+     "boots": [
+      [
+       -66.3,
+       0.0
+      ],
+      [
+       45.7,
+       -1.4
+      ]
+     ]
+    },
+    {
+     "file": "spitter_walk_sheet_c04.png",
+     "w": 268,
+     "h": 270,
+     "body_h": 253.7,
+     "foot_x": 147.35,
+     "foot_y": 261.68,
+     "scale": 0.5,
+     "boots": [
+      [
+       -53.1,
+       -1.0
+      ],
+      [
+       18.6,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "spitter_walk_sheet_c05.png",
+     "w": 241,
+     "h": 299,
+     "body_h": 282.1,
+     "foot_x": 125.71,
+     "foot_y": 290.76,
+     "scale": 0.5,
+     "boots": [
+      [
+       -46.3,
+       0.0
+      ],
+      [
+       9.8,
+       -8.1
+      ]
+     ]
+    }
+   ]
+  },
+  "idle": {
+   "fps": 3.5,
+   "loop": true,
+   "frames": [
+    {
+     "file": "spitter_walk_sheet_c01.png",
+     "w": 259,
+     "h": 268,
+     "body_h": 250.3,
+     "foot_x": 142.62,
+     "foot_y": 258.97,
+     "scale": 0.5,
+     "boots": [
+      [
+       -52.3,
+       -1.7
+      ],
+      [
+       24.0,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "alert": {
+   "fps": 5.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "spitter_combat_sheet_c00.png",
+     "w": 247,
+     "h": 290,
+     "body_h": 271.1,
+     "foot_x": 133.18,
+     "foot_y": 280.34,
+     "scale": 0.5,
+     "boots": [
+      [
+       -55.3,
+       0.0
+      ],
+      [
+       32.1,
+       -1.2
+      ]
+     ]
+    }
+   ]
+  },
+  "windup": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "spitter_combat_sheet_c01.png",
+     "w": 261,
+     "h": 298,
+     "body_h": 280.9,
+     "foot_x": 128.9,
+     "foot_y": 288.88,
+     "scale": 0.5,
+     "boots": [
+      [
+       -50.5,
+       0.0
+      ],
+      [
+       48.8,
+       -1.2
+      ]
+     ]
+    }
+   ]
+  },
+  "recover": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "spitter_combat_sheet_c02.png",
+     "w": 256,
+     "h": 272,
+     "body_h": 255.8,
+     "foot_x": 135.01,
+     "foot_y": 263.85,
+     "scale": 0.5,
+     "boots": [
+      [
+       -47.9,
+       0.0
+      ],
+      [
+       37.9,
+       -2.1
+      ]
+     ]
+    }
+   ]
+  },
+  "hit": {
+   "fps": 6.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "spitter_combat_sheet_c03.png",
+     "w": 308,
+     "h": 297,
+     "body_h": 280.9,
+     "foot_x": 138.67,
+     "foot_y": 288.88,
+     "scale": 0.5,
+     "boots": [
+      [
+       -23.2,
+       0.0
+      ],
+      [
+       -10.6,
+       0.0
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

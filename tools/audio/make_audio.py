@@ -171,15 +171,209 @@ def ks_pluck(freq, d, bright=0.5, slide=0.0):
     return out * env(n, 0.001, d * 1.2)
 
 
+def _clip_hz(freq, lo=15.0, hi=None):
+    upper = SR * 0.46 if hi is None else hi
+    return np.clip(freq, lo, upper)
+
+
+def sos_lp(sig, cut, order=2):
+    from scipy.signal import butter, sosfilt
+    sos = butter(order, float(_clip_hz(cut)) / (SR * 0.5), btype="low", output="sos")
+    return sosfilt(sos, sig)
+
+
+def sos_hp(sig, cut, order=2):
+    from scipy.signal import butter, sosfilt
+    sos = butter(order, float(_clip_hz(cut)) / (SR * 0.5), btype="high", output="sos")
+    return sosfilt(sos, sig)
+
+
+def sos_bp(sig, lo, hi, order=2):
+    from scipy.signal import butter, sosfilt
+    lo_hz = float(_clip_hz(lo, 15.0, SR * 0.44))
+    hi_hz = float(_clip_hz(hi, lo_hz + 40.0, SR * 0.47))
+    sos = butter(order, [lo_hz / (SR * 0.5), hi_hz / (SR * 0.5)], btype="band", output="sos")
+    return sosfilt(sos, sig)
+
+
+def svf_sweep(sig, freq, qval=2.5, mode="bp"):
+    count = len(sig)
+    freqs = _clip_hz(np.broadcast_to(np.asarray(freq, np.float64), (count,)), 20.0, SR * 0.45)
+    qvals = np.broadcast_to(np.asarray(qval, np.float64), (count,))
+    damp = 1.0 / np.maximum(qvals, 0.5)
+    gain = np.tan(np.pi * freqs / SR)
+    coef1 = 1.0 / (1.0 + gain * (gain + damp))
+    coef2 = gain * coef1
+    coef3 = gain * coef2
+    out = np.zeros(count, np.float64)
+    ic1 = 0.0
+    ic2 = 0.0
+    if mode == "bp":
+        scale = np.sqrt(damp)
+        for idx in range(count):
+            v3 = sig[idx] - ic2
+            v1 = coef1[idx] * ic1 + coef2[idx] * v3
+            v2 = ic2 + coef2[idx] * ic1 + coef3[idx] * v3
+            ic1 = 2.0 * v1 - ic1
+            ic2 = 2.0 * v2 - ic2
+            out[idx] = v1 * scale[idx]
+    elif mode == "lp":
+        for idx in range(count):
+            v3 = sig[idx] - ic2
+            v1 = coef1[idx] * ic1 + coef2[idx] * v3
+            v2 = ic2 + coef2[idx] * ic1 + coef3[idx] * v3
+            ic1 = 2.0 * v1 - ic1
+            ic2 = 2.0 * v2 - ic2
+            out[idx] = v2
+    else:
+        for idx in range(count):
+            v3 = sig[idx] - ic2
+            v1 = coef1[idx] * ic1 + coef2[idx] * v3
+            v2 = ic2 + coef2[idx] * ic1 + coef3[idx] * v3
+            ic1 = 2.0 * v1 - ic1
+            ic2 = 2.0 * v2 - ic2
+            out[idx] = sig[idx] - damp[idx] * v1 - v2
+    return out
+
+
+def soft_sat(sig, drive=1.5):
+    return np.tanh(sig * drive) / np.tanh(drive)
+
+
+def unit_peak(sig):
+    peak = np.max(np.abs(sig))
+    return sig / peak if peak > 1e-9 else sig
+
+
+def ad_env(times, onset=0.0, attack=0.004, decay=0.06, power=1.0):
+    delta = times - onset
+    out = np.zeros_like(times)
+    atk = max(attack, 1e-6)
+    dec = max(decay, 1e-6)
+    rising = (delta >= 0.0) & (delta < atk)
+    falling = delta >= atk
+    out[rising] = (delta[rising] / atk) ** power
+    out[falling] = np.exp(-(delta[falling] - atk) / dec)
+    return out
+
+
+def punch_body(times, f_start, f_end, drop_tau, decay, onset=0.0, attack=0.003, drive=1.4):
+    delta = np.maximum(0.0, times - onset)
+    inst_freq = f_end + (f_start - f_end) * np.exp(-delta / max(drop_tau, 1e-6))
+    phase = np.cumsum(2.0 * np.pi * inst_freq / SR)
+    tone = soft_sat(np.sin(phase), drive)
+    return tone * ad_env(times, onset, attack, decay)
+
+
+def blade_ring(times, freqs, decays, amps, glide=0.0, glide_tau=0.06, onset=0.0, attack=0.003, mod_sig=None, mod_depth=0.0):
+    delta = np.maximum(0.0, times - onset)
+    glide_curve = 1.0 + glide * (1.0 - np.exp(-delta / max(glide_tau, 1e-6)))
+    out = np.zeros_like(times)
+    nyq_lim = SR * 0.47
+    for freq, decay, amp in zip(freqs, decays, amps):
+        inst = np.clip(freq * glide_curve, 20.0, nyq_lim)
+        phase = np.cumsum(2.0 * np.pi * inst / SR)
+        out += amp * np.sin(phase) * np.exp(-delta / max(decay, 1e-6))
+    gate = np.where(times < onset, 0.0, np.minimum(1.0, delta / max(attack, 1e-6)))
+    out *= gate
+    if mod_sig is not None and mod_depth != 0.0:
+        out *= 1.0 + mod_depth * mod_sig
+    return out
+
+
+def micro_bursts(times, stamps, decays, amps, rng_local, lo=1200.0, hi=5500.0):
+    raw = np.zeros_like(times)
+    for stamp, decay, amp in zip(stamps, decays, amps):
+        raw += amp * rng_local.standard_normal(len(times)) * ad_env(times, stamp, 0.0012, decay)
+    return sos_bp(raw, lo, hi, order=2)
+
+
+def make_combat_sfx():
+    rng_c = np.random.default_rng(108)
+
+    times = t_(0.20)
+    cut_freq = np.exp(np.interp(times, [0.0, 0.034, 0.068, 0.125, 0.200], np.log([2100.0, 720.0, 1550.0, 4350.0, 3300.0])))
+    wind_cut = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), cut_freq, np.linspace(2.4, 3.8, len(times)), "bp") * ad_env(times, 0.003, 0.044, 0.048, 1.5))
+    edge_freq = np.exp(np.interp(times, [0.0, 0.042, 0.115, 0.200], np.log([2600.0, 1850.0, 5800.0, 4600.0])))
+    edge = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), edge_freq, 3.6, "bp") * ad_env(times, 0.018, 0.032, 0.038, 1.4))
+    air_tip = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 3600.0, 8200.0, 2) * ad_env(times, 0.024, 0.024, 0.030, 1.4))
+    wind_body = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 520.0, 3600.0, 2) * ad_env(times, 0.005, 0.038, 0.044, 1.3))
+    sheen_mod = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 1600.0, 5800.0, 2))
+    sheen = unit_peak(blade_ring(times, [2920.0, 3580.0, 4340.0, 5180.0], [0.046, 0.034, 0.024, 0.017], [0.90, 0.74, 0.58, 0.42], glide=0.10, glide_tau=0.052, onset=0.024, attack=0.007, mod_sig=sheen_mod, mod_depth=0.55))
+    save("swing", sos_hp(1.00 * wind_cut + 0.72 * edge + 0.36 * air_tip + 0.38 * wind_body + 0.34 * sheen, 180.0, 2), 0.85)
+
+    times = t_(0.30)
+    cleave_freq = np.exp(np.interp(times, [0.0, 0.052, 0.135, 0.225, 0.300], np.log([1950.0, 1280.0, 460.0, 230.0, 175.0])))
+    cleave = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), cleave_freq, np.linspace(2.6, 1.8, len(times)), "bp") * ad_env(times, 0.006, 0.068, 0.082, 1.6))
+    wind_low = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 75.0, 380.0, 2) * ad_env(times, 0.012, 0.065, 0.088, 1.4))
+    air_boom = unit_peak(punch_body(times, 124.0, 42.0, 0.052, 0.095, onset=0.036, attack=0.030, drive=1.3))
+    hi_freq = np.exp(np.interp(times, [0.0, 0.075, 0.210, 0.300], np.log([3600.0, 2300.0, 740.0, 460.0])))
+    hi_edge = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), hi_freq, 2.8, "bp") * ad_env(times, 0.010, 0.055, 0.058, 1.4))
+    dark_mod = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 1000.0, 4000.0, 2))
+    dark_sheen = unit_peak(blade_ring(times, [1960.0, 2690.0, 3580.0], [0.060, 0.042, 0.028], [0.75, 0.56, 0.38], glide=-0.10, glide_tau=0.068, onset=0.038, attack=0.012, mod_sig=dark_mod, mod_depth=0.55))
+    save("swing_heavy", sos_hp(1.15 * cleave + 0.78 * wind_low + 0.36 * air_boom + 0.72 * hi_edge + 0.28 * dark_sheen, 35.0, 2), 0.90)
+
+    times = t_(0.27)
+    rip_snap = unit_peak(soft_sat(sos_bp(rng_c.standard_normal(len(times)), 2200.0, 8600.0, 2) * ad_env(times, 0.002, 0.0025, 0.009), 1.9))
+    jet_freq = np.exp(np.interp(times, [0.0, 0.022, 0.095, 0.210, 0.270], np.log([6600.0, 4600.0, 2050.0, 1280.0, 960.0])))
+    lance_jet = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), jet_freq, 3.6, "bp") * ad_env(times, 0.004, 0.014, 0.066, 1.2))
+    qi_freq = np.exp(np.interp(times, [0.0, 0.032, 0.105, 0.230], np.log([1900.0, 3100.0, 5200.0, 4400.0])))
+    qi_whistle = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), qi_freq, 5.0, "bp") * ad_env(times, 0.005, 0.015, 0.062, 1.2))
+    thrust_kick = unit_peak(punch_body(times, 215.0, 72.0, 0.016, 0.036, onset=0.001, attack=0.0028, drive=1.4))
+    bronze_ring = unit_peak(blade_ring(times, [1318.0, 1340.0, 2245.0, 3190.0, 4430.0, 5920.0], [0.160, 0.150, 0.112, 0.080, 0.054, 0.034], [0.55, 0.45, 0.68, 0.56, 0.42, 0.28], glide=0.03, glide_tau=0.048, onset=0.008, attack=0.006))
+    save("swing_thrust", sos_hp(0.95 * rip_snap + 1.00 * lance_jet + 0.68 * qi_whistle + 0.34 * thrust_kick + 0.52 * bronze_ring, 65.0, 2), 0.90)
+
+    times = t_(0.32)
+    cracks = unit_peak(soft_sat(micro_bursts(times, [0.0025, 0.006, 0.011, 0.018, 0.027], [0.005, 0.0065, 0.0085, 0.010, 0.014], [1.0, 0.88, 0.74, 0.58, 0.42], rng_c, 900.0, 6400.0), 2.1))
+    grit = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 480.0, 4200.0, 2) * ad_env(times, 0.002, 0.003, 0.042))
+    stone_modes = unit_peak(blade_ring(times, [210.0, 365.0, 620.0, 980.0, 1560.0], [0.055, 0.040, 0.028, 0.019, 0.013], [0.80, 0.68, 0.54, 0.40, 0.28], glide=-0.04, glide_tau=0.025, onset=0.002, attack=0.0025))
+    sub_thud = unit_peak(punch_body(times, 138.0, 38.0, 0.026, 0.082, onset=0.001, attack=0.003, drive=1.55))
+    rubble = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 95.0, 420.0, 2) * ad_env(times, 0.004, 0.008, 0.085))
+    save("ground_slam", sos_hp(1.32 * cracks + 0.84 * grit + 0.56 * stone_modes + 0.64 * sub_thud + 0.58 * rubble, 32.0, 2), 0.90)
+
+    times = t_(0.18)
+    bite_snap = unit_peak(soft_sat(sos_bp(rng_c.standard_normal(len(times)), 1250.0, 4800.0, 2) * ad_env(times, 0.002, 0.0025, 0.0085), 2.2))
+    wet_freq = np.exp(np.interp(times, [0.0, 0.012, 0.052, 0.130], np.log([4700.0, 3200.0, 1400.0, 980.0])))
+    wet_shear = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), wet_freq, 2.5, "bp") * ad_env(times, 0.0025, 0.003, 0.028))
+    micro_bite = unit_peak(micro_bursts(times, [0.0025, 0.007, 0.0125], [0.0045, 0.0055, 0.0065], [1.0, 0.70, 0.42], rng_c, 1450.0, 5800.0))
+    chest = unit_peak(punch_body(times, 160.0, 55.0, 0.019, 0.044, onset=0.0025, attack=0.003, drive=1.65))
+    steel_slice = unit_peak(blade_ring(times, [2950.0, 3980.0, 5150.0], [0.036, 0.026, 0.018], [0.82, 0.66, 0.48], glide=-0.06, glide_tau=0.028, onset=0.0025, attack=0.0025))
+    save("hit_flesh", sos_hp(1.38 * bite_snap + 0.98 * wet_shear + 0.88 * micro_bite + 0.46 * chest + 0.52 * steel_slice, 42.0, 2), 0.90)
+
+    times = t_(0.27)
+    tear_crack = unit_peak(soft_sat(sos_bp(rng_c.standard_normal(len(times)), 1400.0, 6400.0, 2) * ad_env(times, 0.002, 0.0025, 0.012), 2.3))
+    tear_freq = np.exp(np.interp(times, [0.0, 0.018, 0.072, 0.175], np.log([5200.0, 3300.0, 1100.0, 680.0])))
+    tear_rip = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), tear_freq, 2.4, "bp") * ad_env(times, 0.003, 0.004, 0.048))
+    tear_pulses = unit_peak(soft_sat(micro_bursts(times, [0.0025, 0.008, 0.015, 0.0235], [0.005, 0.0065, 0.0085, 0.010], [1.0, 0.84, 0.66, 0.46], rng_c, 1350.0, 6200.0), 1.9))
+    sub_punch = unit_peak(punch_body(times, 140.0, 38.0, 0.028, 0.078, onset=0.003, attack=0.003, drive=1.75))
+    sword_ring = unit_peak(blade_ring(times, [1480.0, 2380.0, 3420.0, 4780.0], [0.120, 0.088, 0.060, 0.038], [0.82, 0.70, 0.55, 0.40], glide=-0.03, glide_tau=0.048, onset=0.003, attack=0.003))
+    save("hit_heavy", sos_hp(1.28 * tear_crack + 0.96 * tear_rip + 0.98 * tear_pulses + 0.64 * sub_punch + 0.56 * sword_ring, 30.0, 2), 0.90)
+
+    times = t_(0.38)
+    spark_noise = unit_peak(soft_sat(sos_bp(rng_c.standard_normal(len(times)), 2800.0, 9000.0, 2) * ad_env(times, 0.002, 0.002, 0.014), 2.1))
+    spark_crackle = unit_peak(micro_bursts(times, [0.0025, 0.007, 0.0135, 0.021], [0.0035, 0.0045, 0.0055, 0.006], [1.0, 0.74, 0.50, 0.30], rng_c, 3200.0, 9200.0))
+    spark_pings = unit_peak(blade_ring(times, [5280.0, 6820.0, 8250.0], [0.030, 0.020, 0.014], [0.90, 0.78, 0.62], onset=0.002, attack=0.0018))
+    iron_raw = unit_peak(blade_ring(times, [515.0, 815.0, 1340.0, 2045.0, 2980.0, 4120.0, 5450.0], [0.180, 0.150, 0.120, 0.092, 0.066, 0.046, 0.030], [0.65, 0.75, 0.88, 0.82, 0.72, 0.56, 0.40], onset=0.002, attack=0.002))
+    iron_bite = unit_peak(soft_sat(iron_raw, 2.4) * ad_env(times, 0.002, 0.002, 0.026))
+    iron_thud = unit_peak(punch_body(times, 185.0, 68.0, 0.015, 0.036, onset=0.001, attack=0.0025, drive=1.45))
+    save("hit_armor", sos_hp(1.15 * spark_noise + 0.95 * spark_crackle + 0.80 * spark_pings + 0.78 * iron_raw + 0.65 * iron_bite + 0.40 * iron_thud, 55.0, 2), 0.90)
+
+    times = t_(0.23)
+    wind_freq = np.exp(np.interp(times, [0.0, 0.020, 0.080, 0.160, 0.230], np.log([4200.0, 2600.0, 1100.0, 540.0, 390.0])))
+    wind_step = unit_peak(svf_sweep(rng_c.standard_normal(len(times)), wind_freq, np.linspace(2.6, 1.8, len(times)), "bp") * ad_env(times, 0.002, 0.014, 0.062, 1.2))
+    air_rush = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 1800.0, 7400.0, 2) * ad_env(times, 0.003, 0.014, 0.048))
+    air_tail = unit_peak(sos_bp(rng_c.standard_normal(len(times)), 420.0, 3200.0, 2) * ad_env(times, 0.004, 0.018, 0.065))
+    step_pop = unit_peak(punch_body(times, 195.0, 72.0, 0.013, 0.024, onset=0.002, attack=0.0028, drive=1.2))
+    cloth_snap = unit_peak(micro_bursts(times, [0.012, 0.030], [0.009, 0.013], [1.0, 0.68], rng_c, 1300.0, 5600.0))
+    save("dash", sos_hp(1.00 * wind_step + 0.55 * air_rush + 0.42 * air_tail + 0.28 * step_pop + 0.72 * cloth_snap, 65.0, 2), 0.80)
+
+
 # ------------------------------------------------------------------ SFX
 def make_sfx():
     save("swing_pre", bp(noise(0.12), 800, 3000) * env(int(SR * 0.12), 0.01, 0.05), 0.4)
-    sw = sweep_noise(0.22, 600, 3200, 0.6) * env(int(SR * 0.22), 0.03, 0.1)
-    save("swing", sw, 0.8)
     save("step", bp(noise(0.08), 100, 900) * env(int(SR * 0.08), 0.002, 0.02), 0.5)
     save("jump", sweep_noise(0.18, 300, 1200, 0.8) * env(int(SR * 0.18), 0.01, 0.06), 0.5)
     save("land", (bp(noise(0.2), 60, 600) + 0.8 * thud(0.2, 120, 50)) * env(int(SR * 0.2), 0.002, 0.06), 0.7)
-    save("dash", sweep_noise(0.3, 2400, 500, 0.8) * env(int(SR * 0.3), 0.01, 0.12), 0.7)
     save("guard_up", modal(0.25, [1800, 2700], [0.05, 0.03], [0.3, 0.2]) + bp(noise(0.25), 1000, 4000) * env(int(SR * 0.25), 0.002, 0.02), 0.5)
     clang = modal(0.6, [880, 1320, 2210, 3170, 4400], [0.25, 0.18, 0.12, 0.08, 0.05], [1, 0.7, 0.5, 0.35, 0.2])
     save("block", clang + 2 * bp(noise(0.6), 2000, 6000) * env(int(SR * 0.6), 0.001, 0.015), 0.8)
@@ -206,11 +400,6 @@ def make_sfx():
     save("beads_charge", shim + 0.4 * bp(noise(0.5), 3000, 8000) * env(len(tt), 0.3, 0.2), 0.6)
     bell = modal(2.0, [262, 524, 698, 1047, 1400, 2093], [1.4, 1.0, 0.8, 0.6, 0.4, 0.3], [1, 0.6, 0.5, 0.4, 0.3, 0.25])
     save("beads_burst", bell + 1.2 * thud(2.0, 140, 45) + 0.6 * sweep_noise(2.0, 2500, 400, 0.8) * env(int(SR * 2.0), 0.01, 0.4), 0.9)
-    flesh = (bp(noise(0.22), 200, 2500) * env(int(SR * 0.22), 0.001, 0.05) + 0.9 * thud(0.22, 180, 70))
-    save("hit_flesh", flesh, 0.85)
-    save("hit_heavy", flesh * 0.7 + 1.2 * thud(0.3, 120, 40)[:len(flesh)], 0.9)
-    armor = modal(0.5, [310, 470, 930, 1400], [0.12, 0.1, 0.07, 0.05], [1, 0.8, 0.5, 0.3]) + bp(noise(0.5), 300, 3000) * env(int(SR * 0.5), 0.001, 0.03) + 0.8 * thud(0.5, 140, 60)
-    save("hit_armor", armor, 0.85)
     edie = bp(noise(1.0), 100, 1200) * env(int(SR * 1.0), 0.01, 0.4) + 0.6 * thud(1.0, 90, 40)
     tt = t_(1.0)
     moan = np.sin(2 * np.pi * (110 - 40 * tt) * tt + 3 * np.sin(2 * np.pi * 6 * tt)) * env(len(tt), 0.05, 0.5)
@@ -263,6 +452,7 @@ def make_sfx():
     save("ending_chime", modal(3.5, [262, 392, 524, 659, 784], [3.0, 2.5, 2.0, 1.6, 1.2], [1, 0.8, 0.6, 0.5, 0.4]), 0.8)
     save("ui_confirm", modal(0.6, [784, 1175], [0.3, 0.2], [1, 0.6]), 0.6)
     save("ui_move", modal(0.2, [1175], [0.06], [1]), 0.4)
+    make_combat_sfx()
 
 
 # ------------------------------------------------------------------ music
@@ -496,6 +686,12 @@ def stingers():
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[2] == "sfx":
+        make_sfx()
+        sys.exit(0)
+    if len(sys.argv) > 2 and sys.argv[2] == "combat":
+        make_combat_sfx()
+        sys.exit(0)
     if len(sys.argv) > 2 and sys.argv[2] == "beds":
         ambience_beds()
         sys.exit(0)

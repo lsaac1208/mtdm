@@ -332,6 +332,15 @@ func hitstop(duration: float, scale := 0.05) -> void:
 	Engine.time_scale = scale
 
 
+## Real-time delta unaffected by brief hitstop slow-downs so slash trails,
+## hit sparks, enemy hit-shudder, and camera punch stay fluid at 60/120 fps.
+static func unscaled_delta(delta: float) -> float:
+	var ts := Engine.time_scale
+	if ts <= 0.001:
+		return 1.0 / 60.0
+	return minf(delta / ts, 0.05)
+
+
 func new_run() -> void:
 	checkpoint_id = 0
 	cleared.clear()

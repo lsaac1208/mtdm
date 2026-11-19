@@ -76,6 +76,8 @@ func _physics_process(delta: float) -> void:
 		for h in hits:
 			if h.has_method("ignite"):
 				h.ignite(3.0)
+		if is_instance_valid(owner_actor) and owner_actor.has_method("register_hit"):
+			owner_actor.register_hit(hits.size())
 		Game.hitstop(0.04)
 		_burst(true)
 	elif global_position.y > Game.GROUND_Y + 40:

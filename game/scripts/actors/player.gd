@@ -12,6 +12,7 @@ extends Actor
 signal hp_changed(hp, max_hp)
 signal qi_changed(qi, max_qi)
 signal gourd_changed(charges)
+signal combo_changed(count: int)
 signal died
 
 const RUN_SPEED := 260.0
@@ -20,10 +21,11 @@ const JUMP_V := -760.0
 const MAX_QI := 100.0
 const PARRY_WINDOW := 0.17
 const COYOTE := 0.1
-const BUFFER := 0.16
+const BUFFER := 0.20
 const TALISMAN_COST := 20.0
 const BEADS_COST := 50.0
 const GOURD_MAX := 3
+const COMBO_WINDOW := 2.6
 
 # Attack table. rect = Rect2(forward x, y above feet (negative), w, h).
 const ATK := {
@@ -66,6 +68,8 @@ var _fall_peak := 0.0
 var _hit_stun := 0.35
 var _jump_arm := 0.0
 var _block_recoil := 0.0   # sword-arm rot, back-arm rot, sword-arm offset along x (uv)
+var combo_hits := 0
+var combo_timer := 0.0
 var input_override = null   # test harness: Dictionary of action -> bool
 
 
@@ -127,6 +131,11 @@ func _physics_process(delta: float) -> void:
 	jump_buf = maxf(0.0, jump_buf - delta)
 	atk_buf = maxf(0.0, atk_buf - delta)
 	in_taint = maxf(0.0, in_taint - delta)
+	if combo_timer > 0.0:
+		combo_timer = maxf(0.0, combo_timer - delta)
+		if combo_timer <= 0.0 and combo_hits > 0:
+			combo_hits = 0
+			combo_changed.emit(0)
 	if dead:
 		velocity.x = move_toward(velocity.x, 0, 1200 * delta)
 		apply_gravity(delta)
@@ -278,9 +287,12 @@ func _on_landed(vy: float) -> void:
 
 func _st_land(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0, 2400.0 * delta)
-	if state_t > 0.14:
+	if state_t > 0.12:
 		set_state("idle")
-	elif state_t > 0.06:
+	elif state_t > 0.04:
+		if jump_buf > 0.0:
+			_jump()
+			return
 		_try_actions()
 
 
@@ -297,6 +309,13 @@ func _start_attack(name_: String) -> void:
 		facing = int(signf(ax))
 	vis.set_pose(cur_atk.pre, 0.0)
 	Sfx.play("swing_pre", -12.0)
+	match name_:
+		"slash1":
+			Fx.blade_glint(global_position + Vector2(-12 * facing, -92), facing, Fx.C_GOLD, 16.0)
+		"slash2", "down":
+			Fx.blade_glint(global_position + Vector2(6 * facing, -148), facing, Color(1.0, 0.82, 0.42), 23.0)
+		"slash3":
+			Fx.blade_glint(global_position + Vector2(-18 * facing, -98), facing, Color(1.0, 0.62, 0.28), 26.0)
 
 
 func _st_attack(delta: float) -> void:
@@ -316,26 +335,63 @@ func _st_attack(delta: float) -> void:
 		_swing_started = true
 		vis.set_pose(a.pose, 0.03)
 		var f: Array = a.fx
-		Fx.slash(global_position + Vector2(a.fx_off.x * facing, a.fx_off.y), facing, f[0], f[1], f[2], f[3], 0.3,
-			Fx.C_CINNABAR, Color(1, 0.97, 0.9), f[4])
-		Sfx.play("swing", -4.0)
-		vis.squash = Vector2(1.06, 0.95)
+		var fx_pos := global_position + Vector2(a.fx_off.x * facing, a.fx_off.y)
+		match cur_atk_name:
+			"slash1":
+				Fx.slash(fx_pos, facing, f[0], f[1], f[2] + 8.0, f[3] + 4.0, 0.24,
+					Color(0.84, 0.16, 0.09), Color(1.0, 0.98, 0.92), f[4],
+					"arc", Fx.C_GOLD, -0.14)
+				Sfx.play("swing", -4.0, 0.04, 1.04)
+				vis.squash = Vector2(1.07, 0.95)
+			"slash2", "down":
+				Fx.slash(fx_pos, facing, f[0], f[1], f[2] + 10.0, f[3] + 6.0, 0.28,
+					Color(0.88, 0.18, 0.08), Color(1.0, 0.98, 0.93), f[4],
+					"cleave", Color(1.0, 0.80, 0.34), 0.04)
+				Fx.ground_slam(global_position + Vector2(68 * facing, 0.0), facing, 0.78 if cur_atk_name == "slash2" else 0.95)
+				_smear(1, 0.28)
+				Sfx.play("swing_heavy", -2.5, 0.04, 1.0)
+				vis.squash = Vector2(1.10, 0.92)
+			"slash3":
+				Fx.slash(global_position + Vector2(12 * facing, -98), facing, f[0], f[1], f[2], 32.0, 0.28,
+					Color(0.92, 0.20, 0.08), Color(1.0, 0.99, 0.94), 0.16,
+					"thrust", Color(1.0, 0.82, 0.38), 0.0, 196.0)
+				_smear(2, 0.34)
+				Sfx.play("swing_thrust", -1.5, 0.03, 1.0)
+				vis.squash = Vector2(1.14, 0.90)
+			_:
+				Fx.slash(fx_pos, facing, f[0], f[1], f[2], f[3], 0.26,
+					Fx.C_CINNABAR, Color(1, 0.97, 0.9), f[4])
+				Sfx.play("swing", -4.0)
+				vis.squash = Vector2(1.06, 0.95)
 	if t >= st and t < st + ac:
 		var hits := strike(a.rect, a.dmg, a.poise, a.knock, hit_set, {"tag": cur_atk_name, "low": a.get("low", false)})
 		if hits.size() > 0:
 			_on_melee_connect(hits)
-	# combo input window opens during active frames
-	if t >= st * 0.5 and atk_buf > 0.0 and a.next != "":
+	# combo input window opens early so rapid taps always chain seamlessly
+	if t >= 0.02 and atk_buf > 0.0 and a.next != "":
 		combo_queued = a.next
 		atk_buf = 0.0
-	var can_cancel := t >= st + ac + 0.06
+	var can_cancel := t >= st + ac + 0.04
 	if can_cancel and combo_queued != "":
 		_start_attack(combo_queued)
 		return
 	if can_cancel and _pressed("dash") and dash_cd <= 0.0:
 		_start_dash()
 		return
-	if can_cancel and _held("block") and t >= st + ac + 0.1:
+	if can_cancel and jump_buf > 0.0 and not hit_set.is_empty() and is_on_floor():
+		_jump()
+		return
+	if can_cancel and skill_cd <= 0.0:
+		if _pressed("talisman") and qi >= TALISMAN_COST:
+			_start_skill("talisman")
+			return
+		if _pressed("beads") and qi >= BEADS_COST:
+			_start_skill("beads_a")
+			return
+		if _pressed("gourd") and gourd > 0:
+			_start_skill("gourd")
+			return
+	if can_cancel and _held("block") and t >= st + ac + 0.08:
 		set_state("block")
 		block_t = 0.0
 		return
@@ -347,8 +403,14 @@ func _st_attack(delta: float) -> void:
 
 func _on_melee_connect(hits: Array) -> void:
 	_gain_qi(5.0 * hits.size())
-	Game.hitstop(0.055 if cur_atk_name != "slash3" else 0.08)
-	Fx.shake(2.5 if cur_atk_name == "slash1" else 4.5, 0.12)
+	register_hit(hits.size())
+	var heavy := cur_atk_name in ["slash3", "down"]
+	var hs := 0.042 if cur_atk_name == "slash1" else (0.075 if cur_atk_name == "slash3" else 0.056)
+	Game.hitstop(hs)
+	Fx.shake(2.6 if cur_atk_name == "slash1" else (5.2 if cur_atk_name == "slash3" else 3.8), 0.12)
+	Fx.kick(Vector2(facing * (6.0 if cur_atk_name == "slash3" else (4.2 if heavy else 2.8)), 1.6 if cur_atk_name in ["slash2", "down"] else 0.0), 0.10)
+	if heavy:
+		Fx.punch(0.024 if cur_atk_name == "slash3" else 0.016, 0.16)
 
 
 # ---------------------------------------------------------------- dash
@@ -393,9 +455,11 @@ func _start_dash_attack() -> void:
 	hit_set = {}
 	invuln = maxf(invuln, 0.16)
 	vis.set_pose("hero_06_dash", 0.02)
-	Sfx.play("swing", -3.0, 0.05, 0.9)
-	Fx.slash(global_position + Vector2(30 * facing, -50), facing, -70.0, 70.0, 110.0, 26.0, 0.3,
-		Fx.C_CINNABAR, Color(1, 0.97, 0.9), 0.25)
+	Fx.blade_glint(global_position + Vector2(8 * facing, -64), facing, Fx.C_GOLD, 22.0)
+	Sfx.play("swing_thrust", -2.5, 0.05, 1.08)
+	Fx.slash(global_position + Vector2(24 * facing, -54), facing, -72.0, 72.0, 114.0, 30.0, 0.28,
+		Color(0.88, 0.18, 0.08), Color(1.0, 0.98, 0.93), 0.26,
+		"dash", Color(1.0, 0.80, 0.34), -0.05, 172.0)
 
 
 func _st_dash_attack(delta: float) -> void:
@@ -408,8 +472,14 @@ func _st_dash_attack(delta: float) -> void:
 		var hits := strike(Rect2(-20, -95, 140, 95), 14.0, 16.0, 220.0, hit_set, {"tag": "dash_attack", "low": true})
 		if hits.size() > 0:
 			_gain_qi(5.0 * hits.size())
-			Game.hitstop(0.06)
+			register_hit(hits.size())
+			Game.hitstop(0.055)
 			Fx.shake(3.5, 0.12)
+			Fx.kick(Vector2(facing * 5.2, 0.0), 0.10)
+	if state_t >= 0.26 and atk_buf > 0.0:
+		atk_buf = 0.0
+		_start_attack("slash2")
+		return
 	if state_t >= 0.42:
 		set_state("idle")
 
@@ -423,7 +493,9 @@ func _start_jump_attack() -> void:
 	vis.set_pose("hero_07_jump", 0.03)
 	_smear(1, 0.3)
 	Sfx.play("swing", -4.0, 0.06, 1.08)
-	Fx.slash(global_position + Vector2(26 * facing, -70), facing, -80.0, 95.0, 88.0, 34.0, 0.3)
+	Fx.slash(global_position + Vector2(26 * facing, -70), facing, -85.0, 98.0, 92.0, 36.0, 0.26,
+		Color(0.86, 0.17, 0.09), Color(1.0, 0.98, 0.93), 1.0,
+		"cleave", Fx.C_GOLD, 0.10)
 
 
 func _st_jump_attack(delta: float) -> void:
@@ -434,7 +506,9 @@ func _st_jump_attack(delta: float) -> void:
 		var hits := strike(Rect2(-10, -125, 128, 165), 13.0, 12.0, 160.0, hit_set, {"tag": "jump_attack", "low": true})
 		if hits.size() > 0:
 			_gain_qi(5.0 * hits.size())
-			Game.hitstop(0.05)
+			register_hit(hits.size())
+			Game.hitstop(0.046)
+			Fx.kick(Vector2(facing * 3.5, -2.5), 0.10)
 			velocity.y = minf(velocity.y, -180.0)   # small pogo on hit
 	if state_t >= 0.36:
 		set_state("air")
@@ -496,6 +570,7 @@ func _st_skill(delta: float) -> void:
 				p.dir = facing
 				p.owner_actor = self
 				Fx.layer().add_child(p)
+				Fx.blade_glint(p.global_position, facing, Fx.C_GOLD, 20.0)
 				Sfx.play("talisman_fire", -3.0)
 			if state_t >= 0.32:
 				set_state("idle" if is_on_floor() else "air")
@@ -513,6 +588,7 @@ func _st_skill(delta: float) -> void:
 					"damage": 4.0, "poise": 30.0, "knock": 520.0, "dir": facing, "kind": "aoe", "centre": global_position,
 					"unblockable": false, "tag": "gourd"}, gust)
 				if hits.size() > 0:
+					register_hit(hits.size())
 					Fx.shake(3.0, 0.15)
 			if state_t >= 0.58:
 				set_state("idle")
@@ -524,13 +600,17 @@ func _st_skill(delta: float) -> void:
 				var r := Fx.ring(global_position + Vector2(0, -40), 30.0, 230.0, Fx.C_GOLD, 0.6, 16.0, 0.45)
 				r.glyphs = 18
 				Fx.ring(global_position + Vector2(0, -40), 20.0, 190.0, Color(1, 0.95, 0.8, 0.8), 0.35, 6.0, 0.45)
+				Fx.ground_slam(global_position, facing, 1.35)
 				Fx.shake(6.0, 0.25)
+				Fx.kick(Vector2(0.0, 6.0), 0.14)
 				Fx.punch(0.04, 0.3)
 				Game.hitstop(0.08)
 				var hs := {}
-				Combat.strike({"owner": self, "team": team, "rect": Rect2(global_position.x - 210, global_position.y - 210, 420, 230),
+				var b_hits := Combat.strike({"owner": self, "team": team, "rect": Rect2(global_position.x - 210, global_position.y - 210, 420, 230),
 					"damage": 28.0, "poise": 60.0, "knock": 420.0, "dir": facing, "kind": "aoe", "centre": global_position,
 					"unblockable": false, "tag": "beads"}, hs)
+				if b_hits.size() > 0:
+					register_hit(b_hits.size())
 				get_tree().call_group("taint_puddle", "purify_near", global_position, 240.0)
 		"beads_b":
 			if state_t >= 0.4:
@@ -602,8 +682,11 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 		velocity.y = -260.0
 	invuln = 0.75
 	Game.hitstop(0.08)
+	vis.hit_shake(dir, 8.0, 0.16)
 	Fx.shake(6.0, 0.22)
+	Fx.kick(Vector2(dir * 7.0, 2.0), 0.12)
 	Fx.hit_ink(global_position + Vector2(0, -80), dir, Fx.C_CINNABAR)
+	Fx.hit_impact(global_position + Vector2(0, -84), dir, "slash1", atk.damage >= 20, Fx.C_CINNABAR, Color(1.0, 0.72, 0.4))
 	Sfx.play("player_hurt", -2.0)
 	return {}
 
@@ -627,11 +710,14 @@ func _parry(atk: Dictionary) -> void:
 	Game.parries += 1
 	_gain_qi(15.0)
 	Sfx.play("parry", 0.0, 0.03)
-	Fx.spark(global_position + Vector2(36 * facing, -96), Color(1, 0.95, 0.7), 22)
-	Fx.ring(global_position + Vector2(36 * facing, -96), 6.0, 70.0, Color(1, 0.9, 0.6), 0.25, 5.0, 1.0)
+	var ppos := global_position + Vector2(36 * facing, -96)
+	Fx.spark(ppos, Color(1, 0.95, 0.7), 22)
+	Fx.ring(ppos, 6.0, 76.0, Color(1, 0.9, 0.6), 0.25, 5.0, 1.0)
+	Fx.hit_impact(ppos, facing, "slash3", true, Fx.C_GOLD, Color(1.0, 0.98, 0.86))
 	Fx.float_text(global_position + Vector2(0, -175), "弹反", Color(1, 0.88, 0.5), 30)
 	Game.hitstop(0.16, 0.02)
 	Fx.shake(4.0, 0.15)
+	Fx.kick(Vector2(-facing * 6.0, 0.0), 0.11)
 	Fx.punch(0.05, 0.25)
 	var o = atk.get("owner")
 	if is_instance_valid(o) and o.has_method("on_parried"):
@@ -649,6 +735,9 @@ func _st_hit(delta: float) -> void:
 func _die() -> void:
 	Game.telemetry.deaths.append(last_hit_source)
 	dead = true
+	combo_hits = 0
+	combo_timer = 0.0
+	combo_changed.emit(0)
 	set_state("dead")
 	vis.play_clip("dead", 0.08, true)
 	Sfx.play("player_die", 0.0)
@@ -664,6 +753,9 @@ func respawn_at(pos: Vector2) -> void:
 	hp = max_hp
 	qi = maxf(qi, 40.0)
 	gourd = GOURD_MAX
+	combo_hits = 0
+	combo_timer = 0.0
+	combo_changed.emit(0)
 	invuln = 1.0
 	vis.alpha = 1.0
 	vis.dissolve = 0.0
@@ -688,6 +780,12 @@ func _gain_qi(v: float) -> void:
 		qi_changed.emit(qi, MAX_QI)
 
 
+func register_hit(count := 1) -> void:
+	combo_hits += maxi(1, count)
+	combo_timer = COMBO_WINDOW
+	combo_changed.emit(combo_hits)
+
+
 func on_kill(_enemy) -> void:
 	_gain_qi(8.0)
 
@@ -696,7 +794,9 @@ func on_kill(_enemy) -> void:
 ## Motion smear: fading copies of the previous and current pose trailing the swing.
 func _smear(n: int, alpha: float) -> void:
 	for i in n:
-		var src: Sprite2D = vis.prev if (i == 0 and vis.prev.visible) else vis.cur
+		var src: Sprite2D = vis.prev if (i == 0 and vis.prev.visible) else vis.active_sprite()
+		if src == null or src.texture == null:
+			continue
 		var g := Sprite2D.new()
 		g.texture = src.texture
 		g.centered = false
@@ -706,19 +806,24 @@ func _smear(n: int, alpha: float) -> void:
 		g.z_index = 4
 		Fx.layer().add_child(g)
 		var tw := g.create_tween()
+		tw.set_ignore_time_scale(true)
 		tw.tween_property(g, "modulate:a", 0.0, 0.14)
 		tw.tween_callback(g.queue_free)
 
 
 func _spawn_ghost() -> void:
+	var src: Sprite2D = vis.active_sprite()
+	if src == null or src.texture == null:
+		return
 	var g := Sprite2D.new()
-	g.texture = vis.cur.texture
+	g.texture = src.texture
 	g.centered = false
-	g.global_transform = vis.cur.global_transform
+	g.global_transform = src.global_transform
 	g.modulate = Color(0.95, 0.75, 0.35, 0.45)
 	g.z_index = 4
 	Fx.layer().add_child(g)
 	var tw := g.create_tween()
+	tw.set_ignore_time_scale(true)
 	tw.tween_property(g, "modulate:a", 0.0, 0.22)
 	tw.tween_callback(g.queue_free)
 
@@ -727,6 +832,12 @@ func _animate(delta: float) -> void:
 	vis.facing = facing
 	vis.on_ground = is_on_floor()
 	vis.locomotion_speed = absf(velocity.x)
+	if is_on_floor():
+		vis.air_height = 0.0
+	elif _floor_probe != null and _floor_probe.is_colliding():
+		vis.air_height = maxf(0.0, to_local(_floor_probe.get_collision_point()).y)
+	else:
+		vis.air_height = maxf(0.0, Game.GROUND_Y - global_position.y)
 	vis.squash = vis.squash.lerp(Vector2.ONE, minf(1.0, delta * 12.0))
 	var target_lean := 0.0
 	vis.stride = 0.0
@@ -739,8 +850,7 @@ func _animate(delta: float) -> void:
 	vis.breathe = 0.0
 	vis.tint = Color(0.82, 1.0, 0.7) if in_taint > 0.0 else Color.WHITE
 	vis.alpha = 0.7 if (invuln > 0.0 and state != "dash" and state != "dash_attack" and int(invuln * 20) % 2 == 0) else 1.0
-	var cut: CutoutRig = vis.cut
-	cut.speed_scale = 1.0
+	vis.clip_speed_scale = 1.0
 	match state:
 		"idle":
 			vis.play_clip("idle", 0.18)
@@ -748,12 +858,12 @@ func _animate(delta: float) -> void:
 			var spd := absf(velocity.x)
 			if spd < 170.0:
 				vis.play_clip("walk", 0.15)
-				cut.speed_scale = clampf(spd / 140.0, 0.4, 1.3)
+				vis.clip_speed_scale = clampf(spd / 140.0, 0.45, 1.35)
 			else:
 				vis.play_clip("run", 0.12)
-				cut.speed_scale = clampf(spd / 260.0, 0.6, 1.3)
+				vis.clip_speed_scale = clampf(spd / 260.0, 0.65, 1.35)
 			# footfalls at the two contact keys of the cycle
-			var pos := cut.clip_progress()
+			var pos: float = vis.clip_progress()
 			for contact in [0.1, 0.6]:
 				if _last_clip_pos < contact and pos >= contact:
 					Sfx.play("step", -18.0, 0.15)
@@ -811,13 +921,24 @@ func _draw() -> void:
 			return
 		floor_y = maxf(0.0, to_local(_floor_probe.get_collision_point()).y)
 	var lift := clampf(floor_y / 200.0, 0.0, 1.0)
-	var strength := lerpf(0.21, 0.04, lift) * (1.0 - vis.dissolve)
-	var floor_pos := Vector2(0, floor_y - 1.0)
-	draw_set_transform(floor_pos, 0.0, Vector2(1.0 + lift * 0.3, 0.14))
-	draw_circle(Vector2.ZERO, 38.0, Color(0.12, 0.09, 0.075, strength), true, -1.0, true)
+	var fade := 1.0 - vis.dissolve
+	var lean_x := float(vis.current_light().get("shadow_lean", -0.35))
+	var soil: Color = vis.current_light().get("soil", Color(0.20, 0.16, 0.13))
+	var shadow_col := Color(soil.r * 0.16, soil.g * 0.14, soil.b * 0.15, 1.0)
+	# Directional cast shadow skewed opposite the zone's key sun/moon angle
+	var cast_shift := Vector2(lean_x * lerpf(28.0, 48.0, lift), floor_y + 1.0)
+	draw_set_transform(cast_shift, 0.0, Vector2(1.25 + lift * 0.35, 0.15 + lift * 0.04))
+	draw_circle(Vector2.ZERO, 44.0, Color(shadow_col.r, shadow_col.g, shadow_col.b, lerpf(0.22, 0.05, lift) * fade), true, -1.0, true)
+	# Core grounded ambient occlusion pool under the figure's mass
+	draw_set_transform(Vector2(lean_x * 6.0, floor_y - 0.5), 0.0, Vector2(1.0 + lift * 0.25, 0.14))
+	draw_circle(Vector2.ZERO, 34.0, Color(shadow_col.r, shadow_col.g, shadow_col.b, lerpf(0.32, 0.07, lift) * fade), true, -1.0, true)
 	if is_on_floor():
+		var last_fx := 1e9
 		for foot: Vector2 in vis.contacts:
-			var pressure := 1.0 - smoothstep(1.0, 13.0, absf(foot.y))
-			draw_set_transform(Vector2(foot.x, -0.7), 0.0, Vector2(1, 0.20))
-			draw_circle(Vector2.ZERO, 10.0, Color(0.07, 0.05, 0.04, 0.38 * pressure), true, -1.0, true)
+			if absf(foot.x - last_fx) < 16.0:
+				continue
+			last_fx = foot.x
+			var pressure := 1.0 - smoothstep(2.0, 18.0, absf(foot.y))
+			draw_set_transform(Vector2(foot.x, -0.5), 0.0, Vector2(1.0, 0.22))
+			draw_circle(Vector2.ZERO, 11.5, Color(0.05, 0.04, 0.035, 0.42 * pressure * fade), true, -1.0, true)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
