@@ -90,3 +90,9 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D21 · macOS export without Apple credentials (M10)
 - Universal `.app`, ad-hoc signed by Godot's built-in signer; needs ETC2/ASTC import enabled. Not notarized → Gatekeeper requires right-click → Open. Not run on a Mac.
+
+## D22 · Combat guard instead of relaxed idle between strikes (0.3.1)
+- The relaxed idle sheet is drawn three-quarter front while every other hero drawing is in profile. `Player.guard_t` keeps the painted profile guard (`hero_strike_settle`) for 2.6 s after any combat action or while an aggro enemy is within 430 px; the relaxed idle only plays out of combat. Covered by `guard_stance`.
+
+## D23 · One UI theme (0.3.1)
+- `InkTheme.shared()` (code-built `Theme`) is set on the root window and on the pause/options roots (CanvasLayer children do not inherit the window theme). Screens keep their own font sizes/colours; only widget skins come from the theme.

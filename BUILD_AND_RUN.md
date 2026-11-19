@@ -19,6 +19,11 @@ python3 tools/readability.py build/qa/masks build/qa/readability
 ```
 
 
+## 0.3.1 visual review modes
+Run with a display (or `xvfb-run`), `--rendering-driver opengl3 --resolution 1280x720 --fixed-fps 60`, then `-- --test=<mode> --shots=<dir> --mute`:
+`titlecap` (title menu), `showcase` (every enemy telegraph + hero skills), `gatecap` (encounter ward, sealed/open end gate), `combocap` (per-frame combo), `ending_shot`. A full rendered playthrough: `--write-movie out.avi -- --test=bot`.
+To compare against another commit, check it out in a worktree, copy the current `game/tests/test_runner.gd` into it, and run the same modes (see evidence/v0.3.1).
+
 ## 1. Requirements
 - **Godot 4.7.2 stable** (standard build, not .NET). Download: https://godotengine.org/download/archive/4.7.2-stable/
 - For exports: the matching **export templates** (Editor → Manage Export Templates, or unpack `Godot_v4.7.2-stable_export_templates.tpz` into `~/.local/share/godot/export_templates/4.7.2.stable/`).
@@ -27,7 +32,7 @@ python3 tools/readability.py build/qa/masks build/qa/readability
 ## 2. Play from source
 ```bash
 git clone https://github.com/lsaac1208/mtdm.git
-cd mtdm && git switch codex/visual-polish-v03
+cd mtdm && git switch claude/post-codex-continuation
 godot --path game            # or open game/project.godot in the editor and press F5
 ```
 The first launch imports assets (~10 s).

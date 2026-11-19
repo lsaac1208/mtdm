@@ -1,8 +1,19 @@
 # DEVELOPMENT_STATUS — 道行者 / Taoist Wanderer
 
-## 0.3 视觉打磨版
+## 0.3.1 接手版（当前）
 
-当前开发分支为 `codex/visual-polish-v03`。三档难度、九个主角新姿势、五区绘景、动态按键提示和场景退出修复已接入。查看[验收记录](evidence/v0.3/README.md)和[候选包](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1)。以下为上一个发布基线的历史记录。
+_2026-11-19 · 分支 `claude/post-codex-continuation`（基于 `codex/visual-polish-v03` @ `451d4d3`）· Godot 4.7.2 · 版本 0.3.1_
+
+当前画面系统：`FrameAnim`（逐帧手绘图集 + 2.5D 法线/厚度/AO，负责移动、跳跃、待机与敌人循环）＋ `PoseSprite`（原画姿势，负责出招关键帧）＋ `CutoutRig`（仅作缺图回退）。三者由 `RigVisual` 统一调度。
+
+- 已验证：基线 52/52 + 通关；本分支 53/53，机器人完美 ×3 / 拟人 ×1 通关；Linux 导出包内 53/53 + 通关 + 渲染截图。
+- 本轮修复与前后对照：[evidence/v0.3.1](evidence/v0.3.1/README.md)。
+- 未验证：Windows、macOS 包未在对应系统运行；无真人试玩与实体手柄测试；音频未经人耳试听。
+- 已知问题与下一步见 [ROADMAP](ROADMAP.md) 的 0.3.1 段落。
+
+## 0.3 视觉打磨版（历史）
+
+当时开发分支为 `codex/visual-polish-v03`。三档难度、九个主角新姿势、五区绘景、动态按键提示和场景退出修复已接入。查看[验收记录](evidence/v0.3/README.md)和[候选包](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1)。以下为上一个发布基线的历史记录。
 
 _Last updated: 2026-11-19 (v0.2.0) · branch `dev/vertical-slice-20261118` · engine Godot 4.7.2 · version 0.2.0_
 
