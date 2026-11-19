@@ -332,7 +332,23 @@ func _build_platforms() -> void:
 		sprite.scale = Vector2(w, h) / sprite.texture.get_size()
 		sprite.position = Vector2(p[0], p[2])
 		sprite.z_index = 2
+		# Sit the painted block in its zone's light: the raw paintings are
+		# fully saturated and read as pasted-on next to the hazy backdrop.
+		var zi := 0
+		for k in LevelData.ZONES.size():
+			if p[0] >= LevelData.ZONES[k].x:
+				zi = k
+		var lt: Dictionary = LevelData.ZONES[zi].light
+		var shade: Color = (lt.shadow as Color).lerp(Color.WHITE, 0.42)
+		sprite.modulate = Color(shade.r, shade.g, shade.b, 1.0)
 		add_child(sprite)
+		var contact := Sprite2D.new()
+		contact.texture = Fx.dot_texture()
+		contact.scale = Vector2(w * 1.18, 22.0) / 24.0 * 1.5
+		contact.position = Vector2(p[0] + w * 0.5, Game.GROUND_Y + 1.0)
+		contact.modulate = Color(0.10, 0.07, 0.05, 0.38)
+		contact.z_index = 1
+		add_child(contact)
 
 
 func _add_sign(s: Dictionary) -> void:

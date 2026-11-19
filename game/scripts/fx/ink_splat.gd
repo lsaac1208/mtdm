@@ -2,7 +2,7 @@ extends Node2D
 ## Ground ink/blood blot left by hits; fades out. Kept to a small pool.
 
 static var pool: Array = []
-var life := 7.0
+var life := 5.0
 var t := 0.0
 var color := Color(0.12, 0.05, 0.04, 0.8)
 var size := 18.0
@@ -34,8 +34,12 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	# Soaked-in stain: a soft wide rim and a translucent core, so blots read
+	# as ink seeping into the painted earth rather than black holes in it.
 	var a := clampf(t / 0.12, 0.0, 1.0) * clampf((life - t) / 1.5, 0.0, 1.0)
 	for b in blobs:
-		draw_set_transform(b[0], 0.0, Vector2(1.0, 0.28))
-		draw_circle(Vector2.ZERO, b[1], Color(color.r, color.g, color.b, color.a * a))
+		draw_set_transform(b[0], 0.0, Vector2(1.0, 0.24))
+		draw_circle(Vector2.ZERO, b[1] * 1.45, Color(color.r, color.g, color.b, color.a * a * 0.16))
+		draw_circle(Vector2.ZERO, b[1] * 1.15, Color(color.r, color.g, color.b, color.a * a * 0.22))
+		draw_circle(Vector2.ZERO, b[1] * 0.8, Color(color.r, color.g, color.b, color.a * a * 0.42))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
