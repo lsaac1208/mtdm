@@ -26,9 +26,13 @@ SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/06_taint_puddle
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/07_talisman.png
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/08_husk_burst.png
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/09_beads_burst.png
-SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/10_elite_windup_sweep.png
+SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/10_elite_windup_chop.png
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/11_elite_strike.png
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/12_block.png
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/13_jump_attack.png
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/14_dash_attack.png
 SHOT /workspace/mtdm/evidence/acceptance-20261119/shots/showcase/15_gourd.png
+WARNING: 4 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 2 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)

@@ -1,17 +1,18 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
-ERROR: Tween (bound to /root/Level/@CanvasLayer@203): started with no Tweeners.
+ERROR: Tween (bound to /root/Level/@CanvasLayer@212): started with no Tweeners.
    at: step (scene/animation/tween.cpp:366)
-BOT t=20s x=3748 hp=90 deaths=0 kills=3 cleared=["e1_village", "e2_crawler"]
-BOT t=40s x=6029 hp=34 deaths=0 kills=9 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
-BOT t=60s x=7137 hp=79 deaths=0 kills=11 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c"]
-BOT t=80s x=9329 hp=66 deaths=0 kills=15 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
-BOT t=100s x=10090 hp=88 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=120s x=11074 hp=71 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
-DEMO_COMPLETE time=02:01 deaths=0 kills=24 parries=7
-TEST bot_completes_demo           PASS  sim_time=121s deaths=0 kills=24 parries=7 run_time=02:01
+BOT t=20s x=3816 hp=90 deaths=0 kills=3 cleared=["e1_village", "e2_crawler"]
+BOT t=40s x=4469 hp=100 deaths=0 kills=6 cleared=["e1_village", "e2_crawler", "e3_group_a"]
+BOT t=60s x=6976 hp=100 deaths=0 kills=11 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c"]
+BOT t=80s x=9262 hp=100 deaths=0 kills=15 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
+BOT t=100s x=10164 hp=77 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=120s x=9941 hp=33 deaths=0 kills=23 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+DEMO_COMPLETE time=02:08 deaths=0 kills=24 parries=9
+TELEMETRY {"damage":{"hazard:puddle":20.5,"伏爬者:pounce":70.0,"封印残尸:attack":8.1,"尸将:ground_shock":32.0,"普通尸祟:attack":125.0,"瘴吐者:taint":14.0},"deaths":[],"encounters":{"e1_village":{"damage":0.0,"deaths":0,"start":0.0,"time":4.23333333333338},"e3_group_a":{"damage":85.0,"deaths":0,"start":0.0,"time":17.7666666666657},"e5_group_c":{"damage":29.0,"deaths":0,"start":0.0,"time":6.81666666666628},"e7_group_b":{"damage":15.4,"deaths":0,"start":0.0,"time":6.48333333333296},"e7c_burial_wave":{"damage":50.0,"deaths":0,"start":0.0,"time":10.6499999999994},"e8_elite":{"damage":67.0,"deaths":0,"start":0.0,"time":29.1833333333317}}}
+TEST bot_completes_demo           PASS  sim_time=129s deaths=0 kills=24 parries=9 run_time=02:08
 TESTS DONE pass=1 fail=0
-WARNING: 26 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+WARNING: 18 ObjectDB instances were leaked at exit (run with `--verbose` for details).
    at: cleanup (core/object/object.cpp:2536)
-ERROR: 13 resources still in use at exit (run with --verbose for details).
+ERROR: 9 resources still in use at exit (run with --verbose for details).
    at: clear (core/io/resource.cpp:822)

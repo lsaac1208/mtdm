@@ -15,14 +15,14 @@ ERROR: Condition "status < 0" is true. Returning: ERR_CANT_OPEN
 WARNING: All audio drivers failed, falling back to the dummy driver.
      at: initialize (servers/audio/audio_server.cpp:258)
 
-FPS 68  frame_ms 14.7  objects 192
-FPS 69  frame_ms 14.5  objects 218
-FPS 61  frame_ms 16.4  objects 224
-FPS 65  frame_ms 15.4  objects 220
-FPS 68  frame_ms 14.7  objects 222
-DEATH x=9034 zone=Burial Mound cp=0
-FPS 73  frame_ms 13.7  objects 214
-WARNING: 4 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+FPS 57  frame_ms 17.5  objects 308
+FPS 53  frame_ms 18.9  objects 368
+FPS 53  frame_ms 18.9  objects 391
+FPS 52  frame_ms 19.2  objects 388
+FPS 55  frame_ms 18.2  objects 385
+FPS 57  frame_ms 17.5  objects 383
+DEATH x=9133 zone=Burial Mound cp=0
+WARNING: 6 ObjectDB instances were leaked at exit (run with `--verbose` for details).
    at: cleanup (core/object/object.cpp:2536)
-ERROR: 2 resources still in use at exit (run with --verbose for details).
+ERROR: 3 resources still in use at exit (run with --verbose for details).
    at: clear (core/io/resource.cpp:822)

@@ -19,12 +19,18 @@ Priorities follow the project directive: launchable → core combat → distinct
 ## Done in session 3 (v0.1.3)
 - Arm bones + attack arm curves (hero and enemies), enemy ledge hop, spec-conformance/continuity/ledge tests, acceptance.sh with committed evidence.
 
-## v0.2.0 (in progress)
+## v0.2.0 (done — acceptance 14/14 at e312e39)
 - [x] M7 skinned cut-out rigs + clips for hero and all five enemies
 - [x] M6 options menu, telemetry, balance pass, fairness tests
-- [ ] M8 audio refinement + boss music + audio review evidence
-- [ ] M9 environment art, material hit effects, boss death, scale readability, zone comparison
-- [ ] M10 packaging, Windows/macOS feasibility, v0.2.0 acceptance
+- [x] M8 audio normalization, boss music + stingers, audio review evidence
+- [x] M9 zone skylines, material hit effects, boss defeat cinematic, readability gate, 5-zone comparison
+- [x] M10 Linux/Windows/macOS packages, v0.2.0 acceptance
+
+## After v0.2.0
+- Human playtest + listening test (cannot be done here).
+- Windows/macOS runtime checks on real machines; Developer ID signing + notarization (needs Apple account).
+- Second source pose per character (back/turn) and hand poses — needs new art.
+- Painted environment layers to replace procedural skylines.
 
 ## Next
 ### M6 · Playtest & tuning (highest value)

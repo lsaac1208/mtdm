@@ -1,45 +1,44 @@
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
-ERROR: Tween (bound to /root/Level/@CanvasLayer@203): started with no Tweeners.
+ERROR: Tween (bound to /root/Level/@CanvasLayer@212): started with no Tweeners.
    at: step (scene/animation/tween.cpp:366)
-BOT t=20s x=2086 hp=98 deaths=0 kills=2 cleared=["e1_village"]
-BOT t=40s x=2981 hp=60 deaths=0 kills=2 cleared=["e1_village"]
-BOT t=60s x=3923 hp=60 deaths=0 kills=4 cleared=["e1_village", "e2_crawler"]
-BOT t=80s x=4960 hp=90 deaths=0 kills=7 cleared=["e1_village", "e2_crawler", "e3_group_a"]
-BOT t=100s x=5270 hp=60 deaths=0 kills=8 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
-BOT t=120s x=5965 hp=73 deaths=0 kills=10 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
-BOT t=140s x=7149 hp=82 deaths=0 kills=11 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c"]
-BOT t=160s x=8158 hp=82 deaths=0 kills=14 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk"]
-BOT t=180s x=9309 hp=88 deaths=0 kills=15 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
-BOT t=200s x=9434 hp=68 deaths=0 kills=19 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
-BOT t=220s x=9443 hp=63 deaths=0 kills=19 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
-BOT t=240s x=10308 hp=100 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=260s x=10145 hp=90 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=280s x=10157 hp=62 deaths=0 kills=23 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=300s x=10282 hp=62 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
-DEMO_COMPLETE time=02:17 deaths=0 kills=24 parries=5
-TEST bot_completes_demo           PASS  sim_time=309s deaths=0 kills=24 parries=5 run_time=02:17
-SOAK run 0 nodes=37 orphans=0 objects=1896
-ERROR: Tween (bound to /root/Level/@CanvasLayer@7790): started with no Tweeners.
+BOT t=20s x=3067 hp=90 deaths=0 kills=2 cleared=["e1_village"]
+BOT t=40s x=3745 hp=68 deaths=0 kills=3 cleared=["e1_village", "e2_crawler"]
+BOT t=60s x=5172 hp=93 deaths=0 kills=7 cleared=["e1_village", "e2_crawler", "e3_group_a"]
+BOT t=80s x=5984 hp=48 deaths=0 kills=9 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
+BOT t=100s x=7174 hp=82 deaths=0 kills=11 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c"]
+BOT t=120s x=8067 hp=54 deaths=0 kills=14 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk"]
+BOT t=140s x=9407 hp=65 deaths=0 kills=17 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
+BOT t=160s x=9905 hp=100 deaths=0 kills=20 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=180s x=10153 hp=76 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=200s x=10196 hp=68 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=220s x=9933 hp=74 deaths=0 kills=22 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=240s x=9919 hp=66 deaths=0 kills=23 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+DEMO_COMPLETE time=02:04 deaths=0 kills=24 parries=1
+TELEMETRY {"damage":{"hazard:puddle":24.0,"伏爬者:pounce":65.0,"封印残尸:attack":36.0,"尸将:ground_shock":24.0,"尸将:sweep":44.0,"普通尸祟:attack":99.0,"瘴吐者:taint":14.0},"deaths":[],"encounters":{"e1_village":{"damage":3.0,"deaths":0,"start":0.0,"time":4.40083333333333},"e3_group_a":{"damage":14.5,"deaths":0,"start":0.0,"time":5.71916666666613},"e5_group_c":{"damage":47.5,"deaths":0,"start":0.0,"time":8.334999999999},"e7_group_b":{"damage":28.0,"deaths":0,"start":0.0,"time":5.55749999999921},"e7c_burial_wave":{"damage":75.0,"deaths":0,"start":0.0,"time":13.7483333333318},"e8_elite":{"damage":79.5,"deaths":0,"start":0.0,"time":27.7644999999952}}}
+TEST bot_completes_demo           PASS  sim_time=257s deaths=0 kills=24 parries=1 run_time=02:04
+SOAK run 0 nodes=38 orphans=0 objects=1934
+ERROR: Tween (bound to /root/Level/@CanvasLayer@7739): started with no Tweeners.
    at: step (scene/animation/tween.cpp:366)
-BOT t=20s x=1889 hp=100 deaths=0 kills=1 cleared=[]
-BOT t=40s x=3801 hp=88 deaths=0 kills=3 cleared=["e1_village", "e2_crawler"]
-BOT t=60s x=5092 hp=85 deaths=0 kills=7 cleared=["e1_village", "e2_crawler", "e3_group_a"]
-BOT t=80s x=5775 hp=60 deaths=0 kills=8 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
-BOT t=100s x=5942 hp=64 deaths=0 kills=10 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
-BOT t=120s x=7140 hp=82 deaths=0 kills=11 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c"]
-BOT t=140s x=8160 hp=82 deaths=0 kills=14 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk"]
-BOT t=160s x=8423 hp=81 deaths=0 kills=15 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
-BOT t=180s x=9368 hp=68 deaths=0 kills=17 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
-BOT t=200s x=10065 hp=100 deaths=0 kills=20 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=220s x=10312 hp=52 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=240s x=10604 hp=42 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=260s x=10504 hp=42 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
-BOT t=280s x=10731 hp=62 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
-DEMO_COMPLETE time=02:01 deaths=0 kills=24 parries=6
-TEST bot_completes_demo           PASS  sim_time=283s deaths=0 kills=24 parries=6 run_time=02:01
-SOAK run 1 nodes=37 orphans=0 objects=1901
-TEST soak_no_leak                 PASS  nodes 37->37 orphans 0->0 objects 1896->1901
+BOT t=20s x=3064 hp=90 deaths=0 kills=2 cleared=["e1_village"]
+BOT t=40s x=3785 hp=68 deaths=0 kills=3 cleared=["e1_village", "e2_crawler"]
+BOT t=60s x=5220 hp=93 deaths=0 kills=7 cleared=["e1_village", "e2_crawler", "e3_group_a"]
+BOT t=80s x=5990 hp=50 deaths=0 kills=10 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
+BOT t=100s x=7596 hp=82 deaths=0 kills=12 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk"]
+BOT t=120s x=7994 hp=36 deaths=0 kills=14 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk"]
+BOT t=140s x=9358 hp=80 deaths=0 kills=16 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
+BOT t=160s x=9451 hp=40 deaths=0 kills=19 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
+BOT t=180s x=10063 hp=78 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=200s x=10768 hp=78 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=220s x=10852 hp=78 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=240s x=10733 hp=52 deaths=0 kills=22 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=260s x=10656 hp=52 deaths=0 kills=23 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=280s x=10729 hp=52 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
+DEMO_COMPLETE time=02:33 deaths=0 kills=24 parries=2
+TELEMETRY {"damage":{"hazard:puddle":23.5,"伏爬者:pounce":71.5,"封印残尸:attack":72.0,"尸将:ground_shock":16.0,"尸将:sweep":22.0,"普通尸祟:attack":77.5},"deaths":[],"encounters":{"e1_village":{"damage":3.0,"deaths":0,"start":0.0,"time":4.405},"e3_group_a":{"damage":6.0,"deaths":0,"start":0.0,"time":6.21333333333281},"e5_group_c":{"damage":43.0,"deaths":0,"start":0.0,"time":7.96583333333241},"e7_group_b":{"damage":64.0,"deaths":0,"start":0.0,"time":11.1324999999987},"e7c_burial_wave":{"damage":60.0,"deaths":0,"start":0.0,"time":14.5624999999986},"e8_elite":{"damage":48.0,"deaths":0,"start":0.0,"time":51.7293333333473}}}
+TEST bot_completes_demo           PASS  sim_time=290s deaths=0 kills=24 parries=2 run_time=02:33
+SOAK run 1 nodes=38 orphans=0 objects=1937
+TEST soak_no_leak                 PASS  nodes 38->38 orphans 0->0 objects 1934->1937
 TESTS DONE pass=3 fail=0
 WARNING: 22 ObjectDB instances were leaked at exit (run with `--verbose` for details).
    at: cleanup (core/object/object.cpp:2536)
