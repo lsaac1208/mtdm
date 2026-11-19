@@ -67,6 +67,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().auto_accept_quit = false
 	get_window().close_requested.connect(quit)
+	get_window().theme = InkTheme.shared()
 	Input.joy_connection_changed.connect(_on_joy_connection)
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--"):

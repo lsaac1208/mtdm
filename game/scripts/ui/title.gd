@@ -99,6 +99,17 @@ func _ready() -> void:
 		btn.text = b[0]
 		btn.custom_minimum_size = Vector2(300, 48)
 		btn.add_theme_font_size_override("font_size", 22)
+		# On the parchment, idle entries are brushed ink text on a faint wash;
+		# the focused one becomes the cinnabar plate from InkTheme.
+		var idle := StyleBoxFlat.new()
+		idle.bg_color = Color(0.95, 0.88, 0.74, 0.30)
+		idle.border_color = Color(0.20, 0.14, 0.10, 0.55)
+		idle.border_width_bottom = 1
+		idle.content_margin_left = 18
+		idle.skew = Vector2(-0.12, 0.0)
+		btn.add_theme_stylebox_override("normal", idle)
+		btn.add_theme_color_override("font_color", Color(0.17, 0.12, 0.09))
+		btn.add_theme_color_override("font_outline_color", Color(0.95, 0.88, 0.74, 0.5))
 		btn.pressed.connect(Callable(self, b[1]))
 		menu.add_child(btn)
 	help = Label.new()

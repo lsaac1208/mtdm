@@ -21,6 +21,7 @@ var _first: Control
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	theme = InkTheme.shared()
 	var bg := ColorRect.new()
 	bg.color = Color(0.04, 0.035, 0.03, 0.92)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

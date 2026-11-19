@@ -83,6 +83,14 @@ func _run() -> void:
 			await _frames(2)
 		Game.quit()
 		return
+	if only == "titlecap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		get_tree().change_scene_to_file(Game.TITLE_SCENE)
+		for k in 4:
+			await _wait(1.2)
+			await _shot("title_%d" % k)
+		Game.quit()
+		return
 	if only == "gatecap":
 		# the sealed and the opened end gate, plus an encounter ward, in place
 		shot_dir = Game.args.get("shots", "user://shots")
