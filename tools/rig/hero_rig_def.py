@@ -4,45 +4,46 @@ SOURCE = "hero_01_ready"
 
 # name: (parent, head_xy, tail_xy)   head = pivot
 BONES = {
-    "root":    (None,     (120, 172), (120, 140)),
-    "spine":   ("root",   (120, 140), (121, 96)),
-    "neck":    ("spine",  (121, 92),  (122, 70)),
-    "head":    ("neck",   (122, 70),  (122, 30)),
-    "ribbon1": ("head",   (104, 44),  (95, 60)),
-    "ribbon2": ("ribbon1", (95, 60),  (92, 76)),
-    "shoulder_b": ("spine", (96, 96),  (74, 140)),   # back arm (screen-left, gourd hand)
-    "forearm_b":  ("shoulder_b", (74, 140), (63, 180)),
-    "shoulder_f": ("spine", (154, 96), (168, 142)),  # front/sword arm (screen-right)
-    "forearm_f":  ("shoulder_f", (168, 142), (178, 178)),
-    "sword":      ("forearm_f", (178, 180), (254, 304)),
-    "thigh_b": ("root",    (104, 176), (88, 250)),
-    "shin_b":  ("thigh_b", (88, 250),  (76, 318)),
-    "thigh_f": ("root",    (140, 176), (160, 250)),
-    "shin_f":  ("thigh_f", (160, 250), (172, 318)),
-    "panel_b1": ("root",   (72, 176),  (48, 238)),
-    "panel_b2": ("panel_b1", (48, 238), (30, 296)),
-    "panel_f1": ("root",   (180, 186), (192, 240)),
-    "panel_f2": ("panel_f1", (192, 240), (200, 296)),
+    "root": (None, (121, 166), (123, 140)),
+    "spine": ("root", (123, 140), (127, 93)),
+    "neck": ("spine", (127, 91), (128, 72)),
+    "head": ("neck", (128, 72), (123, 28)),
+    "ribbon1": ("head", (111, 44), (96, 62)),
+    "ribbon2": ("ribbon1", (96, 62), (74, 85)),
+    "shoulder_b": ("spine", (96, 94), (79, 141)),
+    "forearm_b": ("shoulder_b", (79, 141), (79, 177)),
+    "shoulder_f": ("spine", (150, 95), (166, 143)),
+    "forearm_f": ("shoulder_f", (166, 143), (180, 188)),
+    "sword": ("forearm_f", (182, 189), (250, 277)),
+    "thigh_b": ("root", (104, 170), (85, 250)),
+    "shin_b": ("thigh_b", (85, 250), (72, 321)),
+    "thigh_f": ("root", (142, 170), (159, 251)),
+    "shin_f": ("thigh_f", (159, 251), (168, 321)),
+    "panel_b1": ("root", (75, 188), (56, 213)),
+    "panel_b2": ("panel_b1", (56, 213), (43, 246)),
+    "panel_f1": ("root", (161, 173), (173, 222)),
+    "panel_f2": ("panel_f1", (173, 222), (189, 261)),
 }
 
-# Part polygons (pixel coords). Pixels are assigned to the first part whose
-# polygon contains them, in this order; everything else belongs to "body".
+# Split the painted ready pose at real overlaps (sleeve/torso, wrist/guard,
+# trousers/coat) so each articulated silhouette has its own colour planes.
 PARTS = [
-    # name, z (higher draws in front), polygon, bones it is weighted to
-    ("sword",   6, [(170, 172), (188, 172), (270, 304), (264, 318), (236, 304)], ["sword"]),
-    ("arm_f",   5, [(150, 84), (166, 84), (192, 120), (196, 176), (186, 190), (168, 190), (160, 150), (150, 120)], ["shoulder_f", "forearm_f"]),
-    ("arm_b",   4, [(98, 84), (84, 88), (46, 140), (50, 160), (56, 186), (72, 192), (80, 170), (92, 140), (104, 112)], ["shoulder_b", "forearm_b"]),
-    ("ribbon",  1, [(84, 38), (112, 36), (110, 50), (100, 80), (88, 82), (86, 60)], ["ribbon1", "ribbon2"]),
-    ("panel_b", 1, [(68, 150), (82, 160), (70, 240), (48, 304), (18, 304), (20, 230), (40, 190)], ["panel_b1", "panel_b2"]),
-    ("panel_f", 1, [(178, 176), (198, 180), (210, 240), (212, 304), (186, 304), (182, 240), (172, 200)], ["panel_f1", "panel_f2"]),
-    ("leg_b",   2, [(52, 256), (106, 256), (108, 290), (90, 330), (40, 330), (52, 300)], ["thigh_b", "shin_b"]),
-    ("leg_f",   2, [(136, 256), (190, 256), (196, 300), (200, 330), (146, 330), (140, 300)], ["thigh_f", "shin_f"]),
+    ("sword", 6, [(181,186),(188,188),(259,272),(258,284),(246,278),(177,195)], ["sword"]),
+    ("arm_f", 5, [(147,89),(159,91),(175,116),(192,148),(181,159),(187,188),(184,197),
+        (174,197),(165,183),(157,158),(150,149),(152,125)], ["shoulder_f","forearm_f"]),
+    ("arm_b", 4, [(100,85),(87,89),(69,115),(43,157),(48,168),(66,160),(68,182),
+        (75,191),(89,188),(100,180),(111,169),(107,156),(100,151),(98,131)], ["shoulder_b","forearm_b"]),
+    ("ribbon", 1, [(105,38),(115,40),(109,54),(98,70),(82,89),(67,89),(72,68),(92,55),(76,53),(77,43)], ["ribbon1","ribbon2"]),
+    ("panel_b", 1, [(73,182),(83,187),(71,212),(58,243),(34,259),(33,216),(57,197)], ["panel_b1","panel_b2"]),
+    ("panel_f", 1, [(157,165),(169,175),(179,206),(197,259),(187,273),(175,258),(168,216)], ["panel_f1","panel_f2"]),
+    ("leg_b", 2, [(75,221),(121,216),(121,264),(102,278),(93,330),(48,330),(65,292),(68,263)], ["thigh_b","shin_b"]),
+    ("leg_f", 2, [(127,217),(167,218),(180,254),(180,283),(202,329),(148,330),(143,290),(122,274)], ["thigh_f","shin_f"]),
 ]
 BODY_Z = 3
 # copy-only extensions (duplicated, not removed from body): legs continue up under the skirt
 EXTEND = {
-    "leg_b": [(60, 196), (112, 196), (110, 262), (54, 262)],
-    "leg_f": [(128, 196), (182, 196), (190, 262), (134, 262)],
+    "leg_b": [(87, 186), (117, 185), (116, 233), (77, 234)],
+    "leg_f": [(129, 186), (156, 186), (170, 233), (126, 234)],
 }  # body (head, torso, skirt) draws above the back leg, below arms
 BODY_BONES = ["root", "spine", "neck", "head", "thigh_b", "thigh_f"]
 

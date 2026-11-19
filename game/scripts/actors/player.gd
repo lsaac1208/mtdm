@@ -29,20 +29,16 @@ const GOURD_MAX := 3
 const ATK := {
 	"slash1": {"pre": "hero_02_draw", "pose": "hero_03_hslash", "startup": 0.07, "active": 0.09,
 		"recover": 0.22, "rect": Rect2(0, -145, 118, 90), "dmg": 10.0, "poise": 8.0, "knock": 170.0,
-		"lunge": 170.0, "next": "slash2", "fx": [-70.0, 55.0, 88.0, 34.0, 0.6], "fx_off": Vector2(10, -96),
-		"lean": 6.0, "arm": [-0.55, 0.3, 0.0, 0.0]},
-	"slash2": {"pre": "hero_04_downslash", "pose": "hero_04_downslash", "startup": 0.12, "active": 0.09,
+		"lunge": 170.0, "next": "slash2", "fx": [-70.0, 55.0, 88.0, 34.0, 0.6], "fx_off": Vector2(10, -96)},
+	"slash2": {"pre": "hero_overhead_load", "pose": "hero_04_downslash", "startup": 0.12, "active": 0.09,
 		"recover": 0.26, "rect": Rect2(4, -160, 104, 160), "dmg": 14.0, "poise": 16.0, "knock": 120.0,
-		"lunge": 120.0, "next": "slash3", "fx": [-120.0, 80.0, 86.0, 38.0, 1.0], "fx_off": Vector2(24, -80),
-		"lean": 10.0, "low": true, "arm": [-0.25, 0.85, 0.0, 0.0]},
-	"slash3": {"pre": "hero_02_draw", "pose": "hero_05_thrust", "startup": 0.11, "active": 0.1,
+		"lunge": 120.0, "next": "slash3", "fx": [-120.0, 80.0, 86.0, 38.0, 1.0], "fx_off": Vector2(24, -80), "low": true},
+	"slash3": {"pre": "hero_thrust_load", "pose": "hero_05_thrust", "startup": 0.11, "active": 0.1,
 		"recover": 0.32, "rect": Rect2(10, -132, 160, 62), "dmg": 17.0, "poise": 20.0, "knock": 300.0,
-		"lunge": 360.0, "next": "", "fx": [-80.0, 80.0, 120.0, 22.0, 0.14], "fx_off": Vector2(60, -100),
-		"lean": 4.0, "arm": [0.0, 0.0, -0.09, 0.03]},
-	"down": {"pre": "hero_04_downslash", "pose": "hero_04_downslash", "startup": 0.14, "active": 0.1,
+		"lunge": 360.0, "next": "", "fx": [-80.0, 80.0, 120.0, 22.0, 0.14], "fx_off": Vector2(60, -100)},
+	"down": {"pre": "hero_overhead_load", "pose": "hero_04_downslash", "startup": 0.14, "active": 0.1,
 		"recover": 0.28, "rect": Rect2(4, -160, 106, 160), "dmg": 16.0, "poise": 20.0, "knock": 140.0,
-		"lunge": 90.0, "next": "slash3", "fx": [-120.0, 85.0, 88.0, 40.0, 1.0], "fx_off": Vector2(24, -80),
-		"lean": 12.0, "low": true, "arm": [-0.3, 0.9, 0.0, 0.0]},
+		"lunge": 90.0, "next": "slash3", "fx": [-120.0, 85.0, 88.0, 40.0, 1.0], "fx_off": Vector2(24, -80), "low": true},
 }
 
 var qi := 40.0
@@ -57,6 +53,8 @@ var air_attack := true
 var block_t := 0.0
 var cur_atk := {}
 var cur_atk_name := ""
+var _swing_started := false
+var _floor_probe := RayCast2D.new()
 var hit_set := {}
 var combo_queued := ""
 var in_taint := 0.0
@@ -66,7 +64,7 @@ var _ghost_t := 0.0
 var _step_t := 0.0
 var _fall_peak := 0.0
 var _hit_stun := 0.35
-var _arm := [0.0, 0.0, 0.0]
+var _jump_arm := 0.0
 var _block_recoil := 0.0   # sword-arm rot, back-arm rot, sword-arm offset along x (uv)
 var input_override = null   # test harness: Dictionary of action -> bool
 
@@ -80,15 +78,18 @@ func _init() -> void:
 
 
 func _make_visual() -> PoseSprite:
-	return RigVisual.new()
+	return preload("res://scripts/actors/hero_visual.gd").new()
 
 
-const WINDUP_CLIP := {"slash1": "windup_slash", "slash2": "windup_over", "down": "windup_over", "slash3": "windup_thrust"}
 var _last_clip_pos := 0.0
 
 
 func _ready() -> void:
 	super._ready()
+	_floor_probe.position = Vector2.UP * 2.0
+	_floor_probe.target_position = Vector2.DOWN * 330.0
+	_floor_probe.collision_mask = 1
+	add_child(_floor_probe)
 	vis.set_pose("hero_01_ready", 0.0)
 	vis.play_clip.call_deferred("idle", 0.0)
 	vis.sway = 0.005
@@ -285,8 +286,8 @@ func _st_land(delta: float) -> void:
 
 # ---------------------------------------------------------------- melee
 func _start_attack(name_: String) -> void:
-	_arm = [0.0, 0.0, 0.0]
 	cur_atk_name = name_
+	_swing_started = false
 	cur_atk = ATK[name_]
 	hit_set = {}
 	combo_queued = ""
@@ -294,7 +295,7 @@ func _start_attack(name_: String) -> void:
 	var ax := _axis()
 	if ax != 0.0:
 		facing = int(signf(ax))
-	vis.play_clip(WINDUP_CLIP.get(name_, "windup_slash"), 0.04, true)
+	vis.set_pose(cur_atk.pre, 0.0)
 	Sfx.play("swing_pre", -12.0)
 
 
@@ -309,22 +310,16 @@ func _st_attack(delta: float) -> void:
 		velocity.x = facing * a.lunge * (1.0 - k) * _speed_mul()
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, 2000.0 * delta)
-	if t >= st and vis.pose != a.pose:
+	if cur_atk_name == "slash1" and t >= st * 0.45 and t < st:
+		vis.set_pose("hero_slash_pass", 0.0)
+	if t >= st and not _swing_started:
+		_swing_started = true
 		vis.set_pose(a.pose, 0.03)
 		var f: Array = a.fx
 		Fx.slash(global_position + Vector2(a.fx_off.x * facing, a.fx_off.y), facing, f[0], f[1], f[2], f[3], 0.3,
 			Fx.C_CINNABAR, Color(1, 0.97, 0.9), f[4])
 		Sfx.play("swing", -4.0)
 		vis.squash = Vector2(1.06, 0.95)
-		_smear(2, 0.3)
-	var ac_curve: Array = a.get("arm", [0.0, 0.0, 0.0, 0.0])
-	if t >= st:
-		# active pose: wind-up angle -> strike angle (fast ease-out), then settle in recovery
-		var k := clampf((t - st) / maxf(ac * 1.3, 0.01), 0.0, 1.0)
-		var e := 1.0 - pow(1.0 - k, 3.0)
-		var settle := clampf((t - st - ac) / maxf(a.recover, 0.01), 0.0, 1.0)
-		_arm[0] = lerpf(lerpf(ac_curve[0], ac_curve[1], e), ac_curve[1] * 0.6, settle)
-		_arm[2] = lerpf(lerpf(ac_curve[2], ac_curve[3], e), 0.0, settle)
 	if t >= st and t < st + ac:
 		var hits := strike(a.rect, a.dmg, a.poise, a.knock, hit_set, {"tag": cur_atk_name, "low": a.get("low", false)})
 		if hits.size() > 0:
@@ -344,8 +339,8 @@ func _st_attack(delta: float) -> void:
 		set_state("block")
 		block_t = 0.0
 		return
-	if t >= st + ac + a.recover * 0.5 and not vis.rig_on:
-		vis.play_clip("recover", 0.06, true)
+	if t >= st + ac + a.recover * 0.42:
+		vis.set_pose("hero_strike_settle", 0.0)
 	if t >= total:
 		set_state("idle")
 
@@ -421,7 +416,7 @@ func _st_dash_attack(delta: float) -> void:
 
 # ---------------------------------------------------------------- air attack
 func _start_jump_attack() -> void:
-	_arm = [-0.6, 0.0, 0.0]
+	_jump_arm = -0.6
 	set_state("jump_attack")
 	air_attack = false
 	hit_set = {}
@@ -434,7 +429,7 @@ func _start_jump_attack() -> void:
 func _st_jump_attack(delta: float) -> void:
 	var ax := _axis()
 	velocity.x = move_toward(velocity.x, ax * RUN_SPEED * 0.8, 1200.0 * delta)
-	_arm[0] = lerpf(-0.6, 0.75, 1.0 - pow(1.0 - clampf(state_t / 0.2, 0.0, 1.0), 3.0))
+	_jump_arm = lerpf(-0.6, 0.75, 1.0 - pow(1.0 - clampf(state_t / 0.2, 0.0, 1.0), 3.0))
 	if state_t >= 0.04 and state_t < 0.24:
 		var hits := strike(Rect2(-10, -125, 128, 165), 13.0, 12.0, 160.0, hit_set, {"tag": "jump_attack", "low": true})
 		if hits.size() > 0:
@@ -730,6 +725,8 @@ func _spawn_ghost() -> void:
 
 func _animate(delta: float) -> void:
 	vis.facing = facing
+	vis.on_ground = is_on_floor()
+	vis.locomotion_speed = absf(velocity.x)
 	vis.squash = vis.squash.lerp(Vector2.ONE, minf(1.0, delta * 12.0))
 	var target_lean := 0.0
 	vis.stride = 0.0
@@ -772,17 +769,15 @@ func _animate(delta: float) -> void:
 		"dash":
 			vis.set_pose("hero_06_dash", 0.03)
 		"attack":
-			target_lean = cur_atk.get("lean", 0.0) if state_t >= cur_atk.startup else -2.0
+			target_lean = 0.0 # The painted strikes already include their forward weight shift.
 		"hit":
 			target_lean = -6.0
-	# arms: attacks drive _arm; locomotion swings arms against the legs
+	# The airborne strike and skill poses still articulate their painted arms.
 	var ar0 := 0.0
 	var ar1 := 0.0
-	var aoff := 0.0
 	match state:
-		"attack", "jump_attack":
-			ar0 = _arm[0]
-			aoff = _arm[2]
+		"jump_attack":
+			ar0 = _jump_arm
 		"talisman":
 			# wind back, then snap the throwing arm forward at release (0.1 s)
 			ar0 = lerpf(-0.7, 0.15, 1.0 - pow(1.0 - clampf((state_t - 0.04) / 0.1, 0.0, 1.0), 3.0))
@@ -802,6 +797,27 @@ func _animate(delta: float) -> void:
 			ar0 = -0.18
 			ar1 = 0.12
 	vis.arm_rot = [ar0, ar1]
-	vis.arm_off = [Vector2(aoff, 0.0), Vector2.ZERO]
+	vis.arm_off = [Vector2.ZERO, Vector2.ZERO]
 	vis.lean = lerpf(vis.lean, target_lean, minf(1.0, delta * 14.0))
 	vis.sway = 0.012 if state in ["run", "dash", "dash_attack", "air", "jump_attack"] else 0.005
+
+
+func _draw() -> void:
+	if vis == null or (dead and vis.dissolve > 0.6):
+		return
+	var floor_y := 0.0
+	if not is_on_floor():
+		if not _floor_probe.is_colliding():
+			return
+		floor_y = maxf(0.0, to_local(_floor_probe.get_collision_point()).y)
+	var lift := clampf(floor_y / 200.0, 0.0, 1.0)
+	var strength := lerpf(0.21, 0.04, lift) * (1.0 - vis.dissolve)
+	var floor_pos := Vector2(0, floor_y - 1.0)
+	draw_set_transform(floor_pos, 0.0, Vector2(1.0 + lift * 0.3, 0.14))
+	draw_circle(Vector2.ZERO, 38.0, Color(0.12, 0.09, 0.075, strength), true, -1.0, true)
+	if is_on_floor():
+		for foot: Vector2 in vis.contacts:
+			var pressure := 1.0 - smoothstep(1.0, 13.0, absf(foot.y))
+			draw_set_transform(Vector2(foot.x, -0.7), 0.0, Vector2(1, 0.20))
+			draw_circle(Vector2.ZERO, 10.0, Color(0.07, 0.05, 0.04, 0.38 * pressure), true, -1.0, true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

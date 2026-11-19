@@ -1,44 +1,22 @@
-# 道行者 Taoist Wanderer — Vertical Slice v0.2.0
+# 道行者 · Taoist Wanderer 0.3.0
 
-一人、一剑、一道，行于废土。 A 2D side-scrolling action demo: a lone Taoist wanders a post-apocalyptic wasteland and fights the Undead Tainted with sword, talismans, a yin-yang gourd and prayer beads.
+横版动作试玩。沿着荒村、断路、污染低地、废弃道观与乱葬岗前进，击败尸将，从光门离开。第一次游玩建议选择常规难度。选项中也可切换故事或修行。
 
-## Play
-- **Linux:** unzip `TaoistWanderer-v0.2.0-linux-x86_64.zip`, run `./TaoistWanderer.x86_64`.
-- **Windows:** unzip `TaoistWanderer-v0.2.0-windows-x86_64.zip`, run `TaoistWanderer.exe`. (The Windows build has been exported but not yet run on Windows.)
-- **macOS (universal, unsigned):** unzip `TaoistWanderer-v0.2.0-macos-universal.zip`, then right-click the app → Open (or run `xattr -dr com.apple.quarantine "道行者 Taoist Wanderer.app"`). The app is ad-hoc signed and not notarized; it has not been run on a Mac yet.
-- Needs an OpenGL 3.3 capable GPU (or Mesa software rendering).
+## 启动
 
-## Controls
-| Action | Keyboard | Gamepad |
-|---|---|---|
-| Move | A / D | Left stick / D-pad |
-| Jump (hold for height) | K / Space | A |
-| Attack — 横斩 → 下劈 → 突刺 | J | X |
-| Down slash (hits low crawlers) | S + J | Down + X |
-| Dash (brief invulnerability); attack during dash = dash slash | L / Shift | B / RB |
-| Block (hold) · Parry (raise guard as the blow lands) | I | LB |
-| Talisman 符箓 (20 Qi) | U | Y |
-| Yin-Yang Gourd 葫芦 (heal + push, 3 charges, refilled at campfires) | O | LT |
-| Prayer Beads 念珠 (50 Qi ring blast) | P | RT |
-| Pause (controls, restart from campfire, volume) | Esc | Start |
-| Fullscreen | F11 / Alt+Enter | — |
+解压整个对应系统的 ZIP。macOS 打开「道行者 Taoist Wanderer.app」，Windows 双击 TaoistWanderer.exe，Linux 运行 `./TaoistWanderer.x86_64`。Linux 解压工具若丢弃可执行权限，先执行 `chmod +x TaoistWanderer.x86_64`。引擎已随游戏打包，图形设备需要支持 OpenGL 3.3。
 
-## New in v0.2.0
-- Characters are now skinned cut-out rigs (Skeleton2D/Bone2D meshes from the concept art): real walk/run/jump cycles, wind-ups and recoveries, cloth that swings; every enemy has its own gait.
-- Options menu: Master/Music/SFX volume, screen-shake strength, hit-stop, fullscreen, keyboard rebinding.
-- Boss battle music (two phases), victory stinger, defeat cinematic; zone-specific skylines; material-specific hit effects.
-- Balance pass: the Undead Warrior Elite's sweep can now be reliably jumped or dashed through.
+Mac 包为 Intel 与 Apple Silicon 通用包，采用临时签名，尚未做 Apple 公证。通过浏览器下载后，Gatekeeper 可能要求在「系统设置 → 隐私与安全性」确认来源并选择「仍要打开」。Windows 包未作发行证书签名，系统可能显示 SmartScreen 提示。请核对 GitHub Release 上的 SHA-256。
 
-## What's in it
-- Five zones: 荒村废墟 Ruined Village → 道路边缘 Road's Edge → 低洼污染区 Tainted Lowland → 废弃道观 Abandoned Temple → 乱葬岗 Burial Mound.
-- Five enemy types: Undead Grunt, Crawler (too low for horizontal slashes), Talisman-Bound Husk (punishes greedy combos with a seal burst), Taint Spitter (arcing globs leave poison pools), and the Undead Warrior Elite boss.
-- Six campfires (heal, refill gourd, respawn point). Typical first clear: roughly 8–15 minutes.
+## 第一场战斗
 
-## Tips
-- Read the wind-ups: a glint marks the moment before an attack; red ground bands show where it lands.
-- Against the elite: jump the overhead chop's ground shock, dash through the sweep, punish the long recoveries. Parries break its armour faster.
+- 按 A、D 移动，K 或空格跳跃。按住跳跃可以越过荒村的矮墙。
+- 连按 J 挥出三段道剑。看见贴地的伏爬者时，用 S + J 下劈。I 格挡，抓准时机举剑可弹反。L 或 Shift 冲刺。
+- U 掷符，O 饮葫芦，P 释放念珠。篝火补足葫芦。Esc 暂停或返回篝火。
+- 手柄用左摇杆或方向键移动，A 跳跃、X 攻击、B 冲刺、LB 格挡、Y 掷符、LT 葫芦、RT 念珠。游戏会随当前设备与键盘绑定更新提示。
 
-## Known limitations
-- Characters are rigged from one painted pose each: no turnarounds, hands don't articulate, and the hero's base pose is three-quarter front; attack contact frames are the original painted poses.
-- Audio is synthesized; it passes automated level/clipping/loop checks but has not had a human listening pass.
-- Gamepad bindings are untested on hardware.
+## 本版变化
+
+主角增加针对侧身、握剑与挥剑过渡绘制的姿势。五个区域更新环境画面，污染区加强危险边界。技能提示随当前输入设备和重绑结果更新。结局换场、音效淡出及退出时序得到修复。三档难度现在一起进入下载包。
+
+[候选版下载、同机位录像与平台测试记录](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1) · [开发工程](https://github.com/lsaac1208/mtdm/tree/codex/visual-polish-v03)

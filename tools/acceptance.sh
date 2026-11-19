@@ -6,7 +6,7 @@ set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 G="${GODOT:-godot}"
 VER="${1:-dev}"
-OUT="$ROOT/evidence/acceptance-$(date +%Y%m%d)"
+OUT="$ROOT/evidence/acceptance-$(date +%Y%m%d-%H%M%S)-$(git -C "$ROOT" rev-parse --short HEAD)"
 PY="${PYTHON:-python3}"
 mkdir -p "$OUT/shots"
 cd "$ROOT/game"
@@ -17,13 +17,17 @@ gate() { # name, status
 }
 : > "$OUT/gates.md"
 
+clean_engine_log() {
+  ! grep -Eq 'SCRIPT ERROR:|(^|[[:space:]])ERROR:|leaked at exit' "$1"
+}
+
 echo "== import"
 timeout 600 "$G" --headless --path . --import > "$OUT/import.log" 2>&1
 
 echo "== engine tests"
 timeout 1200 "$G" --headless --path . -- --test=all --nohitstop --mute > "$OUT/tests.log" 2>&1
 line=$(grep "TESTS DONE" "$OUT/tests.log")
-grep -q "fail=0" <<< "$line" && gate "Engine tests ($line)" PASS || gate "Engine tests ($line)" FAIL
+clean_engine_log "$OUT/tests.log" && grep -Eq "^TESTS DONE pass=[1-9][0-9]* fail=0$" <<< "$line" && gate "Engine tests ($line)" PASS || gate "Engine tests ($line)" FAIL
 grep -E "^SPEC" "$OUT/tests.log" > "$OUT/spec.txt"
 
 echo "== bots"
@@ -36,7 +40,7 @@ done
 wait
 for f in "$OUT"/bot_*.log; do
   r=$(grep "^TEST bot_completes_demo" "$f" | sed 's/  */ /g')
-  grep -q PASS <<< "$r" && gate "$(basename "$f" .log): $r" PASS || gate "$(basename "$f" .log): $r" FAIL
+  clean_engine_log "$f" && grep -q PASS <<< "$r" && gate "$(basename "$f" .log): $r" PASS || gate "$(basename "$f" .log): $r" FAIL
 done
 
 echo "== audio review"
@@ -50,7 +54,7 @@ fi
 echo "== soak (two full playthroughs in one process)"
 timeout 2400 "$G" --headless --fixed-fps 60 --path . -- --test=soak --mute --bot_limit=1500 > "$OUT/soak.log" 2>&1
 r=$(grep "^TEST soak_no_leak" "$OUT/soak.log" | sed 's/  */ /g')
-grep -q PASS <<< "$r" && gate "Soak: $r" PASS || gate "Soak: $r" FAIL
+clean_engine_log "$OUT/soak.log" && grep -q PASS <<< "$r" && gate "Soak: $r" PASS || gate "Soak: $r" FAIL
 
 echo "== export"
 mkdir -p "$ROOT/build"
@@ -60,10 +64,10 @@ ls -la "$ROOT"/build/*.zip >> "$OUT/package.log" 2>&1
 echo "== exported linux build"
 (cd "$ROOT/build/linux" && timeout 1200 ./TaoistWanderer.x86_64 --headless --fixed-fps 60 -- --test=all --nohitstop --mute > "$OUT/exported_tests.log" 2>&1)
 line=$(grep "TESTS DONE" "$OUT/exported_tests.log")
-grep -q "fail=0" <<< "$line" && gate "Exported Linux build tests ($line)" PASS || gate "Exported Linux build tests ($line)" FAIL
+clean_engine_log "$OUT/exported_tests.log" && grep -Eq "^TESTS DONE pass=[1-9][0-9]* fail=0$" <<< "$line" && gate "Exported Linux build tests ($line)" PASS || gate "Exported Linux build tests ($line)" FAIL
 (cd "$ROOT/build/linux" && timeout 1200 ./TaoistWanderer.x86_64 --headless --fixed-fps 60 -- --test=bot --mute --bot_limit=1500 > "$OUT/exported_bot.log" 2>&1)
 r=$(grep "^TEST bot_completes_demo" "$OUT/exported_bot.log" | sed 's/  */ /g')
-grep -q PASS <<< "$r" && gate "Exported Linux build bot: $r" PASS || gate "Exported Linux build bot: $r" FAIL
+clean_engine_log "$OUT/exported_bot.log" && grep -q PASS <<< "$r" && gate "Exported Linux build bot: $r" PASS || gate "Exported Linux build bot: $r" FAIL
 
 echo "== rendered captures"
 if command -v xvfb-run > /dev/null; then

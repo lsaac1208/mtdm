@@ -5,6 +5,7 @@ signal checkpoint_changed(id)
 signal hint(text, duration)
 signal zone_entered(title_cn, title_en)
 signal boss_changed(boss)
+signal prompts_changed
 
 const TITLE_SCENE := "res://scenes/title.tscn"
 const LEVEL_SCENE := "res://scenes/level.tscn"
@@ -22,6 +23,11 @@ var running := false
 var level: Node = null     # current level node
 var player: Node = null
 var args := {}
+var _prompt_pad := -1
+var _pad_family := ""
+var using_gamepad: bool:
+	get: return _prompt_pad >= 0
+var _quitting := false
 ## Run telemetry for balance analysis: damage taken per attack source, death
 ## causes, per-encounter time / damage / deaths.
 var telemetry := {"damage": {}, "deaths": [], "encounters": {}}             # parsed user args after "--"
@@ -59,6 +65,9 @@ const PAD_BUTTONS := {
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().auto_accept_quit = false
+	get_window().close_requested.connect(quit)
+	Input.joy_connection_changed.connect(_on_joy_connection)
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--"):
 			var kv := a.substr(2).split("=", true, 1)
@@ -73,7 +82,7 @@ func _ready() -> void:
 		var tr = load("res://tests/test_runner.gd").new()
 		add_child(tr)
 	if args.has("quit_after"):
-		get_tree().create_timer(float(args.quit_after), true, false, true).timeout.connect(func(): get_tree().quit())
+		get_tree().create_timer(float(args.quit_after), true, false, true).timeout.connect(quit)
 
 
 func _setup_input() -> void:
@@ -162,6 +171,10 @@ func rebind(action: String, keycode: int) -> void:
 	var k := InputEventKey.new()
 	k.physical_keycode = keycode
 	InputMap.action_add_event(action, k)
+	if using_gamepad:
+		_set_prompt_device(-1)
+	else:
+		prompts_changed.emit()
 
 
 func reset_bindings() -> void:
@@ -173,24 +186,74 @@ func reset_bindings() -> void:
 			var k := InputEventKey.new()
 			k.physical_keycode = kc
 			InputMap.action_add_event(action, k)
+	prompts_changed.emit()
 
 
-## Replace {action} placeholders with the currently bound key names.
+const PAD_LABELS := {
+	JOY_BUTTON_A: "A", JOY_BUTTON_B: "B", JOY_BUTTON_X: "X", JOY_BUTTON_Y: "Y",
+	JOY_BUTTON_LEFT_SHOULDER: "LB", JOY_BUTTON_RIGHT_SHOULDER: "RB", JOY_BUTTON_START: "Start",
+	JOY_BUTTON_DPAD_LEFT: "D-pad ←", JOY_BUTTON_DPAD_RIGHT: "D-pad →",
+	JOY_BUTTON_DPAD_UP: "D-pad ↑", JOY_BUTTON_DPAD_DOWN: "D-pad ↓",
+}
+const SONY_LABELS := {
+	JOY_BUTTON_A: "×", JOY_BUTTON_B: "○", JOY_BUTTON_X: "□", JOY_BUTTON_Y: "△",
+	JOY_BUTTON_LEFT_SHOULDER: "L1", JOY_BUTTON_RIGHT_SHOULDER: "R1", JOY_BUTTON_START: "Options",
+}
+const NINTENDO_LABELS := {
+	JOY_BUTTON_A: "B", JOY_BUTTON_B: "A", JOY_BUTTON_X: "Y", JOY_BUTTON_Y: "X",
+	JOY_BUTTON_LEFT_SHOULDER: "L", JOY_BUTTON_RIGHT_SHOULDER: "R", JOY_BUTTON_START: "+",
+}
+const TRIGGER_LABELS := {"": ["LT", "RT"], "sony": ["L2", "R2"], "nintendo": ["ZL", "ZR"]}
+
+
+func keyboard_label(action: String, primary_only := false) -> String:
+	var labels := PackedStringArray()
+	for kc: Key in action_keys(action):
+		var key := kc
+		if DisplayServer.get_name() != "headless":
+			key = DisplayServer.keyboard_get_keycode_from_physical(kc)
+		labels.append(OS.get_keycode_string(kc if key == KEY_NONE else key))
+		if primary_only:
+			break
+	return " / ".join(labels) if not labels.is_empty() else "—"
+
+
+func binding_label(action: String, primary_only := false) -> String:
+	if not using_gamepad:
+		return keyboard_label(action, primary_only)
+	var labels := PackedStringArray()
+	for ev in InputMap.action_get_events(action):
+		var label := ""
+		if ev is InputEventJoypadButton:
+			label = PAD_LABELS.get(ev.button_index, "")
+			if _pad_family == "sony":
+				label = SONY_LABELS.get(ev.button_index, label)
+			elif _pad_family == "nintendo":
+				label = NINTENDO_LABELS.get(ev.button_index, label)
+		elif ev is InputEventJoypadMotion:
+			if ev.axis == JOY_AXIS_TRIGGER_LEFT:
+				label = TRIGGER_LABELS[_pad_family][0]
+			elif ev.axis == JOY_AXIS_TRIGGER_RIGHT:
+				label = TRIGGER_LABELS[_pad_family][1]
+		if not label.is_empty():
+			labels.append(label)
+			if primary_only:
+				break
+	return " / ".join(labels) if not labels.is_empty() else "—"
+
+
 func fmt_keys(text: String) -> String:
 	var out := text
-	for action in REBINDABLE:
+	for action in BINDINGS:
 		var tag := "{%s}" % action
 		if out.contains(tag):
-			var names := []
-			for kc in action_keys(action):
-				names.append(OS.get_keycode_string(kc))
-			out = out.replace(tag, " / ".join(names) if not names.is_empty() else "?")
+			out = out.replace(tag, binding_label(action))
 	return out
 
 
 func load_settings() -> void:
 	var cf := ConfigFile.new()
-	if cf.load(SETTINGS_PATH) != OK:
+	if cf.load(args.get("qa-settings", SETTINGS_PATH)) != OK:
 		return
 	set_bus_volume("Master", cf.get_value("audio", "volume", 1.0))
 	set_bus_volume("Music", cf.get_value("audio", "music", 1.0))
@@ -211,6 +274,7 @@ func load_settings() -> void:
 					var k := InputEventKey.new()
 					k.physical_keycode = kc
 					InputMap.action_add_event(action, k)
+	prompts_changed.emit()
 
 
 func save_settings() -> void:
@@ -224,10 +288,34 @@ func save_settings() -> void:
 	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
 	for action in REBINDABLE:
 		cf.set_value("keys", action, action_keys(action))
-	cf.save(SETTINGS_PATH)
+	cf.save(args.get("qa-settings", SETTINGS_PATH))
+
+
+func _on_joy_connection(device: int, connected: bool) -> void:
+	if not connected and device == _prompt_pad:
+		_set_prompt_device(-1)
+
+
+func _set_prompt_device(device: int) -> void:
+	if _prompt_pad == device:
+		return
+	_prompt_pad = device
+	_pad_family = ""
+	if device >= 0 and device in Input.get_connected_joypads():
+		var vendor: int = Input.get_joy_info(device).get("vendor_id", 0)
+		match vendor:
+			0x054c: _pad_family = "sony"
+			0x057e: _pad_family = "nintendo"
+	prompts_changed.emit()
 
 
 func _input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and not e.echo:
+		_set_prompt_device(-1)
+	elif e is InputEventJoypadButton and e.pressed:
+		_set_prompt_device(e.device)
+	elif e is InputEventJoypadMotion and absf(e.axis_value) > 0.35:
+		_set_prompt_device(e.device)
 	if e is InputEventKey and e.pressed and not e.echo and (e.physical_keycode == KEY_F11 or (e.physical_keycode == KEY_ENTER and e.alt_pressed)):
 		var w := get_window()
 		w.mode = Window.MODE_WINDOWED if w.mode == Window.MODE_FULLSCREEN else Window.MODE_FULLSCREEN
@@ -279,7 +367,22 @@ func set_checkpoint(id: int) -> void:
 
 
 func show_hint(text: String, duration := 4.0) -> void:
-	hint.emit(fmt_keys(text), duration)
+	hint.emit(text, duration)
+
+
+func quit(exit_code := 0) -> void:
+	if _quitting:
+		return
+	_quitting = true
+	running = false
+	Sfx.shutdown()
+	# AudioServer retires stopped playbacks on the mixer thread, then releases
+	# their resources on an idle frame. Fixed-FPS test runs outpace that thread.
+	var drain_us := int(maxf(0.08, AudioServer.get_output_latency() + 2 * AudioServer.get_time_to_next_mix()) * 1e6)
+	var deadline := Time.get_ticks_usec() + drain_us
+	while Time.get_ticks_usec() < deadline:
+		await get_tree().process_frame
+	get_tree().quit(exit_code)
 
 
 func format_time(t: float) -> String:

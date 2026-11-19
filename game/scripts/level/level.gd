@@ -8,8 +8,7 @@ const Checkpoint := preload("res://scripts/level/checkpoint.gd")
 const Puddle := preload("res://scripts/fx/taint_puddle.gd")
 const Hud := preload("res://scripts/ui/hud.gd")
 const PauseMenu := preload("res://scripts/ui/pause_menu.gd")
-const ENV := "res://assets/env/"
-const ZONE_KEYS := ["village", "road", "lowland", "temple", "burial"]
+const RouteArt := preload("res://scripts/level/painted_route.gd")
 const ZONE_BLEND := 320.0
 
 
@@ -41,8 +40,7 @@ var cam: Camera2D
 var encounters: Array = []
 var checkpoints: Array = []
 var hud: CanvasLayer
-var bg_layers: Array = []     # [{node, factor, y, yf}]
-var fg_layers: Array = []
+var route_art := RouteArt.new()
 var fog_rect: ColorRect
 var zone_idx := -1
 var _shake := 0.0
@@ -57,7 +55,7 @@ var _cam_y := 0.0
 
 func _ready() -> void:
 	Game.level = self
-	_build_background()
+	add_child(route_art)
 	for n in ["Props", "Actors", "Fx"]:
 		var node := Node2D.new()
 		node.name = n
@@ -66,7 +64,6 @@ func _ready() -> void:
 	$Fx.z_index = 10
 	_build_ground()
 	_build_platforms()
-	_build_props()
 	for pl in LevelData.POOLS:
 		var pd := Puddle.new()
 		pd.permanent = true
@@ -106,7 +103,6 @@ func _ready() -> void:
 	cam.make_current()
 	_cam_x = player.position.x
 	_cam_y = Game.GROUND_Y - 190
-	_build_foreground()
 	_build_motes()
 	_build_overlay()
 	hud = Hud.new()
@@ -118,62 +114,6 @@ func _ready() -> void:
 
 
 # ------------------------------------------------------------------ build
-func _tex(name_: String) -> Texture2D:
-	var p := ENV + name_ + ".png"
-	return load(p) if ResourceLoader.exists(p) else null
-
-
-func _build_background() -> void:
-	var cl := CanvasLayer.new()
-	cl.layer = -10
-	cl.name = "BG"
-	add_child(cl)
-	var sky := TextureRect.new()
-	sky.texture = _tex("sky")
-	sky.stretch_mode = TextureRect.STRETCH_SCALE
-	sky.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	cl.add_child(sky)
-	bg_layers.append({"node": sky, "factor": 0.0, "sky": true})
-	# [texture, scroll factor, top y on screen at rest, vertical factor]
-	for l in [["far", 0.08, 150.0, 0.03], ["mid", 0.22, 70.0, 0.08], ["near", 0.45, 46.0, 0.2]]:
-		# per-zone variants (mid_village, near_road, ...) crossfade at zone borders
-		var variants := []
-		for zi in ZONE_KEYS.size():
-			var vt := _tex("%s_%s" % [l[0], ZONE_KEYS[zi]])
-			if vt:
-				variants.append([zi, vt])
-		if variants.is_empty():
-			var t := _tex(l[0])
-			if t == null:
-				continue
-			variants.append([-1, t])
-		for v in variants:
-			var s := Sprite2D.new()
-			s.texture = v[1]
-			s.centered = false
-			s.region_enabled = true
-			s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-			cl.add_child(s)
-			bg_layers.append({"node": s, "factor": l[1], "y": l[2], "yf": l[3], "zone": v[0]})
-
-
-func _build_foreground() -> void:
-	var t := _tex("fore")
-	if t == null:
-		return
-	var cl := CanvasLayer.new()
-	cl.layer = 1
-	add_child(cl)
-	var s := Sprite2D.new()
-	s.texture = t
-	s.centered = false
-	s.region_enabled = true
-	s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-	s.modulate = Color(1, 1, 1, 0.92)
-	cl.add_child(s)
-	fg_layers.append({"node": s, "factor": 1.35, "y": 560.0, "yf": 1.0})
-
-
 var motes: CPUParticles2D
 
 
@@ -240,7 +180,6 @@ func _build_ground() -> void:
 	body.name = "Ground"
 	body.collision_layer = 1
 	add_child(body)
-	var gt := _tex("ground")
 	for g in LevelData.GROUND:
 		var cs := CollisionShape2D.new()
 		var s := RectangleShape2D.new()
@@ -248,27 +187,7 @@ func _build_ground() -> void:
 		cs.shape = s
 		cs.position = Vector2((g[0] + g[1]) / 2.0, g[2] + 300)
 		body.add_child(cs)
-		var poly := Polygon2D.new()
-		poly.polygon = PackedVector2Array([Vector2(g[0], g[2] - 14), Vector2(g[1], g[2] - 14), Vector2(g[1], g[2] + 520), Vector2(g[0], g[2] + 520)])
-		if gt:
-			poly.texture = gt
-			poly.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-			poly.texture_offset = Vector2(0, -(g[2] - 14))
-		else:
-			poly.color = Color(0.2, 0.17, 0.14)
-		poly.z_index = 1
-		add_child(poly)
-		var dt := _tex("debris")
-		if dt:
-			var deb := Sprite2D.new()
-			deb.texture = dt
-			deb.centered = false
-			deb.region_enabled = true
-			deb.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-			deb.region_rect = Rect2(0, 0, g[1] - g[0], dt.get_height())
-			deb.position = Vector2(g[0], g[2] - dt.get_height() + 22)
-			deb.z_index = 1
-			add_child(deb)
+		route_art.add_soil(g[0], g[1], g[2])
 
 
 func _build_platforms() -> void:
@@ -284,64 +203,23 @@ func _build_platforms() -> void:
 		cs.shape = s
 		cs.position = Vector2(p[0] + w / 2.0, p[2] + h / 2.0)
 		body.add_child(cs)
-		var t := _tex("plat_" + p[3])
-		if t:
-			var sp := Sprite2D.new()
-			sp.texture = t
-			sp.centered = false
-			var sc := w / float(t.get_width())
-			sp.scale = Vector2(sc, sc)
-			sp.position = Vector2(p[0], Game.GROUND_Y + 8 - t.get_height() * sc)
-			sp.z_index = 2
-			add_child(sp)
-		else:
-			var poly := Polygon2D.new()
-			poly.polygon = PackedVector2Array([Vector2(p[0], p[2]), Vector2(p[1], p[2]), Vector2(p[1], Game.GROUND_Y), Vector2(p[0], Game.GROUND_Y)])
-			poly.color = Color(0.25, 0.21, 0.17)
-			poly.z_index = 2
-			add_child(poly)
-
-
-# decorative props: [texture, x, scale, z, flip]
-const PROPS := [
-	["prop_house", 120.0, 0.9, -1, false], ["prop_tree", 620.0, 0.85, -1, false], ["prop_house", 1380.0, 0.8, -1, true],
-	["prop_well", 1900.0, 0.7, -1, false], ["prop_tree", 2260.0, 0.9, -1, true],
-	["prop_post", 2600.0, 0.8, -1, false], ["prop_cart", 3330.0, 0.75, -1, false], ["prop_tree", 3720.0, 1.0, -1, false],
-	["prop_post", 4100.0, 0.8, -1, true],
-	["prop_deadtree", 4560.0, 0.9, -1, false], ["prop_bones", 4880.0, 0.7, 3, false], ["prop_deadtree", 5420.0, 1.0, -1, true],
-	["prop_bones", 5800.0, 0.6, 3, true], ["prop_deadtree", 6420.0, 0.85, -1, false],
-	["prop_gate", 6620.0, 1.0, -1, false], ["prop_statue", 7000.0, 0.8, -1, false], ["prop_lantern", 7550.0, 0.8, -1, false],
-	["prop_statue", 7900.0, 0.85, -1, true], ["prop_shrine", 8320.0, 0.9, -1, false],
-	["prop_graves", 8640.0, 0.85, -1, false], ["prop_graves", 9200.0, 0.9, -1, true], ["prop_banner", 9560.0, 0.9, -1, false],
-	["prop_deadtree", 9780.0, 0.95, -1, false], ["prop_graves", 10150.0, 0.85, -1, false], ["prop_banner", 10480.0, 1.0, -1, true],
-	["prop_graves", 10760.0, 0.9, -1, true], ["prop_deadtree", 10980.0, 1.0, -1, true],
-]
-
-
-func _build_props() -> void:
-	for pr in PROPS:
-		var t := _tex(pr[0])
-		if t == null:
-			continue
-		var s := Sprite2D.new()
-		s.texture = t
-		s.centered = false
-		s.scale = Vector2(pr[2], pr[2])
-		s.flip_h = pr[4]
-		s.position = Vector2(pr[1] - t.get_width() * pr[2] / 2.0, Game.GROUND_Y + 6 - t.get_height() * pr[2])
-		s.z_index = pr[3]
-		$Props.add_child(s)
+		var sprite := Sprite2D.new()
+		sprite.texture = route_art.texture(p[3])
+		sprite.centered = false
+		sprite.scale = Vector2(w, h) / sprite.texture.get_size()
+		sprite.position = Vector2(p[0], p[2])
+		sprite.z_index = 2
+		add_child(sprite)
 
 
 func _add_sign(s: Dictionary) -> void:
-	var t := _tex("prop_stele")
-	if t:
-		var sp := Sprite2D.new()
-		sp.texture = t
-		sp.centered = false
-		sp.scale = Vector2(0.5, 0.5)
-		sp.position = Vector2(s.x - t.get_width() * 0.25, Game.GROUND_Y + 4 - t.get_height() * 0.5)
-		$Props.add_child(sp)
+	var marker := Sprite2D.new()
+	marker.texture = route_art.texture(s.art)
+	var height := 78.0 if s.x == 470.0 else 56.0
+	marker.scale = Vector2.ONE * height / marker.texture.get_height()
+	marker.offset.y = -marker.texture.get_height() * 0.5
+	marker.position = Vector2(s.x, Game.GROUND_Y + 1.0)
+	$Props.add_child(marker)
 
 
 func _build_gate() -> void:
@@ -398,28 +276,7 @@ func _process(delta: float) -> void:
 	else:
 		cam.zoom = Vector2.ONE
 	var vs := get_viewport().get_visible_rect().size
-	var left := cam.global_position.x - vs.x / 2.0
-	var dy := cam.global_position.y - (Game.GROUND_Y - 190)
-	var zw := zone_weights(cam.global_position.x)
-	if Game.args.has("zwdebug") and Engine.get_process_frames() % 60 == 0:
-		var vis_n := []
-		for l in bg_layers:
-			if l.get("zone", -1) >= 0 and l.node.visible:
-				vis_n.append("%s a=%.2f" % [l.node.texture.resource_path.get_file(), l.node.self_modulate.a])
-		print("ZW x=%.0f w=%s vis=%s" % [cam.global_position.x, zw, vis_n])
-	for l in bg_layers + fg_layers:
-		var n = l.node
-		if l.get("sky", false):
-			continue
-		var s: Sprite2D = n
-		var zi: int = l.get("zone", -1)
-		if zi >= 0:
-			s.self_modulate.a = zw[zi]
-			s.visible = zw[zi] > 0.004
-			if not s.visible:
-				continue
-		s.region_rect = Rect2(left * l.factor, 0, vs.x + 4, s.texture.get_height())
-		s.position = Vector2(0, l.y - dy * l.yf + (vs.y - 720.0) * 0.5)
+	route_art.follow(cam.global_position, vs, zone_weights(cam.global_position.x))
 
 
 func _update_camera(delta: float) -> void:
@@ -462,9 +319,6 @@ func _update_zone(force: bool) -> void:
 		_set_motes(z)
 	# smooth atmosphere blend toward the current zone
 	var z2: Dictionary = LevelData.ZONES[zone_idx]
-	for l in bg_layers:
-		var n: CanvasItem = l.node
-		n.modulate = n.modulate.lerp(z2.tint, 0.02 if not force else 1.0)
 	if fog_rect:
 		var m: ShaderMaterial = fog_rect.material
 		var cur: Color = m.get_shader_parameter("fog_color") if m.get_shader_parameter("fog_color") != null else z2.fog

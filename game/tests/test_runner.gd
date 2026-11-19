@@ -69,7 +69,7 @@ func spawn(type: String, x: float, frozen := false) -> Enemy:
 func _run() -> void:
 	if only == "showcase":
 		await _showcase()
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "slashcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -81,7 +81,7 @@ func _run() -> void:
 			print("SLASHDBG state=", p.state, " t=", p.state_t, " pose=", p.vis.pose, " fx=", Game.level.get_node("Fx").get_child_count())
 			await _shot("s%d" % i)
 			await _frames(2)
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "ending_shot":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -92,7 +92,7 @@ func _run() -> void:
 		Game.finish_demo()
 		await _wait(4.5)
 		await _shot("ending")
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "runcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -105,7 +105,7 @@ func _run() -> void:
 			await _shot("run%d" % i)
 			await _frames(3)
 		hold(p, {})
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "elitecap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -122,7 +122,7 @@ func _run() -> void:
 			if e.state != "chase" and e.state != "idle":
 				await _shot("e_%s" % e.state)
 				k += 1
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "optcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -135,7 +135,7 @@ func _run() -> void:
 		cl.add_child(o)
 		await _wait(0.4)
 		await _shot("options")
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "deathcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -163,31 +163,15 @@ func _run() -> void:
 				for tt in [0.15, 0.5, 0.9, 1.6, 2.6]:
 					await get_tree().create_timer(tt, true, false, true).timeout
 					await _shot("bossdeath_%.2f" % tt)
-		get_tree().quit()
+		Game.quit()
 		return
-	if only == "readcap":
-		shot_dir = Game.args.get("shots", "user://shots")
-		var cases := [[900.0, "grunt"], [3000.0, "crawler"], [5300.0, "spitter"], [7300.0, "husk"], [10200.0, "elite"]]
-		for c in cases:
-			Game.args["skip_cleared"] = "1"
-			var p := await _fresh_level(c[0])
-			p.set_physics_process(false)
-			for other in Combat.enemies_alive():
-				other.visible = false
-				other.set_physics_process(false)
-			await _frames(2)
-			var e := await spawn(c[1], c[0] + 170.0, true)
-			if Game.level.hud:
-				Game.level.hud.visible = false
-			Game.level.fog_rect.visible = true
-			await _wait(1.2)
-			await _shot("read_%s_with" % c[1])
-			p.visible = false
-			if is_instance_valid(e):
-				e.visible = false
-			await _frames(3)
-			await _shot("read_%s_bg" % c[1])
-		get_tree().quit()
+	if only in ["visual_replay", "readcap"]:
+		var review = load("res://tests/visual_review.gd").new()
+		add_child(review)
+		if only == "readcap":
+			await review.masks(self)
+		else:
+			await review.replay(self)
 		return
 	if only == "pausecap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -199,7 +183,7 @@ func _run() -> void:
 		await get_tree().create_timer(0.5, true, false, true).timeout
 		await _shot("pause")
 		get_tree().paused = false
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "walkcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -222,7 +206,7 @@ func _run() -> void:
 				await _shot("w_%s_%d" % [ty, i])
 			e.queue_free()
 			await _frames(2)
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "jumpcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -233,13 +217,13 @@ func _run() -> void:
 		for i in 6:
 			await _frames(5)
 			await _shot("j%d" % i)
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "walkright":
 		var p := await _fresh_level(float(Game.args.get("from", "4200")))
 		hold(p, {"move_right": true})
 		await _wait(float(Game.args.get("secs", "10")))
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "chopcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -254,7 +238,7 @@ func _run() -> void:
 		for i in 10:
 			await _frames(6)
 			await _shot("c%d_%s" % [i, e.state])
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "armcap":
 		# static check of the arm rig on the ready pose at fixed rotations
@@ -266,7 +250,7 @@ func _run() -> void:
 			p.vis.arm_rot = [r, -r]
 			await _frames(3)
 			await _shot("arm_%+.2f" % r)
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "combocap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -292,7 +276,7 @@ func _run() -> void:
 			if seq.begins_with("jumpatk") and f == 14:
 				p.input_override = {"attack": true, "attack_just": true}
 			await _shot("f%03d_%s" % [f, p.vis.pose])
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "crawlcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -311,7 +295,7 @@ func _run() -> void:
 				last = c.state
 				await _shot("cr_%s" % c.state)
 				n += 1
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "rigcap":
 		shot_dir = Game.args.get("shots", "user://shots")
@@ -339,7 +323,7 @@ func _run() -> void:
 			for i in n:
 				await _wait(maxf(clip_len / n, 0.05) if kv[0] != "idle" else 0.6)
 				await _shot("rig_%s_%d" % [kv[0], i])
-		get_tree().quit()
+		Game.quit()
 		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
@@ -354,7 +338,7 @@ func _run() -> void:
 		for i in 6:
 			print("DBG d", i, " state=", p.state, " vx=", p.velocity.x, " x=", p.global_position.x)
 			await _frames(1)
-		get_tree().quit()
+		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
 		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "bot", "soak"]
@@ -364,7 +348,7 @@ func _run() -> void:
 		await call("t_" + t)
 	var fails := results.filter(func(r): return not r[1]).size()
 	print("TESTS DONE pass=%d fail=%d" % [results.size() - fails, fails])
-	get_tree().quit(1 if fails > 0 else 0)
+	Game.quit(1 if fails > 0 else 0)
 
 
 # ------------------------------------------------------------------ tests
@@ -1026,6 +1010,7 @@ func t_gamepad_map() -> void:
 			Input.flush_buffered_events()
 			if not Input.is_action_pressed(action):
 				bad.append("%s/btn%d" % [action, b])
+			ev = ev.duplicate()
 			ev.pressed = false
 			Input.parse_input_event(ev)
 			Input.flush_buffered_events()
@@ -1038,6 +1023,7 @@ func t_gamepad_map() -> void:
 		Input.flush_buffered_events()
 		if not Input.is_action_pressed(pair[0]):
 			bad.append("%s/axis%d" % [pair[0], pair[1]])
+		m = m.duplicate()
 		m.axis_value = 0.0
 		Input.parse_input_event(m)
 		Input.flush_buffered_events()
@@ -1193,6 +1179,7 @@ func t_options() -> void:
 	Input.parse_input_event(ev)
 	Input.flush_buffered_events()
 	var on_h := Input.is_action_pressed("attack")
+	ev = ev.duplicate()
 	ev.pressed = false
 	Input.parse_input_event(ev)
 	Input.flush_buffered_events()
@@ -1211,6 +1198,43 @@ func t_options() -> void:
 	var off: Vector2 = Game.level.cam.offset
 	Game.shake_scale = 1.0
 	_log("shake_setting_respected", off == Vector2.ZERO, "offset=%s" % off)
+	# Keep a road sign on screen while the binding and active device change.
+	var hud = Game.level.hud
+	Game.show_hint("{talisman} 符箓", 5.0)
+	Game.rebind("talisman", KEY_H)
+	var keyboard_ok: bool = hud.skill_keys.talisman == "H" and hud.hint_label.text == "H 符箓"
+	var axis := InputEventJoypadMotion.new()
+	axis.device = 6  # synthetic controller with the generic face-button layout
+	axis.axis = JOY_AXIS_LEFT_X
+	axis.axis_value = 0.08
+	Input.parse_input_event(axis)
+	Input.flush_buffered_events()
+	var drift_ok := not Game.using_gamepad
+	var pad := InputEventJoypadButton.new()
+	pad.device = 6
+	pad.button_index = JOY_BUTTON_Y
+	pad.pressed = true
+	Input.parse_input_event(pad)
+	Input.flush_buffered_events()
+	var pad_ok: bool = hud.skill_keys.talisman == "Y" and hud.skill_keys.gourd == "LT" and hud.skill_keys.beads == "RT" and hud.hint_label.text == "Y 符箓"
+	var release: InputEventJoypadButton = pad.duplicate()
+	release.pressed = false
+	Input.parse_input_event(release)
+	Input.flush_buffered_events()
+	var keyboard := InputEventKey.new()
+	keyboard.physical_keycode = KEY_H
+	keyboard.pressed = true
+	Input.parse_input_event(keyboard)
+	Input.flush_buffered_events()
+	var switched_back: bool = hud.skill_keys.talisman == "H" and hud.hint_label.text == "H 符箓"
+	var key_up: InputEventKey = keyboard.duplicate()
+	key_up.pressed = false
+	Input.parse_input_event(key_up)
+	Input.flush_buffered_events()
+	Game.reset_bindings()
+	var reset_ok: bool = hud.skill_keys.talisman == "U" and hud.hint_label.text == "U 符箓"
+	_log("hud_and_active_sign_bindings", keyboard_ok and drift_ok and pad_ok and switched_back and reset_ok,
+		"rebind=%s drift=%s pad=%s keyboard=%s reset=%s" % [keyboard_ok, drift_ok, pad_ok, switched_back, reset_ok])
 	# separate music/sfx buses
 	Game.set_bus_volume("Music", 0.3)
 	var mv := Game.bus_volume("Music")

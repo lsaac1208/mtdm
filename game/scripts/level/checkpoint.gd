@@ -12,14 +12,13 @@ var light: Node2D
 
 func _ready() -> void:
 	z_index = 3
-	var tex_path := "res://assets/env/prop_campfire.png"
-	if ResourceLoader.exists(tex_path):
-		var s := Sprite2D.new()
-		s.texture = load(tex_path)
-		s.centered = false
-		s.scale = Vector2(0.55, 0.55)
-		s.position = Vector2(-s.texture.get_width() * 0.275, 8 - s.texture.get_height() * 0.55)
-		add_child(s)
+	var hearth := Sprite2D.new()
+	hearth.texture = preload("res://assets/env/painted/hearth.webp")
+	hearth.scale = Vector2.ONE * 98.0 / hearth.texture.get_width()
+	hearth.offset.y = -hearth.texture.get_height() * 0.5
+	hearth.position.y = 5.0
+	hearth.show_behind_parent = true
+	add_child(hearth)
 	embers = CPUParticles2D.new()
 	embers.amount = 26
 	embers.lifetime = 1.6
@@ -68,8 +67,11 @@ func _draw() -> void:
 		draw_circle(Vector2.ZERO, r, Color(1.0, 0.6, 0.25, 0.05))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	for i in 3:
-		var h := (34.0 - i * 8.0) * f + sin(t * 9.0 + i) * 4.0
-		var w := 14.0 - i * 3.0
-		var pts := PackedVector2Array([Vector2(-w, -8), Vector2(sin(t * 6.0 + i) * 4.0, -8 - h), Vector2(w, -8)])
-		var cols := [Color(0.85, 0.25, 0.08, 0.9), Color(1, 0.6, 0.15, 0.95), Color(1, 0.92, 0.6, 1)]
-		draw_colored_polygon(pts, cols[i])
+		var x := (i - 1) * 7.0
+		var h := (28.0 - absf(x) * 1.4) * f
+		var bend := sin(t * 8.0 + i * 1.8) * 3.0
+		var base := Vector2(x, -11.0)
+		var points := PackedVector2Array([base + Vector2(-6, 0), base + Vector2(-5, -h * 0.38),
+			base + Vector2(bend - 2, -h * 0.69), base + Vector2(bend + 2, -h),
+			base + Vector2(bend + 4, -h * 0.4), base + Vector2(5, -h * 0.23), base + Vector2(5, 0)])
+		draw_colored_polygon(points, Color(1, 0.47 + i * 0.09, 0.14, 0.91))

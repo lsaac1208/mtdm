@@ -4,6 +4,8 @@ extends Node2D
 ## player must jump or dash across. Prayer beads purify puddles.
 ## `permanent` puddles are level hazards in the polluted lowland.
 
+const SURFACE := preload("res://assets/env/painted/mire.webp")
+
 var radius := 65.0
 var life := 4.5
 var permanent := false
@@ -17,7 +19,7 @@ func _ready() -> void:
 	add_to_group("taint_puddle")
 	z_index = 3
 	for i in 7:
-		_bubbles.append(Vector2(randf_range(-radius * 0.8, radius * 0.8), randf()))
+		_bubbles.append(Vector2(radius * lerpf(-0.78, 0.78, i / 6.0), fmod(i * 0.618, 1.0)))
 
 
 func purify_near(pos: Vector2, r: float) -> void:
@@ -57,23 +59,11 @@ func _draw() -> void:
 	var r := radius * grow
 	if r < 3.0:
 		return
-	var pts := PackedVector2Array()
-	for i in 33:
-		var ang := PI + PI * i / 32.0
-		var wob := 1.0 + 0.06 * sin(i * 1.7 + t * 2.0)
-		pts.append(Vector2(cos(ang) * r * wob, sin(ang) * 9.0 * wob + 2.0))
-	for i in range(1, 32):
-		var ang := PI * i / 32.0
-		pts.append(Vector2(cos(ang) * r, sin(ang) * 5.0 + 2.0))
-	draw_colored_polygon(pts, Color(0.2, 0.26, 0.08, 0.85 * fade))
-	var inner := PackedVector2Array()
-	for p in pts:
-		inner.append(p * Vector2(0.82, 0.7))
-	draw_colored_polygon(inner, Color(0.42, 0.55, 0.14, 0.75 * fade))
-	for b in _bubbles:
-		var k: float = fmod(b.y + t * 0.6, 1.0)
-		draw_circle(Vector2(b.x * grow, -2 - k * 10.0), 3.0 * (1.0 - k), Color(0.75, 0.9, 0.35, 0.8 * fade * (1.0 - k)))
-	# rising miasma
-	if randf() < 0.1:
-		Fx.particles(global_position + Vector2(randf_range(-r, r) * 0.8, -4), 1, Color(0.5, 0.65, 0.2, 0.35),
-			40.0, 20.0, Vector2.UP, -40.0, 1.2, 9.0, 3)
+	# The mineral lip ends exactly at the active horizontal extents.
+	var depth := minf(30.0, r * 0.34)
+	draw_texture_rect(SURFACE, Rect2(-r, -depth * 0.62, r * 2.0, depth), false, Color(1, 1, 1, fade))
+	for bubble in _bubbles:
+		var rise := fmod(bubble.y + t * 0.48, 1.0)
+		var centre := Vector2(bubble.x * grow + sin(rise * PI) * 1.4, -3.0 - rise * 17.0)
+		draw_circle(centre, 3.2 * (1.0 - rise * 0.6),
+			Color(0.84, 0.94, 0.42, fade * (1.0 - rise)), false, 1.1, true)

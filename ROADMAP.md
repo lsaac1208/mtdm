@@ -1,5 +1,9 @@
 # ROADMAP — 道行者 / Taoist Wanderer
 
+## 0.3 交付与下一次观察
+
+本轮实现主角、五区环境、危险边界与 HUD 的视觉打磨，保留既有战斗判定。请结合[同机位录像与验收](evidence/v0.3/README.md)和[首玩记录](evidence/v0.3/PLAYTEST.md)，先处理具体读招困难与操作误解，再安排新章节。下列 0.1 与 0.2 里程碑用于回溯。
+
 Priorities follow the project directive: launchable → core combat → distinct enemies → full level + elite + ending → polish/packaging.
 
 ## Done (v0.1.0, 2026-11-18)

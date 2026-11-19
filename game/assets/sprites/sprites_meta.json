@@ -2,45 +2,45 @@
  "hero_01_ready": {
   "w": 276,
   "h": 347,
-  "body_h": 307,
+  "body_h": 308,
   "foot_x": 118.5,
   "foot_y": 327.0,
   "group": "hero_r1",
   "scale": 0.49511
  },
  "hero_02_draw": {
-  "w": 264,
-  "h": 294,
-  "body_h": 260,
-  "foot_x": 125.0,
-  "foot_y": 277.0,
+  "w": 313,
+  "h": 323,
+  "body_h": 282,
+  "foot_x": 144.75,
+  "foot_y": 309.9,
   "group": "hero_r1",
   "scale": 0.49511
  },
  "hero_03_hslash": {
-  "w": 314,
-  "h": 263,
-  "body_h": 227,
-  "foot_x": 148.0,
-  "foot_y": 245.0,
+  "w": 373,
+  "h": 301,
+  "body_h": 274,
+  "foot_x": 127.65,
+  "foot_y": 287.85,
   "group": "hero_r1",
   "scale": 0.49511
  },
  "hero_04_downslash": {
-  "w": 326,
-  "h": 329,
-  "body_h": 291,
-  "foot_x": 185.0,
-  "foot_y": 310.0,
+  "w": 328,
+  "h": 278,
+  "body_h": 251,
+  "foot_x": 108.75,
+  "foot_y": 264.45,
   "group": "hero_r1",
   "scale": 0.49511
  },
  "hero_05_thrust": {
-  "w": 383,
-  "h": 282,
-  "body_h": 238,
-  "foot_x": 177.0,
-  "foot_y": 260.0,
+  "w": 453,
+  "h": 268,
+  "body_h": 241,
+  "foot_x": 120.0,
+  "foot_y": 254.55,
   "group": "hero_r1",
   "scale": 0.49511
  },
@@ -448,5 +448,41 @@
   "foot_y": 156.0,
   "group": "elite_row",
   "scale": 1.32331
+ },
+ "hero_slash_pass": {
+  "w": 365,
+  "h": 301,
+  "body_h": 274,
+  "foot_x": 147.9,
+  "foot_y": 287.4,
+  "group": "hero_r1",
+  "scale": 0.49511
+ },
+ "hero_overhead_load": {
+  "w": 299,
+  "h": 337,
+  "body_h": 274,
+  "foot_x": 119.1,
+  "foot_y": 323.4,
+  "group": "hero_r1",
+  "scale": 0.49511
+ },
+ "hero_thrust_load": {
+  "w": 325,
+  "h": 290,
+  "body_h": 263,
+  "foot_x": 123.6,
+  "foot_y": 276.6,
+  "group": "hero_r1",
+  "scale": 0.49511
+ },
+ "hero_strike_settle": {
+  "w": 325,
+  "h": 309,
+  "body_h": 281,
+  "foot_x": 118.2,
+  "foot_y": 295.95,
+  "group": "hero_r1",
+  "scale": 0.49511
  }
 }

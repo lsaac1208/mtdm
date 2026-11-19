@@ -132,16 +132,9 @@ func _check(box: VBoxContainer, text: String, on: bool, cb: Callable) -> void:
 	box.add_child(c)
 
 
-func _key_name(action: String) -> String:
-	var names := []
-	for kc in Game.action_keys(action):
-		names.append(OS.get_keycode_string(kc))
-	return " / ".join(names) if not names.is_empty() else "—"
-
-
 func _refresh_keys() -> void:
 	for action in _key_buttons:
-		_key_buttons[action].text = "…按任意键 press a key…" if action == _capture else _key_name(action)
+		_key_buttons[action].text = "…按任意键 press a key…" if action == _capture else Game.keyboard_label(action)
 
 
 func _begin_capture(action: String) -> void:

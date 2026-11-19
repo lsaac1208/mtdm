@@ -13,6 +13,8 @@ var boss_lag := 1.0
 var hint_label: Label
 var hint_panel: Panel
 var hint_t := 0.0
+var hint_template := ""
+var skill_keys := {}
 var zone_cn: Label
 var zone_en: Label
 var zone_t := 0.0
@@ -82,12 +84,13 @@ func _ready() -> void:
 	fade.color = Color(0.03, 0.03, 0.03, 1.0)
 	fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(fade)
-	var tw := create_tween()
 	if Game.run_time < 0.5 and Game.checkpoint_id == 0 and Game.deaths == 0 and not Game.args.has("startx"):
 		_opening()
 	else:
-		tw.tween_property(fade, "color:a", 0.0, 0.8)
+		create_tween().tween_property(fade, "color:a", 0.0, 0.8)
 	Game.hint.connect(_on_hint)
+	Game.prompts_changed.connect(_refresh_prompts)
+	_refresh_prompts()
 	Game.zone_entered.connect(_on_zone)
 	Game.boss_changed.connect(_on_boss)
 
@@ -164,8 +167,16 @@ func _on_player_died() -> void:
 
 
 func _on_hint(text: String, dur: float) -> void:
-	hint_label.text = text
+	hint_template = text
+	hint_label.text = Game.fmt_keys(hint_template)
 	hint_t = dur
+
+
+func _refresh_prompts() -> void:
+	hint_label.text = Game.fmt_keys(hint_template)
+	for action in ["gourd", "talisman", "beads"]:
+		skill_keys[action] = Game.binding_label(action, true)
+	draw_root.queue_redraw()
 
 
 func _on_zone(cn: String, en: String) -> void:
@@ -214,32 +225,40 @@ func _draw_hud() -> void:
 		return
 	var ci := draw_root
 	var f: Font = ci.get_theme_default_font()
-	# portrait medallion
-	var c := Vector2(70, 70)
-	ci.draw_circle(c, 50, Color(0.05, 0.04, 0.04, 0.9))
+	var ink := Color(0.10, 0.09, 0.08, 0.91)
+	var paper := Color(0.96, 0.90, 0.76)
+	var brass := Color(0.72, 0.54, 0.32)
+	var skills := [
+		["gourd", "葫芦 ×%d" % player.gourd, player.gourd > 0],
+		["talisman", "符箓", player.qi >= player.TALISMAN_COST],
+		["beads", "念珠", player.qi >= player.BEADS_COST],
+	]
+	# Let long rebound key names extend the ink backing, without moving the bars.
+	var skill_x := 26.0
+	var slots: Array[float] = []
+	for skill in skills:
+		slots.append(skill_x)
+		skill_x += 26.0 + f.get_string_size("%s  %s" % [skill_keys[skill[0]], skill[1]], HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 16.0
+	var right := maxf(360.0, skill_x)
+	ci.draw_colored_polygon(PackedVector2Array([
+		Vector2(17, 17), Vector2(right + 8, 16), Vector2(right, 65),
+		Vector2(right + 2, 99), Vector2(20, 101), Vector2(15, 62)]), ink)
+	ci.draw_line(Vector2(28, 68), Vector2(right - 12, 68), Color(brass, 0.45), 1.0)
+	var c := Vector2(49, 44)
+	ci.draw_circle(c, 25.0, ink)
 	if portrait:
-		ci.draw_texture_rect(portrait, Rect2(c - Vector2(44, 44), Vector2(88, 88)), false)
-	ci.draw_arc(c, 47, 0, TAU, 48, Color(0.62, 0.17, 0.12), 4.0, true)
-	ci.draw_arc(c, 52, 0, TAU, 48, Color(0.75, 0.6, 0.35, 0.8), 2.0, true)
-	# bars
-	ci.draw_string(f, Vector2(128, 44), "气血", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(0.9, 0.8, 0.62))
-	_brush_bar(Vector2(172, 28), 300, 18, hp_disp, hp_lag, Color(0.66, 0.14, 0.1))
-	ci.draw_string(f, Vector2(128, 76), "道力", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(0.9, 0.8, 0.62))
-	_brush_bar(Vector2(172, 62), 240, 14, qi_disp, qi_disp, Color(0.86, 0.66, 0.26))
-	# qi cost markers
+		ci.draw_texture_rect(portrait, Rect2(c - Vector2(23, 23), Vector2(46, 46)), false, Color(0.89, 0.84, 0.76))
+	ci.draw_arc(c, 25.0, 0, TAU, 48, brass, 1.5, true)
+	ci.draw_string(f, Vector2(86, 40), "气血", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, paper)
+	ci.draw_string(f, Vector2(86, 62), "道力", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, paper)
+	_brush_bar(Vector2(130, 26), 210, 13, hp_disp, hp_lag, Color(0.78, 0.24, 0.16))
+	_brush_bar(Vector2(130, 48), 168, 11, qi_disp, qi_disp, Color(0.90, 0.67, 0.29))
 	for cost in [player.TALISMAN_COST, player.BEADS_COST]:
-		var x: float = 172 + 240 * cost / player.MAX_QI
-		ci.draw_line(Vector2(x, 60), Vector2(x, 78), Color(0.1, 0.08, 0.06, 0.8), 2.0)
-	# gourd charges
-	var gi: Texture2D = icons.get("icon_gourd")
-	for i in player.GOURD_MAX:
-		var r := Rect2(Vector2(130 + i * 34, 90), Vector2(30, 30))
-		if gi:
-			ci.draw_texture_rect(gi, r, false, Color(1, 1, 1, 1) if i < player.gourd else Color(0.25, 0.22, 0.2, 0.6))
-	ci.draw_string(f, Vector2(236, 112), "O", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.8, 0.72, 0.55))
-	# skills
-	_skill(Vector2(290, 88), "icon_talisman", "U 符箓", player.qi >= player.TALISMAN_COST)
-	_skill(Vector2(380, 88), "icon_beads", "P 念珠", player.qi >= player.BEADS_COST)
+		var x: float = 130 + 168 * cost / player.MAX_QI
+		ci.draw_line(Vector2(x, 50), Vector2(x, 57), ink, 2.0)
+	for i in skills.size():
+		var skill: Array = skills[i]
+		_skill(Vector2(slots[i], 74), skill[0], skill[1], skill[2])
 	# boss bar
 	if boss and is_instance_valid(boss):
 		var vs := ci.size
@@ -255,15 +274,15 @@ func _draw_hud() -> void:
 		ci.draw_string(f, Vector2(x0 + w + 8, y0 + 30), "甲", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.85, 0.75, 0.55))
 
 
-func _skill(pos: Vector2, icon: String, label: String, ready: bool) -> void:
+func _skill(pos: Vector2, action: String, name_: String, ready: bool) -> void:
 	var ci := draw_root
-	var t: Texture2D = icons.get(icon)
-	ci.draw_rect(Rect2(pos, Vector2(34, 34)), Color(0.05, 0.04, 0.04, 0.8))
-	if t:
-		ci.draw_texture_rect(t, Rect2(pos + Vector2(2, 2), Vector2(30, 30)), false, Color.WHITE if ready else Color(0.3, 0.28, 0.26, 0.7))
-	ci.draw_rect(Rect2(pos, Vector2(34, 34)), Color(0.75, 0.6, 0.35) if ready else Color(0.3, 0.25, 0.2), false, 1.5)
-	ci.draw_string(ci.get_theme_default_font(), pos + Vector2(40, 23), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14,
-		Color(0.9, 0.82, 0.64) if ready else Color(0.5, 0.45, 0.4))
+	var icon: Texture2D = icons.get("icon_" + action)
+	if icon:
+		var tint := Color.WHITE if ready else Color(0.52, 0.50, 0.46)
+		ci.draw_texture_rect(icon, Rect2(pos, Vector2(23, 23)), false, tint)
+	var text := "%s  %s" % [skill_keys[action], name_]
+	ci.draw_string(ci.get_theme_default_font(), pos + Vector2(26, 17), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16,
+		Color(0.96, 0.90, 0.76) if ready else Color(0.74, 0.70, 0.63))
 
 
 func fade_out(dur: float, col := Color(0.03, 0.03, 0.03)) -> void:

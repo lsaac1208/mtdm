@@ -1,5 +1,9 @@
 # DEVELOPMENT_STATUS — 道行者 / Taoist Wanderer
 
+## 0.3 视觉打磨版
+
+当前开发分支为 `codex/visual-polish-v03`。三档难度、九个主角新姿势、五区绘景、动态按键提示和场景退出修复已接入。查看[验收记录](evidence/v0.3/README.md)和[候选包](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1)。以下为上一个发布基线的历史记录。
+
 _Last updated: 2026-11-19 (v0.2.0) · branch `dev/vertical-slice-20261118` · engine Godot 4.7.2 · version 0.2.0_
 
 ## Where things are

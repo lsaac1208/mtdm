@@ -1,5 +1,18 @@
 # 《道行者 / Taoist Wanderer》（项目代号：`mtdm`）— 第一批开发交付物料与核心设定总库
 
+## 试玩与开发入口
+
+**当前可玩工程为 Godot 4.7.2 的 0.3.0 视觉打磨版。** 从荒村向右走，第一次遭遇能体验跑跳、三段斩与弹反；完整路线穿过五个区域，终点为尸将与光门。
+
+| 想做什么 | 入口 |
+| --- | --- |
+| 下载 Mac、Windows 或 Linux 试玩包，看改版前后实机录像 | [GitHub Release](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1) |
+| 用引擎运行、调试或重新导出 | [构建说明](BUILD_AND_RUN.md) · [项目配置](game/project.godot) |
+| 核对五区画面、战斗与平台验收 | [0.3 验收记录](evidence/v0.3/README.md) |
+| 理解主角、道术、尸祟与原设 | [美术与世界观](docs/01_WORLD_AND_ART_BIBLE.md) · [主角设计](docs/02_PROTAGONIST_SPEC.md) · [首批尸祟](docs/03_FIRST_WAVE_ENEMIES_SPEC.md) |
+| 对照上一可下载版本 | [v0.2.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0) |
+
+
 > **「末日废土之上，道法不灭，万物异变。」**  
 > *In the wasteland, the Tao endures, all things rot and transform.*
 >

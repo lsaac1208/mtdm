@@ -1,0 +1,73 @@
+name: Native release verification
+on:
+  push:
+    tags:
+      - 'v0.3.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to test
+        required: true
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            suffix: linux-x86_64
+          - os: windows-2025
+            suffix: windows-x86_64
+          - os: macos-15
+            suffix: macos-universal
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 22
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag || github.ref_name }}
+      SUFFIX: ${{ matrix.suffix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - name: Download the exact candidate ZIP
+        shell: bash
+        run: |
+          mkdir -p package
+          for attempt in {1..20}; do
+            if gh release download "$TAG" --pattern "*-$SUFFIX.zip" --dir package --clobber; then
+              digest=$(gh release view "$TAG" --json assets --jq '.assets[] | select(.name | endswith(env.SUFFIX + ".zip")) | .digest')
+              if [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+                echo "ARCHIVE_SHA256=${digest#sha256:}" >> "$GITHUB_ENV"
+                exit 0
+              fi
+            fi
+            sleep 12
+          done
+          exit 1
+      - name: Install Linux desktop renderer
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
+      - name: Install Windows software OpenGL
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          C:\msys64\usr\bin\bash.exe -lc 'pacman --noconfirm --needed -S mingw-w64-x86_64-mesa'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          'C:\msys64\mingw64\bin' >> $env:GITHUB_PATH
+          'MESA_BIN=C:\msys64\mingw64\bin' >> $env:GITHUB_ENV
+      - name: Exercise downloaded package
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            xvfb-run -a -s '-screen 0 1280x720x24' python tools/qa/native_release.py package/*.zip native-evidence --sha256 "$ARCHIVE_SHA256"
+          else
+            python tools/qa/native_release.py package/*.zip native-evidence --sha256 "$ARCHIVE_SHA256"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-${{ matrix.suffix }}
+          path: native-evidence

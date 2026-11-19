@@ -11,6 +11,8 @@ var ambience: AudioStreamPlayer
 var music_name := ""
 var muted := false
 var _last_play := {}
+var _fades := {}
+var _shutting_down := false
 
 
 static func ensure_bus(name_: String) -> int:
@@ -67,6 +69,8 @@ func _stream(name_: String) -> AudioStream:
 
 
 func play(name_: String, vol_db := 0.0, pitch_var := 0.08, pitch := 1.0) -> void:
+	if _shutting_down:
+		return
 	# de-duplicate the same sound within 30 ms (multi-hits)
 	var now := Time.get_ticks_msec()
 	if _last_play.get(name_, -1000) > now - 30:
@@ -84,6 +88,8 @@ func play(name_: String, vol_db := 0.0, pitch_var := 0.08, pitch := 1.0) -> void
 
 
 func play_music(name_: String, vol_db := -9.0) -> void:
+	if _shutting_down:
+		return
 	if name_ == music_name and music.playing:
 		return
 	music_name = name_
@@ -98,6 +104,8 @@ func play_music(name_: String, vol_db := -9.0) -> void:
 
 
 func play_ambience(name_: String) -> void:
+	if _shutting_down:
+		return
 	var s := _stream(name_)
 	if s == null:
 		return
@@ -110,20 +118,41 @@ func play_ambience(name_: String) -> void:
 
 
 func _crossfade(p: AudioStreamPlayer, s: AudioStream, vol_db: float) -> void:
+	var tw := _begin_fade(p)
 	if not p.playing or p.stream == null:
 		p.stream = s
 		p.volume_db = -40.0
 		p.play()
-		create_tween().tween_property(p, "volume_db", vol_db, 1.2)
+		tw.tween_property(p, "volume_db", vol_db, 1.2)
 		return
-	var tw := create_tween()
 	tw.tween_property(p, "volume_db", -40.0, 0.9)
 	tw.tween_callback(func(): p.stream = s; p.play())
 	tw.tween_property(p, "volume_db", vol_db, 1.4)
 
 
 func stop_music() -> void:
+	if _shutting_down:
+		return
 	music_name = ""
-	var tw := create_tween()
+	var tw := _begin_fade(music)
 	tw.tween_property(music, "volume_db", -40.0, 1.2)
 	tw.tween_callback(music.stop)
+
+
+func _begin_fade(p: AudioStreamPlayer) -> Tween:
+	if _fades.has(p):
+		_fades[p].kill()
+	var tw := p.create_tween()
+	_fades[p] = tw
+	return tw
+
+
+func shutdown() -> void:
+	_shutting_down = true
+	for tw in _fades.values():
+		tw.kill()
+	_fades.clear()
+	for p: AudioStreamPlayer in get_children():
+		p.stop()
+		p.stream = null
+	_cache.clear()

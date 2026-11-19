@@ -7,7 +7,7 @@ const CONTROLS := """移动  {move_left} / {move_right}　　跳跃  {jump}　�
 攻击  {attack}（三段连斩）　　下劈  {move_down} + {attack}　　冲刺斩  冲刺中按 {attack}　　跳劈  空中按 {attack}
 格挡  按住 {block}（出手瞬间格挡 = 弹反）
 符箓  {talisman}（20 道力）　　阴阳葫芦  {gourd}（回血 + 震开）　　念珠  {beads}（50 道力）
-手柄：A 跳　X 攻击　B/RB 冲刺　LB 格挡　Y 符箓　LT 葫芦　RT 念珠　　F11 全屏"""
+暂停  {pause}　　F11 全屏"""
 
 var root: Control
 var _ctl: Label
@@ -42,8 +42,9 @@ func _ready() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var ctl := Label.new()
-	ctl.text = Game.fmt_keys(CONTROLS)
 	_ctl = ctl
+	Game.prompts_changed.connect(_refresh_controls)
+	_refresh_controls()
 	ctl.add_theme_font_size_override("font_size", 17)
 	ctl.add_theme_color_override("font_color", Color(0.85, 0.78, 0.62))
 	ctl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -70,11 +71,14 @@ func _unhandled_input(e: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+func _refresh_controls() -> void:
+	_ctl.text = Game.fmt_keys(CONTROLS)
+
+
 func _open() -> void:
 	if Game.player and Game.player.dead:
 		return
 	root.visible = true
-	_ctl.text = Game.fmt_keys(CONTROLS)
 	get_tree().paused = true
 	_set_hud(false)
 	buttons[0].grab_focus()

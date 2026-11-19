@@ -89,7 +89,9 @@ static func elite() -> Dictionary:
 			[0.58, Vector2(0, 7)], [0.8, Vector2(0, -2)], [1, Vector2(0, 2)]]}}
 	# overhead chop: cleaver hauled up and back over the shoulder (0.8 s)
 	c["windup_chop"] = {"len": 0.8, "loop": false, "tracks": {
-		"shoulder_f": [[0, 0.0], [0.6, 160.0], [1, 172.0]], "forearm_f": [[0, 0.0], [1, -40.0]], "weapon": [[0, 0.0], [1, 30.0]],
+		"shoulder_f": [[0, 0.0], [0.45, 149.0], [0.75, 155.0], [1, 158.0]],
+		"forearm_f": [[0, 0.0], [0.48, -46.0], [1, -43.0]],
+		"weapon": [[0, 0.0], [0.50, 94.0], [0.85, 105.0], [1, 102.0]],
 		"shoulder_b": [[0, 0.0], [1, -60.0]], "forearm_b": [[0, 0.0], [1, -30.0]],
 		"spine": [[0, 0.0], [1, -14.0]], "head": [[0, 0.0], [1, -10.0]],
 		"thigh_f": [[0, 0.0], [1, -16.0]], "shin_f": [[0, 0.0], [1, 20.0]],
@@ -102,12 +104,14 @@ static func elite() -> Dictionary:
 		"@root": [[0, Vector2(10, 22)], [0.7, Vector2(8, 18)], [1, Vector2(0, 4)]]}}
 	# horizontal sweep: draw back (0.65 s), then a fast rig-driven swing
 	c["windup_sweep"] = {"len": 0.65, "loop": false, "tracks": {
-		"shoulder_f": [[0, 0.0], [1, 95.0]], "forearm_f": [[0, 0.0], [1, -20.0]], "weapon": [[0, 0.0], [1, 70.0]],
+		"shoulder_f": [[0, 0.0], [0.47, 75.0], [1, 80.0]],
+		"forearm_f": [[0, 0.0], [0.45, -17.0], [1, -13.0]],
+		"weapon": [[0, 0.0], [0.43, 76.0], [1, 75.0]],
 		"spine": [[0, 0.0], [1, -10.0]], "shoulder_b": [[0, 0.0], [1, -30.0]],
 		"thigh_f": [[0, 0.0], [1, -20.0]], "shin_f": [[0, 0.0], [1, 26.0]], "thigh_b": [[0, 0.0], [1, 14.0]],
 		"@root": [[0, Vector2.ZERO], [1, Vector2(-12, 8)]]}}
 	c["sweep"] = {"len": 0.18, "loop": false, "tracks": {
-		"shoulder_f": [[0, 95.0], [0.6, -90.0], [1, -105.0]], "forearm_f": [[0, -20.0], [1, -10.0]], "weapon": [[0, 70.0], [0.6, -20.0], [1, -30.0]],
+		"shoulder_f": [[0, 80.0], [0.6, -90.0], [1, -105.0]], "forearm_f": [[0, -13.0], [1, -10.0]], "weapon": [[0, 75.0], [0.6, -20.0], [1, -30.0]],
 		"spine": [[0, -10.0], [1, 16.0]], "shoulder_b": [[0, -30.0], [1, 30.0]],
 		"thigh_f": [[0, -20.0], [1, -34.0]], "shin_f": [[0, 26.0], [1, 40.0]], "thigh_b": [[0, 14.0], [1, 26.0]],
 		"@root": [[0, Vector2(-12, 8)], [1, Vector2(14, 14)]]}}

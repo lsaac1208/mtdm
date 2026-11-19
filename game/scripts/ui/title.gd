@@ -63,14 +63,15 @@ func _ready() -> void:
 		btn.pressed.connect(Callable(self, b[1]))
 		menu.add_child(btn)
 	help = Label.new()
-	help.text = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").CONTROLS)
+	Game.prompts_changed.connect(_refresh_help)
+	_refresh_help()
 	help.add_theme_font_size_override("font_size", 17)
 	help.add_theme_color_override("font_color", Color(0.12, 0.1, 0.08))
 	help.position = Vector2(470, 410)
 	help.visible = false
 	add_child(help)
 	var foot := Label.new()
-	foot.text = "第一章 · 序　垂直切片试玩版 v0.2.0　|　Vertical-slice demo"
+	foot.text = "第一章 · 序　垂直切片试玩版 v%s　|　Vertical-slice demo" % ProjectSettings.get_setting("application/config/version")
 	foot.add_theme_font_size_override("font_size", 14)
 	foot.add_theme_color_override("font_color", Color(0.25, 0.2, 0.16))
 	foot.position = Vector2(130, 680)
@@ -94,8 +95,11 @@ func _start() -> void:
 	Game.new_run()
 
 
-func _help() -> void:
+func _refresh_help() -> void:
 	help.text = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").CONTROLS)
+
+
+func _help() -> void:
 	help.visible = not help.visible
 	Sfx.play("ui_move", -6.0)
 
@@ -107,4 +111,4 @@ func _options() -> void:
 
 
 func _quit() -> void:
-	get_tree().quit()
+	Game.quit()

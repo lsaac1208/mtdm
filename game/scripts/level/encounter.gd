@@ -162,10 +162,10 @@ func _clear() -> void:
 		Game.boss_changed.emit(null)
 		Sfx.play("stinger_victory", 0.0, 0.0)
 		Sfx.stop_music()
-		var lvl = Game.level
-		get_tree().create_timer(3.0).timeout.connect(func():
-			if is_instance_valid(lvl) and lvl.has_method("resume_zone_music"):
-				lvl.resume_zone_music())
+		# The level owns this delay. Leaving for the ending or title cancels it.
+		var music_delay := create_tween()
+		music_delay.tween_interval(3.0)
+		music_delay.tween_callback(Game.level.resume_zone_music)
 	cleared.emit(self)
 
 

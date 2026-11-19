@@ -6,7 +6,7 @@ import os, subprocess, sys, zipfile
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 godot = os.environ.get("GODOT", "godot")
-ver = sys.argv[1] if len(sys.argv) > 1 else "0.2.0"
+ver = sys.argv[1] if len(sys.argv) > 1 else "0.3.0"
 targets = [("Linux", "linux", "TaoistWanderer.x86_64", "linux-x86_64"),
            ("Windows", "windows", "TaoistWanderer.exe", "windows-x86_64"),
            ("macOS", "macos", "TaoistWanderer.zip", "macos-universal")]

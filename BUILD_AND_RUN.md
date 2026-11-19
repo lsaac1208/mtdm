@@ -1,5 +1,24 @@
 # BUILD_AND_RUN — 道行者 / Taoist Wanderer
 
+## 0.3 release verification
+
+The three ZIPs come from one game-source commit. Run the native smoke suite on the corresponding OS after exporting. It extracts the archive into a temporary directory, starts its executable, runs the engine checks and a Normal route, and captures the actual title and village viewport. On macOS it opens the extracted app bundle through Launch Services for the title check. The suite passes an isolated settings file to each launch.
+
+```sh
+python3 tools/build/package.py 0.3.0
+python3 tools/qa/native_release.py build/TaoistWanderer-v0.3.0-macos-universal.zip build/qa/native-mac
+```
+
+For reproducible visual review, import the project first, then run the following with a display. Choose `village`, `lowland`, or `elite`. Normal gameplay HUD and sound remain enabled in the movies. Compare two recording directories with `tools/qa/review_media.py compare BEFORE AFTER village village.mp4`. The export ZIP contains the same game and test entry points. Pin Godot 4.7.2, FFmpeg with libx264, and Python with Pillow and NumPy for media review.
+
+```sh
+godot --headless --path game --import
+python3 tools/qa/review_media.py record game village build/replay evidence/v0.3/after
+godot --path game --resolution 1280x720 --fixed-fps 60 -- --test=readcap --shots="$PWD/build/qa/masks" --mute
+python3 tools/readability.py build/qa/masks build/qa/readability
+```
+
+
 ## 1. Requirements
 - **Godot 4.7.2 stable** (standard build, not .NET). Download: https://godotengine.org/download/archive/4.7.2-stable/
 - For exports: the matching **export templates** (Editor → Manage Export Templates, or unpack `Godot_v4.7.2-stable_export_templates.tpz` into `~/.local/share/godot/export_templates/4.7.2.stable/`).
@@ -8,7 +27,7 @@
 ## 2. Play from source
 ```bash
 git clone https://github.com/lsaac1208/mtdm.git
-cd mtdm && git checkout dev/vertical-slice-20261118
+cd mtdm && git switch codex/visual-polish-v03
 godot --path game            # or open game/project.godot in the editor and press F5
 ```
 The first launch imports assets (~10 s).
@@ -31,7 +50,7 @@ The first launch imports assets (~10 s).
 ## 3. Tests (headless, no window)
 ```bash
 G=godot   # path to the 4.7.2 binary
-# 32 engine-level gameplay checks (~2 min)
+# Engine-level gameplay checks (~2 min)
 $G --headless --path game -- --test=all --nohitstop --mute
 # input-driven bot plays the full route to the ending (~30 s with fixed fps)
 $G --headless --fixed-fps 60 --path game -- --test=bot --mute
@@ -52,7 +71,7 @@ Other dev flags (after `--`): `--autostart` (skip title), `--startx=<px> [--skip
 
 ## 3b. Full acceptance run (release gate)
 ```bash
-GODOT=$G PYTHON=python3 tools/acceptance.sh 0.1.3   # ~25 min; exit 0 = all gates passed
+GODOT=$G PYTHON=python3 tools/acceptance.sh 0.3.0   # ~25 min; exit 0 = all gates passed
 ```
 Needs Pillow for the contact sheet and `xvfb-run` for rendered frames (skipped otherwise). Do not override `XDG_DATA_HOME` when running it — Godot looks for export templates there.
 
@@ -66,7 +85,7 @@ $G --headless --path game --export-release "Windows" ../build/windows/TaoistWand
 ```
 One command does both exports and the zips (with `RELEASE_NOTES.md` as the player README):
 ```bash
-GODOT=$G python3 tools/build/package.py 0.1.0   # -> build/TaoistWanderer-v0.1.0-{linux,windows}-x86_64.zip
+GODOT=$G python3 tools/build/package.py 0.3.0   # -> build/TaoistWanderer-v0.3.0-*.zip
 ```
 Both presets embed the PCK (single file). Run the Linux build with `./build/linux/TaoistWanderer.x86_64`. The exported binary accepts the same test flags, e.g. `./TaoistWanderer.x86_64 --headless --fixed-fps 60 -- --test=bot --mute`.
 

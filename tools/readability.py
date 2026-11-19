@@ -1,48 +1,57 @@
-"""Figure/background readability at reduced display scales.
-Input: pairs read_<name>_with.png / read_<name>_bg.png (same frame with and without
-characters). Mask = pixels changed by the figures. Metric per scale: mean luminance
-contrast of figure pixels vs the background they cover (0-255) and the figure's
-outline coverage. Usage: python -I tools/readability.py <shots_dir> <out_dir>"""
-import sys, os, glob, json
+"""Measure each character against the exact same background in five Godot scenes."""
+import json
+import sys
+from pathlib import Path
+
 import numpy as np
 from PIL import Image, ImageDraw
-src, out = sys.argv[1], sys.argv[2]
-os.makedirs(out, exist_ok=True)
-SCALES = [1.0, 0.667, 0.5, 0.333]
-rows = []
-tiles = []
-for fw in sorted(glob.glob(os.path.join(src, "*_with.png"))):
-    name = os.path.basename(fw).split("read_")[1].replace("_with.png", "")
-    fb = glob.glob(os.path.join(src, f"*read_{name}_bg.png"))[0]
-    A = Image.open(fw).convert("RGB"); B = Image.open(fb).convert("RGB")
-    r = {"name": name}
-    for s in SCALES:
-        size = (int(A.width * s), int(A.height * s))
-        a = np.asarray(A.resize(size, Image.LANCZOS)).astype(np.float32)
-        b = np.asarray(B.resize(size, Image.LANCZOS)).astype(np.float32)
-        La = a @ [0.299, 0.587, 0.114]; Lb = b @ [0.299, 0.587, 0.114]
-        diff = np.abs(a - b).max(axis=2)
-        mask = diff > 18
-        n = int(mask.sum())
-        contrast = float(np.abs(La - Lb)[mask].mean()) if n else 0.0
-        r[f"contrast@{int(round(s * 100))}"] = round(contrast, 1)
-        r[f"pixels@{int(round(s * 100))}"] = n
-        if s == 0.333:
-            tiles.append((name, Image.fromarray(a.astype(np.uint8))))
-    rows.append(r)
-json.dump(rows, open(os.path.join(out, "readability.json"), "w"), indent=1)
-w = 427
-sheet = Image.new("RGB", (w * len(tiles), 260), (20, 20, 20))
-d = ImageDraw.Draw(sheet)
-for i, (n, im) in enumerate(tiles):
-    sheet.paste(im, (i * w, 20)); d.text((i * w + 4, 4), n + " @33%", fill=(255, 255, 0))
-sheet.save(os.path.join(out, "readability_33pct.png"))
-ok = all(r["contrast@33"] >= 20 and r["pixels@33"] >= 300 for r in rows)
-with open(os.path.join(out, "READABILITY.md"), "w") as md:
-    md.write("# Readability at reduced display scale\n\nSame frame rendered with and without the hero + one enemy; mask = pixels the figures change. ")
-    md.write("Contrast = mean |ΔL| (0–255) between figure pixels and the background they cover. Gate: contrast@33% ≥ 20 and ≥ 300 figure pixels @33%.\n\n")
-    md.write("| zone / enemy | " + " | ".join(f"contrast@{int(round(s*100))}%" for s in SCALES) + " | pixels@33% |\n|---|" + "---|" * (len(SCALES) + 1) + "\n")
-    for r in rows:
-        md.write(f"| {r['name']} | " + " | ".join(str(r[f'contrast@{int(round(s*100))}']) for s in SCALES) + f" | {r['pixels@33']} |\n")
-    md.write(f"\n**Result: {'PASS' if ok else 'FAIL'}** · sheet: readability_33pct.png\n")
-print(json.dumps(rows, ensure_ascii=False)); print("PASS" if ok else "FAIL")
+
+ZONES = {"village": "grunt", "road": "crawler", "lowland": "spitter", "temple": "husk", "burial": "elite"}
+SCALES = (100, 67, 50, 33)
+
+
+def compare(foreground, background, scale):
+    dims = tuple(round(n * scale / 100) for n in foreground.size)
+    fg = np.asarray(foreground.resize(dims, Image.Resampling.LANCZOS), dtype=float)
+    bg = np.asarray(background.resize(dims, Image.Resampling.LANCZOS), dtype=float)
+    difference = fg - bg
+    mask = np.max(np.abs(difference), axis=2) > 18
+    luma = difference @ [0.299, 0.587, 0.114]
+    return {"pixels": int(mask.sum()), "contrast": round(float(np.abs(luma[mask]).mean()), 1) if mask.any() else 0}
+
+
+def main(src, out):
+    out.mkdir(parents=True, exist_ok=True)
+    canvas = Image.new("RGB", (854, 3 * 265), "#242424")
+    draw = ImageDraw.Draw(canvas)
+    rows = []
+    lines = ["# Five-zone figure readability", "",
+             "Godot renders four plates without advancing simulation. Pixels with an RGB channel difference above 18 form the mask. Contrast is the mean absolute luminance difference from the background, on a 0–255 scale. The historical joint gate is 300 pixels and contrast 20 at 33%. Each figure must also contribute at least 75 changed pixels and contrast 20 independently.", "",
+             "| Zone | Figure | Pixels at 33% | Contrast at 33% | Result |", "| --- | --- | ---: | ---: | --- |"]
+    for index, (zone, enemy) in enumerate(ZONES.items()):
+        with Image.open(src / f"read_{enemy}_bg.png") as image:
+            bg = image.convert("RGB")
+        for plate in ("with", "hero", "enemy"):
+            with Image.open(src / f"read_{enemy}_{plate}.png") as image:
+                fg = image.convert("RGB")
+            if fg.size != (1280, 720) or fg.size != bg.size:
+                raise ValueError(f"Expected matching 1280×720 captures for {zone}/{plate}, got {fg.size} and {bg.size}")
+            by_scale = {str(s): compare(fg, bg, s) for s in SCALES}
+            reduced = by_scale["33"]
+            passed = reduced["pixels"] >= (300 if plate == "with" else 75) and reduced["contrast"] >= 20
+            rows.append({"zone": zone, "plate": plate, "measurements": by_scale, "pass": passed})
+            lines.append(f"| {zone} | {plate if plate != 'enemy' else enemy} | {reduced['pixels']} | {reduced['contrast']} | {'PASS' if passed else 'FAIL'} |")
+            if plate == "with":
+                x, y = (index % 2) * 427, (index // 2) * 265
+                canvas.paste(fg.resize((427, 240), Image.Resampling.LANCZOS), (x, y + 20))
+                draw.text((x + 4, y + 2), f"{zone} / {enemy}", fill="white")
+    canvas.save(out / "readability_33pct.png")
+    (out / "readability.json").write_text(json.dumps(rows, indent=2) + "\n")
+    (out / "READABILITY.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    passed = all(row["pass"] for row in rows)
+    print("PASS" if passed else "FAIL")
+    return 0 if passed else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(Path(sys.argv[1]), Path(sys.argv[2])))

@@ -15,6 +15,8 @@ var cd := 1.0
 var phase := 1
 var since_hit := 0.0
 var chain := ""
+# Replay can supply a fixed move order at the normal AI decision point.
+var heavy_selector: Callable
 var summoned := false
 
 
@@ -151,7 +153,7 @@ func _ai(delta: float) -> void:
 				velocity.x = 0.0
 				still_anim()
 				if cd <= 0.0:
-					_start("windup_chop" if randf() < 0.55 else "windup_sweep")
+					_start(heavy_selector.call() if heavy_selector.is_valid() else ("windup_chop" if randf() < 0.55 else "windup_sweep"))
 		"lunge":
 			velocity.x = facing * 300.0 * (1.0 - state_t / 0.45)
 			walk_anim(delta, 1.2, 6.0, 0.03)
