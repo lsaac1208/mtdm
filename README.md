@@ -2,6 +2,8 @@
 
 ## 试玩与开发入口
 
+> **English developer handoff:** [HANDOFF.md](HANDOFF.md) · [CHANGELOG.md](CHANGELOG.md) · latest pre-release [v0.3.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1) (branch `claude/post-codex-continuation`; not a stable release — Windows/macOS on-device, human playtest, controller and audio acceptance pending).
+
 **当前可玩工程为 Godot 4.7.2 的 0.3.0 视觉打磨版。** 从荒村向右走，第一次遭遇能体验跑跳、三段斩与弹反；完整路线穿过五个区域，终点为尸将与光门。
 
 | 想做什么 | 入口 |
