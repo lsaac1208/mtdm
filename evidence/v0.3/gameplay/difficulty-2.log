@@ -1,0 +1,5 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+DEMO_COMPLETE time=04:49 deaths=7 kills=33 parries=16
+TELEMETRY {"damage":{"hazard:puddle":149.0,"伏爬者:pounce":524.5,"封印残尸:attack":23.4,"尸将:chop":19.5,"尸将:ground_shock":36.4,"尸将:sweep":85.8,"普通尸祟:attack":406.05,"瘴吐者:swipe":7.8,"瘴吐者:taint":139.23},"deaths":["普通尸祟:attack","hazard:puddle","普通尸祟:attack","hazard:puddle","伏爬者:pounce","伏爬者:pounce","伏爬者:pounce"],"encounters":{"e1_village":{"damage":26.0,"deaths":0,"start":0.0,"time":4.51666666666673},"e3_group_a":{"damage":88.95,"deaths":1.0,"start":0.0,"time":4.7166666666664},"e5_group_c":{"damage":464.93,"deaths":3.0,"start":0.0,"time":12.5499999999993},"e7_group_b":{"damage":36.4,"deaths":0,"start":0.0,"time":7.26666666667245},"e7c_burial_wave":{"damage":563.5,"deaths":3.0,"start":0.0,"time":16.1833333333462},"e8_elite":{"damage":141.7,"deaths":0,"start":0.0,"time":51.7499999999893}}}
+TEST bot_completes_demo           PASS  sim_time=290s deaths=7 kills=33 parries=16 run_time=04:49
+TESTS DONE pass=1 fail=0

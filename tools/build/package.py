@@ -1,6 +1,6 @@
-"""Export Linux + Windows builds and zip them with player docs.
+"""Export native desktop builds and zip them with the player documentation.
 
-Usage: GODOT=/path/to/godot python3 tools/build/package.py [version]
+Usage: GODOT=/path/to/godot python3 tools/build/package.py [version] [linux|windows|macos ...]
 """
 import os, subprocess, sys, zipfile
 
@@ -10,14 +10,20 @@ ver = sys.argv[1] if len(sys.argv) > 1 else "0.3.0"
 targets = [("Linux", "linux", "TaoistWanderer.x86_64", "linux-x86_64"),
            ("Windows", "windows", "TaoistWanderer.exe", "windows-x86_64"),
            ("macOS", "macos", "TaoistWanderer.zip", "macos-universal")]
+requested = set(sys.argv[2:]) or {row[1] for row in targets}
+unknown = requested - {row[1] for row in targets}
+if unknown:
+    sys.exit("Unknown platform: " + ", ".join(sorted(unknown)))
 for preset, sub, binary, tag in targets:
+    if sub not in requested:
+        continue
     out_dir = os.path.join(root, "build", sub)
     os.makedirs(out_dir, exist_ok=True)
     out = os.path.join(out_dir, binary)
     if os.path.exists(out):
         os.remove(out)   # never let a stale binary survive a failed export
     subprocess.run([godot, "--headless", "--path", os.path.join(root, "game"), "--export-release", preset, out], check=True,
-                   stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                   stdout=subprocess.DEVNULL)
     if not os.path.exists(out):
         sys.exit("export failed: " + preset)
     zpath = os.path.join(root, "build", f"TaoistWanderer-v{ver}-{tag}.zip")

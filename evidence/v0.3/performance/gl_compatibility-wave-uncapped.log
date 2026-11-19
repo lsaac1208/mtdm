@@ -1,0 +1,24 @@
+renderer=gl_compatibility driver=opengl3 scene=wave difficulty=Normal resolution=1280x720 frame_limit=0 vsync=project-default
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6
+REPLAY_START frame=1
+REPLAY tick=0 x=9051 hero=attack enemies=[]
+REPLAY tick=30 x=9082 hero=run enemies=[]
+REPLAY tick=60 x=9160 hero=attack enemies=["grunt/chase"]
+REPLAY tick=90 x=9244 hero=attack enemies=["grunt/chase", "crawler/spawn"]
+REPLAY tick=120 x=9256 hero=idle enemies=["grunt/windup", "crawler/alert"]
+REPLAY tick=150 x=9269 hero=attack enemies=["grunt/stagger", "crawler/chase"]
+REPLAY tick=180 x=9269 hero=attack enemies=["grunt/windup", "crawler/prep"]
+REPLAY tick=210 x=9280 hero=block enemies=["grunt/stagger", "crawler/stagger"]
+REPLAY tick=240 x=9280 hero=attack enemies=["crawler/prep", "grunt/chase"]
+REPLAY tick=270 x=9280 hero=attack enemies=["crawler/retreat", "grunt/chase"]
+REPLAY tick=300 x=9280 hero=block enemies=["crawler/retreat", "grunt/chase", "crawler/spawn"]
+REPLAY tick=330 x=9280 hero=attack enemies=["crawler/chase", "grunt/attack", "crawler/chase", "grunt/chase"]
+REPLAY tick=360 x=9280 hero=attack enemies=["crawler/prep", "grunt/recover", "crawler/prep", "grunt/chase"]
+REPLAY tick=390 x=9267 hero=hit enemies=["crawler/pounce", "grunt/stagger", "crawler/pounce", "grunt/chase"]
+REPLAY tick=420 x=9261 hero=attack enemies=["crawler/retreat", "grunt/windup", "crawler/retreat", "grunt/stagger"]
+REPLAY tick=450 x=9280 hero=hit enemies=["crawler/chase", "grunt/attack", "crawler/chase", "grunt/stagger"]
+REPLAY tick=480 x=9280 hero=block enemies=["crawler/chase", "grunt/recover", "crawler/chase", "grunt/attack"]
+REPLAY tick=510 x=9259 hero=hit enemies=["crawler/prep", "grunt/chase", "crawler/pounce", "grunt/recover"]
+FRAME_MS device=Apple M6 display=(1280.0, 720.0) samples=3066 presented=[p50=2.99 p95=4.67 p99=5.24] gpu=[unavailable]
+REPLAY_END frame=3068

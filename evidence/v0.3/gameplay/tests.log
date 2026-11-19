@@ -1,0 +1,82 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+TEST move_right_1s                PASS  moved=249 px (spec 260 px/s)
+TEST jump_and_land                PASS  apex=144 px
+TEST dash                         PASS  dash dist=91 (left)
+TEST hslash_whiffs_crawler        PASS  crawler hp 26 -> 26
+TEST hslash_hits_grunt            PASS  grunt hp 34 -> 24
+TEST downslash_hits_crawler       PASS  crawler hp 26 -> 10
+TEST dash_slash_hits_crawler      PASS  crawler hp -> 12
+TEST grunt_staggers_on_light_hit  PASS  state=stagger
+TEST combo_kills_grunt            PASS
+TEST parry_on_timed_guard         PASS  parries=1 hp=100
+TEST parry_staggers_enemy         PASS  grunt state=stagger
+TEST husk_seal_burst_triggers     PASS  after melee chain, state=burst_prep
+TEST husk_burst_punishes_greed    PASS  player hp 100 -> 60
+TEST talisman_no_seal_pressure    PASS  seal=0
+TEST spitter_fires_parabolic_glob PASS  t=2.3s
+TEST glob_leaves_taint_puddle     PASS
+TEST talisman_interrupts_spitter  PASS  state=stagger
+TEST elite_windup_readable        PASS  windup_sweep lead=0.65s (spec 0.65–0.85)
+TEST elite_armor_ignores_light_hit PASS  state chase -> chase
+DEATH x=600 zone=Ruined Village cp=0
+TEST player_dies                  PASS
+TEST respawn_at_checkpoint        PASS  x=310 cp=260 hp=100
+TEST encounter_locks_on_trigger   PASS  state=active
+TEST encounter_clears             PASS  state=cleared alive=0
+TEST route_e1_village             PASS
+TEST route_e2_crawler             PASS
+TEST route_e3_group_a             PASS
+TEST route_e4_spitter             PASS
+TEST route_e5_group_c             PASS
+TEST route_e6_husk                PASS
+TEST route_e7_group_b             PASS
+TEST route_e7c_burial_wave        PASS
+TEST route_e8_elite               PASS
+DEMO_COMPLETE time=00:20 deaths=0 kills=22 parries=0
+TEST demo_completes               PASS  scene=res://scenes/ending.tscn
+TEST restart_keeps_progress       PASS  x=2460 cp1=2400
+DEMO_COMPLETE time=00:00 deaths=0 kills=0 parries=0
+TEST new_run_resets_state         PASS  cleared=0 cp=0 x=320 alive=9 actors=10
+TEST no_stale_actors              PASS  stale=0
+TEST spawns_on_surfaces           PASS  []
+TEST gamepad_actions_fire         PASS  []
+TEST hero_anim_no_pops            PASS  max body-centre jump 23.0 px at  f91
+TEST enemies_cross_ledges         PASS  []
+SPEC player hurtbox 44x138                            OK   (44.0, 138.0)
+SPEC player run 260 / dash ~520                       OK   260 / 540
+SPEC player sprite ~150 px tall                       OK   155 px
+SPEC slash band 55..145 px                            OK   55..145
+SPEC down slash reaches ground                        OK   bottom 0
+SPEC grunt hurtbox 46x124                             OK   (46.0, 124.0)
+SPEC grunt visual height ~132 px                      OK   135 px
+SPEC crawler hurtbox 92x46                            OK   (92.0, 46.0)
+SPEC crawler visual height ~54 px                     OK   55 px
+SPEC husk hurtbox 50x138                              OK   (50.0, 138.0)
+SPEC husk visual height ~144 px                       OK   150 px
+SPEC spitter hurtbox 52x130                           OK   (52.0, 130.0)
+SPEC spitter visual height ~138 px                    OK   143 px
+SPEC elite hurtbox 72x172                             OK   (72.0, 172.0)
+SPEC elite visual height ~180 px                      OK   188 px
+SPEC crawler top < slash band bottom (whiff)          OK
+SPEC grunt wind-up 0.35-0.45 s                        OK   0.40 s
+SPEC husk seal burst radius ~110 px                   OK   115 px
+SPEC taint puddle r=65 px, 4.5 s                      OK   65 px / 4.5 s
+SPEC elite chop/sweep wind-up 0.65-0.85 s (phase 1)   OK   0.80 / 0.65 s (see elite_windup_readable)
+SPEC elite armour: light hits never stagger           OK   interrupt_poise=9999
+TEST spec_conformance             PASS  21/21 rows
+TEST settings_persist             PASS  volume 0.35
+TEST rebind_key_works_and_persists PASS  H fired=true persisted=true
+TEST shake_setting_respected      PASS  offset=(0.0, 0.0)
+TEST hud_and_active_sign_bindings PASS  rebind=true drift=true pad=true keyboard=true reset=true
+TEST audio_buses                  PASS  music=0.30
+TEST options_menu_opens           PASS
+FAIR sweep_jump ok_press_times=[0.2, 0.26, 0.32, 0.38, 0.44, 0.5]
+FAIR chop_dash ok_press_times=[0.56, 0.62, 0.68]
+FAIR sweep_dash ok_press_times=[0.5, 0.56, 0.62]
+TEST elite_sweep_jumpable         PASS  window ~0.36s
+TEST elite_chop_escapable         PASS  window ~0.18s
+TEST elite_sweep_dash_through     PASS  window ~0.18s
+TEST boss_music_flow              PASS  start=true phase2=true resume=true (now music_temple)
+TEST difficulty_scales            PASS  dmg 11.0 / 20.0 / 26.0, elite poise 77.0 / 110.0 / 132.0
+TESTS DONE pass=52 fail=0

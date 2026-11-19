@@ -1,0 +1,18 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6
+REPLAY_START frame=1
+REPLAY tick=0 x=10240 hero=idle enemies=["elite/chase"]
+REPLAY tick=30 x=10240 hero=idle enemies=["elite/chase"]
+REPLAY tick=60 x=10355 hero=run enemies=["elite/chase"]
+REPLAY tick=90 x=10413 hero=idle enemies=["elite/windup_sweep", "grunt/windup"]
+REPLAY tick=120 x=10337 hero=hit enemies=["elite/recover_sweep", "grunt/attack"]
+REPLAY tick=150 x=10332 hero=block enemies=["elite/recover_sweep", "grunt/recover"]
+REPLAY tick=180 x=10332 hero=block enemies=["elite/chase", "grunt/chase"]
+REPLAY tick=210 x=10332 hero=idle enemies=["elite/chase", "grunt/windup"]
+REPLAY tick=240 x=10311 hero=hit enemies=["elite/windup_sweep", "grunt/attack"]
+REPLAY tick=270 x=10311 hero=block enemies=["elite/windup_sweep", "grunt/recover"]
+REPLAY tick=300 x=10301 hero=block enemies=["elite/recover_sweep", "grunt/chase"]
+REPLAY tick=330 x=10301 hero=idle enemies=["elite/recover_sweep", "grunt/windup"]
+REPLAY tick=360 x=10280 hero=block enemies=["elite/chase", "grunt/recover"]
+REPLAY tick=390 x=10280 hero=block enemies=["elite/chase", "grunt/recover"]
+ERROR: Missing key frame for elite

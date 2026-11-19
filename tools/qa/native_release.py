@@ -66,13 +66,15 @@ def test_package(archive, out, expected_sha256=None):
 
         def run(name, flags, expected, render=False, timeout=300):
             log = out / (name + ".log")
-            pictures = out / name
+            pictures = root / (name + "-shots")
             pictures.mkdir(exist_ok=True)
             godot_flags = ["--resolution", "1280x720"] if render else ["--headless"]
             if os.name == "nt" and render:
                 # Microsoft-hosted Windows runners have no accelerated desktop GPU.
                 # Mesa's native OpenGL implementation is installed by the workflow.
                 godot_flags += ["--rendering-driver", "opengl3"]
+            if os.getenv("CI"):
+                godot_flags += ["--audio-driver", "Dummy"]
             game_flags = [x.replace("{out}", pictures.as_posix()) for x in flags]
             engine_log = root / (name + "-engine.log")
             cmd = [str(app), *godot_flags, "--fixed-fps", "60", "--log-file", str(engine_log),
@@ -100,6 +102,10 @@ def test_package(archive, out, expected_sha256=None):
                     log.write_text(captured, encoding="utf-8")
             bad = re.findall(r"(?m)^.*(?:SCRIPT ERROR:|\bERROR:|\bFAIL\b|leaked at exit).*$", captured)
             images = sorted(pictures.glob("*.png"))
+            destination = out / name
+            destination.mkdir(exist_ok=True)
+            for picture in images:
+                shutil.copy2(picture, destination / picture.name)
             if timed_out:
                 bad.append(f"Case exceeded {timeout} seconds")
             if name == "engine":

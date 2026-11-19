@@ -1,0 +1,19 @@
+gl_compatibility wave --gpu-profile; total_ms_messages=8; observed_ms=0.0
+OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6
+FRAME_MS device=Apple M6 display=(1280.0, 720.0) samples=529 presented=[p50=16.71 p95=19.59 p99=22.56] gpu=[unavailable]
+REPLAY_END frame=531
+
+gl_compatibility elite --gpu-profile; total_ms_messages=7; observed_ms=0.0
+OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6
+FRAME_MS device=Apple M6 display=(1280.0, 720.0) samples=409 presented=[p50=16.69 p95=19.01 p99=20.43] gpu=[unavailable]
+REPLAY_END frame=411
+
+mobile wave --gpu-profile; total_ms_messages=9; observed_ms=0.0
+Metal 4.0 - Forward Mobile - Using Device #0: Apple - Apple M6 (Apple9)
+FRAME_MS device=Apple M6 (Apple9) display=(1280.0, 720.0) samples=523 presented=[p50=16.69 p95=19.39 p99=22.47] gpu=[unavailable]
+REPLAY_END frame=525
+
+mobile elite --gpu-profile; total_ms_messages=7; observed_ms=0.0
+Metal 4.0 - Forward Mobile - Using Device #0: Apple - Apple M6 (Apple9)
+FRAME_MS device=Apple M6 (Apple9) display=(1280.0, 720.0) samples=410 presented=[p50=16.67 p95=18.53 p99=20.83] gpu=[unavailable]
+REPLAY_END frame=412
