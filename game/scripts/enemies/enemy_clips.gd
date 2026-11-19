@@ -18,6 +18,8 @@ static func for_type(t: String) -> Dictionary:
 			return spitter()
 		"husk":
 			return husk()
+		"crawler":
+			return crawler()
 	return {}
 
 
@@ -31,6 +33,8 @@ static func pose_map(t: String) -> Dictionary:
 		"spitter":
 			return {"spitter_idle": "walk", "spitter_side": "walk", "spitter_detect": "alert", "spitter_windup": "windup",
 				"spitter_recover": "recover", "spitter_hit": "hit"}
+		"crawler":
+			return {"crawler_idle": "walk", "crawler_crawl": "walk", "crawler_alert": "alert", "crawler_retreat": "walk"}
 		"husk":
 			return {"husk_idle": "walk", "husk_walk": "walk", "husk_side": "windup", "husk_hit": "hit", "husk_awaken": "awaken"}
 	return {}
@@ -194,4 +198,35 @@ static func husk() -> Dictionary:
 	c["hit"] = {"len": 0.5, "loop": false, "tracks": {
 		"spine": [[0, -14.0], [1, 0.0]], "head": [[0, -10.0], [1, 0.0]], "shoulder_f": [[0, 40.0], [1, 0.0]],
 		"@root": [[0, Vector2(-5, 2)], [1, Vector2.ZERO]]}}
+	return c
+
+
+static func crawler() -> Dictionary:
+	var c := {}
+	c["idle"] = {"len": 1.6, "loop": true, "tracks": {
+		"spine": [[0, 0.0], [0.5, -3.0], [1, 0.0]], "head": [[0, 0.0], [0.3, -8.0], [0.6, 4.0], [1, 0.0]],
+		"@root": [[0, Vector2.ZERO], [0.5, Vector2(0, -1.5)], [1, Vector2.ZERO]]}}
+	# fast diagonal-pair scuttle: long forelimbs reach and drag the body forward
+	var reach := [[0.0, -38.0], [0.5, 26.0]]
+	var claw := [[0.0, -10.0], [0.3, 20.0], [0.7, -30.0]]
+	c["walk"] = {"len": 0.38, "loop": true, "tracks": {
+		"fore_f": _c(reach, 0.0), "claw_f": _c(claw, 0.0),
+		"fore_b": _c(reach, 0.5), "claw_b": _c(claw, 0.5),
+		"hind_b": _c([[0.0, 22.0], [0.5, -18.0]], 0.0), "hfoot_b": _c([[0.0, 0.0], [0.6, -24.0]], 0.0),
+		"hind_f": _c([[0.0, 22.0], [0.5, -18.0]], 0.5), "hfoot_f": _c([[0.0, 0.0], [0.6, -24.0]], 0.5),
+		"spine": [[0, -4.0], [0.25, 3.0], [0.5, -4.0], [0.75, 3.0], [1, -4.0]],
+		"head": [[0, 4.0], [0.5, -4.0], [1, 4.0]],
+		"@root": [[0, Vector2(0, 0)], [0.25, Vector2(0, -4)], [0.5, Vector2(0, 0)], [0.75, Vector2(0, -4)], [1, Vector2(0, 0)]]}}
+	c["alert"] = {"len": 0.3, "loop": false, "tracks": {
+		"spine": [[0, 0.0], [1, -26.0]], "head": [[0, 0.0], [1, -20.0]],
+		"fore_f": [[0, 0.0], [1, -50.0]], "claw_f": [[0, 0.0], [1, -40.0]],
+		"fore_b": [[0, 0.0], [1, -30.0]],
+		"@root": [[0, Vector2.ZERO], [1, Vector2(0, -8)]]}}
+	# coiled crouch before the pounce
+	c["prep"] = {"len": 0.26, "loop": false, "tracks": {
+		"spine": [[0, 0.0], [1, 10.0]], "head": [[0, 0.0], [1, 12.0]],
+		"hind_b": [[0, 0.0], [1, 30.0]], "hfoot_b": [[0, 0.0], [1, -30.0]],
+		"hind_f": [[0, 0.0], [1, 30.0]], "hfoot_f": [[0, 0.0], [1, -30.0]],
+		"fore_f": [[0, 0.0], [1, 20.0]], "fore_b": [[0, 0.0], [1, 20.0]],
+		"@root": [[0, Vector2.ZERO], [1, Vector2(-6, 8)]]}}
 	return c

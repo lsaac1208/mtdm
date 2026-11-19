@@ -27,6 +27,10 @@ def poly_mask(poly):
     return np.asarray(m) > 0
 
 
+for poly in getattr(D, "ERASE_GREY", []):
+    labg = cv2.cvtColor(img[..., :3], cv2.COLOR_RGB2LAB).astype(np.int32)
+    grey = np.hypot(labg[..., 1] - 128, labg[..., 2] - 128) < 14
+    alpha &= ~(poly_mask(poly) & grey & (labg[..., 0] > 90))
 assigned = np.zeros((H, W), bool)
 own = {}
 for name, z, poly, bones in D.PARTS:

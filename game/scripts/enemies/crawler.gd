@@ -9,6 +9,8 @@ var landed := false
 
 
 func _init() -> void:
+	rig_type = "crawler"
+	walk_speed = 215.0
 	enemy_name = "伏爬者"
 	max_hp = 26.0
 	max_poise = 6.0
@@ -71,6 +73,7 @@ func _ai(delta: float) -> void:
 				velocity.x = 0.0
 				set_state("prep")
 				vis.set_pose("crawler_idle", 0.04)
+				anim("prep", 0.05, true)
 				vis.squash = Vector2(1.12, 0.85)
 				telegraph.flare(Vector2(56, -34), 0.26, Color(1, 0.45, 0.2))
 				telegraph.danger(Rect2(10, -60, 230, 60), 0.26)
