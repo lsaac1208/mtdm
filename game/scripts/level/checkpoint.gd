@@ -20,6 +20,7 @@ func _ready() -> void:
 	hearth.show_behind_parent = true
 	add_child(hearth)
 	embers = CPUParticles2D.new()
+	embers.texture = Fx.dot_texture()
 	embers.amount = 26
 	embers.lifetime = 1.6
 	embers.position = Vector2(0, -22)
@@ -28,8 +29,8 @@ func _ready() -> void:
 	embers.initial_velocity_min = 30
 	embers.initial_velocity_max = 80
 	embers.gravity = Vector2(6, -20)
-	embers.scale_amount_min = 2
-	embers.scale_amount_max = 4
+	embers.scale_amount_min = 0.133
+	embers.scale_amount_max = 0.267
 	var g := Gradient.new()
 	g.set_color(0, Color(1, 0.75, 0.3, 1))
 	g.set_color(1, Color(0.8, 0.2, 0.05, 0))

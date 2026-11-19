@@ -86,6 +86,12 @@ func _make_visual() -> PoseSprite:
 
 
 var _last_clip_pos := 0.0
+## Seconds the hero keeps the profile sword guard instead of the relaxed
+## three-quarter idle. The relaxed idle sheet is drawn facing the viewer, so
+## dropping into it between strikes made the body swing round for one beat.
+var guard_t := 0.0
+const GUARD_HOLD := 2.6
+const GUARD_RANGE := 430.0
 
 
 func _ready() -> void:
@@ -828,6 +834,19 @@ func _spawn_ghost() -> void:
 	tw.tween_callback(g.queue_free)
 
 
+func _enemy_near() -> bool:
+	if Game.level == null or not is_instance_valid(Game.level):
+		return false
+	var actors := Game.level.get_node_or_null("Actors")
+	if actors == null:
+		return false
+	for n in actors.get_children():
+		if n is Enemy and n.aggro and n.state != "dead" \
+				and absf(n.global_position.x - global_position.x) < GUARD_RANGE:
+			return true
+	return false
+
+
 func _animate(delta: float) -> void:
 	vis.facing = facing
 	vis.on_ground = is_on_floor()
@@ -851,9 +870,17 @@ func _animate(delta: float) -> void:
 	vis.tint = Color(0.82, 1.0, 0.7) if in_taint > 0.0 else Color.WHITE
 	vis.alpha = 0.7 if (invuln > 0.0 and state != "dash" and state != "dash_attack" and int(invuln * 20) % 2 == 0) else 1.0
 	vis.clip_speed_scale = 1.0
+	if state in ["attack", "dash_attack", "jump_attack", "block", "hit", "talisman", "gourd", "beads_a", "beads_b"] or _enemy_near():
+		guard_t = GUARD_HOLD
+	else:
+		guard_t = maxf(0.0, guard_t - delta)
 	match state:
 		"idle":
-			vis.play_clip("idle", 0.18)
+			if guard_t > 0.0:
+				vis.set_pose("hero_strike_settle", 0.0)
+				vis.breathe = 0.010
+			else:
+				vis.play_clip("idle", 0.18)
 		"run":
 			var spd := absf(velocity.x)
 			if spd < 170.0:

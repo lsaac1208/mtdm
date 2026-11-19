@@ -14,6 +14,7 @@ var trail: CPUParticles2D
 func _ready() -> void:
 	z_index = 11
 	trail = CPUParticles2D.new()
+	trail.texture = Fx.dot_texture()
 	trail.amount = 30
 	trail.lifetime = 0.5
 	trail.local_coords = false
@@ -22,8 +23,8 @@ func _ready() -> void:
 	trail.initial_velocity_min = 10
 	trail.initial_velocity_max = 50
 	trail.gravity = Vector2(0, 500)
-	trail.scale_amount_min = 3
-	trail.scale_amount_max = 6
+	trail.scale_amount_min = 0.200
+	trail.scale_amount_max = 0.400
 	var g := Gradient.new()
 	g.set_color(0, Color(0.55, 0.72, 0.18, 0.9))
 	g.set_color(1, Color(0.25, 0.35, 0.1, 0))

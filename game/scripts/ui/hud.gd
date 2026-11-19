@@ -209,7 +209,14 @@ func _process(delta: float) -> void:
 		var bt: float = maxf(0.0, boss.hp) / boss.max_hp
 		boss_lag = maxf(bt, boss_lag - delta * 0.25)
 	hint_t = maxf(0.0, hint_t - delta)
-	var hy := -200.0 if (boss and is_instance_valid(boss)) else -132.0
+	# During the boss fight the bottom band holds the boss bar and the fight
+	# itself fills the ground line, so the hint moves under the top HUD
+	# instead of covering both fighters' feet.
+	var boss_on: bool = boss != null and is_instance_valid(boss)
+	var anchor := 0.0 if boss_on else 1.0
+	var hy := 238.0 if boss_on else -132.0   # below the boss title card
+	hint_panel.anchor_top = anchor
+	hint_panel.anchor_bottom = anchor
 	hint_panel.offset_top = hy
 	hint_panel.offset_bottom = hy + 48.0
 	hint_panel.modulate.a = lerpf(hint_panel.modulate.a, 1.0 if hint_t > 0.0 else 0.0, minf(1.0, delta * 8.0))

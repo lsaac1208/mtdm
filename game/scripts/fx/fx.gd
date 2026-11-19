@@ -108,6 +108,28 @@ static func ring(pos: Vector2, r0: float, r1: float, color: Color, life := 0.4, 
 	return r
 
 
+static var _dot: Texture2D
+
+
+## Soft round brush dab. Untextured CPU particles render as hard squares,
+## which read as digital noise against the painted scenes.
+static func dot_texture() -> Texture2D:
+	if _dot == null:
+		var g := Gradient.new()
+		g.set_color(0, Color(1, 1, 1, 1))
+		g.set_color(1, Color(1, 1, 1, 0))
+		g.add_point(0.55, Color(1, 1, 1, 0.85))
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		t.width = 24
+		t.height = 24
+		_dot = t
+	return _dot
+
+
 static func particles(pos: Vector2, amount: int, color: Color, speed := 220.0, spread := 180.0,
 		dir := Vector2.UP, gravity := 600.0, life := 0.5, size := 4.0, z := 8) -> void:
 	var p := CPUParticles2D.new()
@@ -121,8 +143,10 @@ static func particles(pos: Vector2, amount: int, color: Color, speed := 220.0, s
 	p.initial_velocity_min = speed * 0.4
 	p.initial_velocity_max = speed
 	p.gravity = Vector2(0, gravity)
-	p.scale_amount_min = size * 0.5
-	p.scale_amount_max = size
+	p.texture = dot_texture()
+	# the dab's opaque core is ~2/3 of its 24 px texture
+	p.scale_amount_min = size * 0.5 / 15.0
+	p.scale_amount_max = size / 15.0
 	p.color = color
 	var ramp := Gradient.new()
 	ramp.set_color(0, color)
@@ -244,7 +268,24 @@ static func kick(vec: Vector2, dur := 0.11) -> void:
 		Game.level.kick(vec, dur)
 
 
+static var _recent_numbers: Array = []   # [Vector2 spawn pos, msec]
+
+
+## Stack numbers that land on the same target within a short window so a
+## combo reads as a rising column instead of digits printed over each other.
+static func _number_slot(pos: Vector2) -> Vector2:
+	var now := Time.get_ticks_msec()
+	_recent_numbers = _recent_numbers.filter(func(e): return now - int(e[1]) < 420)
+	var lift := 0
+	for e in _recent_numbers:
+		if absf((e[0] as Vector2).x - pos.x) < 70.0 and absf((e[0] as Vector2).y - pos.y) < 90.0:
+			lift += 1
+	_recent_numbers.append([pos, now])
+	return pos + Vector2(float(lift % 2) * 14.0 - 7.0 if lift > 0 else 0.0, -28.0 * float(mini(lift, 4)))
+
+
 static func damage_number(pos: Vector2, amount: float, dir := 1, style := "normal") -> void:
+	pos = _number_slot(pos)
 	var l := Label.new()
 	l.text = str(maxi(1, int(roundf(amount))))
 	var font_sz := 24
@@ -271,8 +312,8 @@ static func damage_number(pos: Vector2, amount: float, dir := 1, style := "norma
 	l.add_theme_color_override("font_color", col)
 	l.add_theme_color_override("font_outline_color", outline)
 	l.add_theme_constant_override("outline_size", 6 if style == "normal" else 7)
-	var jitter_x := randf_range(-10.0, 10.0)
-	var jitter_y := randf_range(-8.0, 8.0)
+	var jitter_x := randf_range(-4.0, 4.0)
+	var jitter_y := randf_range(-3.0, 3.0)
 	l.size = Vector2(120, 46)
 	l.pivot_offset = Vector2(60, 23)
 	l.position = pos + Vector2(-60.0 + jitter_x, -23.0 + jitter_y)

@@ -22,6 +22,7 @@ func _ready() -> void:
 	spr.rotation = deg_to_rad(90 * dir)
 	add_child(spr)
 	trail = CPUParticles2D.new()
+	trail.texture = Fx.dot_texture()
 	trail.amount = 40
 	trail.lifetime = 0.35
 	trail.local_coords = false
@@ -30,8 +31,8 @@ func _ready() -> void:
 	trail.initial_velocity_min = 30
 	trail.initial_velocity_max = 90
 	trail.gravity = Vector2(0, -80)
-	trail.scale_amount_min = 3
-	trail.scale_amount_max = 7
+	trail.scale_amount_min = 0.200
+	trail.scale_amount_max = 0.467
 	var g := Gradient.new()
 	g.set_color(0, Color(1, 0.85, 0.4, 1))
 	g.set_color(1, Color(0.8, 0.2, 0.05, 0))

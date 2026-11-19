@@ -83,6 +83,22 @@ func _run() -> void:
 			await _frames(2)
 		Game.quit()
 		return
+	if only == "gatecap":
+		# the sealed and the opened end gate, plus an encounter ward, in place
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(LevelData.END_X - 420.0)
+		await _wait(0.8)
+		await _shot("gate_sealed")
+		Game.cleared["e8_elite"] = true
+		await _wait(0.6)
+		await _shot("gate_open")
+		var b := preload("res://scripts/level/barrier.gd").new()
+		b.position = Vector2(p.global_position.x + 260.0, Game.GROUND_Y)
+		Game.level.get_node("Props").add_child(b)
+		await _wait(0.7)
+		await _shot("ward")
+		Game.quit()
+		return
 	if only == "ending_shot":
 		shot_dir = Game.args.get("shots", "user://shots")
 		Game.run_time = 512.0
@@ -341,7 +357,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1062,6 +1078,33 @@ func t_anim_continuity() -> void:
 				worst_at = "%s f%d" % [p.vis.pose, f]
 		last = rel
 	_log("hero_anim_no_pops", worst < 40.0, "max body-centre jump %.1f px at %s" % [worst, worst_at])
+
+
+## Between strikes the hero must stay in the profile sword guard; the relaxed
+## three-quarter idle sheet only returns once the fight is over. Also checks
+## that damage numbers on one target stack instead of overprinting.
+func t_guard_stance() -> void:
+	var p := await _fresh_level(700.0)
+	p.max_hp = 9999.0
+	p.hp = 9999.0
+	await _wait(0.4)
+	var g := await spawn("grunt", 900.0, true)
+	p.facing = 1
+	await press(p, "attack")
+	var t := 0.0
+	while p.state != "idle" and t < 2.0:
+		await _frames(1)
+		t += 1.0 / 60.0
+	await _frames(3)
+	var guard_ok: bool = p.vis.pose == "hero_strike_settle" and not p.vis.frame_on
+	if is_instance_valid(g):
+		g.queue_free()
+	await _wait(p.GUARD_HOLD + 0.4)
+	var relaxed_ok: bool = p.vis.current_clip() == "idle"
+	var y0 := Fx._number_slot(Vector2(5000, 300)).y
+	var y1 := Fx._number_slot(Vector2(5004, 302)).y
+	_log("guard_stance", guard_ok and relaxed_ok and y1 < y0 - 20.0,
+		"guard=%s relaxed=%s stack_dy=%.0f" % [guard_ok, relaxed_ok, y0 - y1])
 
 
 func t_enemy_ledge() -> void:
