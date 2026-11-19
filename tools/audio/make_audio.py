@@ -64,14 +64,49 @@ def norm(x, peak=0.9):
     return x / m * peak
 
 
+# loudest-400ms RMS targets per category (dBFS); see tools/audio/audio_review.py
+LOUD_TARGET = {"music": -16.0, "ambience": -22.0, "impact": -11.0, "ui": -16.0, "voice": -14.0, "foley": -18.0}
+
+
+def category(name):
+    if name.startswith("music"):
+        return "music"
+    if name.startswith("amb"):
+        return "ambience"
+    if name.startswith("ui_") or name in ("rest", "ending_chime", "barrier_up", "barrier_down", "stinger_boss", "stinger_victory"):
+        return "ui"
+    if name in ("growl", "husk_groan", "hiss", "gurgle", "elite_roar", "elite_die", "player_die", "spawn_rise"):
+        return "voice"
+    if name in ("step", "jump", "land", "swing_pre", "talisman_draw", "guard_up", "sac_swell", "elite_windup", "seal_charge", "beads_charge"):
+        return "foley"
+    return "impact"
+
+
+def loudest_rms(x, win=0.4):
+    n = int(win * SR)
+    if len(x) <= n:
+        return np.sqrt(np.mean(x * x)) + 1e-9
+    c = np.convolve(x * x, np.ones(n) / n, mode="valid")
+    return np.sqrt(c.max()) + 1e-9
+
+
 def save(name, x, peak=0.9):
-    x = norm(x, peak)
-    # tiny fade to avoid clicks
-    f = min(len(x) // 10, 64)
-    if f > 0:
-        x[:f] *= np.linspace(0, 1, f)
-        x[-f:] *= np.linspace(1, 0, f)
-    data = (x * 32767).astype(np.int16)
+    """Loudness-normalize to the category target, soft-limit peaks to -1 dBFS.
+    Loops (music_*/amb_*) get no edge fades so the seam stays continuous."""
+    x = np.asarray(x, np.float64)
+    x = x - x.mean()
+    cat = category(name)
+    x = x * (10 ** (LOUD_TARGET[cat] / 20.0) / loudest_rms(x))
+    ceiling = 10 ** (-1.0 / 20.0)
+    knee = ceiling * 0.8
+    over = np.abs(x) > knee
+    x[over] = np.sign(x[over]) * (knee + (ceiling - knee) * np.tanh((np.abs(x[over]) - knee) / (ceiling - knee)))
+    if cat not in ("music", "ambience"):
+        f = min(len(x) // 10, 64)
+        if f > 0:
+            x[:f] *= np.linspace(0, 1, f)
+            x[-f:] *= np.linspace(1, 0, f)
+    data = (np.clip(x, -1, 1) * 32767).astype(np.int16)
     with wave.open(os.path.join(OUT, name + ".wav"), "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)
@@ -292,7 +327,7 @@ def music(name, root, dur, bpm, density, mood_low, seed, bells=False, wood=True)
         k = int(dly * SR)
         rev[k:] += mix[:-k] * g
         rev[:k] += mix[-k:] * g
-    save(name, hp_fast(lp_fast(mix + rev, 5000), 40), 0.7)
+    save(name, loop_fix(hp_fast(lp_fast(mix + rev, 5000), 40), 0.05), 0.7)
 
 
 def ambience():
@@ -304,10 +339,8 @@ def ambience():
     seg = 512
     for i in range(0, len(n), seg):
         x[i:i + seg] = bp(n[max(0, i - 2048):i + seg], cut[i] * 0.5, cut[i] * 1.6)[-len(n[i:i + seg]):]
-    x *= 0.6 + 0.4 * np.sin(2 * np.pi * tt / 11.0)
-    k = int(2 * SR)
-    x[:k] = x[:k] * np.linspace(0, 1, k) + x[-k:] * np.linspace(1, 0, k)
-    save("amb_wind", x[:-k] if False else x, 0.5)
+    x *= 0.6 + 0.4 * np.sin(2 * np.pi * tt / 10.0)   # 30 s / 10 s: periodic over the loop
+    save("amb_wind", loop_fix(x), 0.5)
 
 
 def wind_bed(d, seed, lo=0.5, hi=1.6, base=300):
@@ -376,9 +409,100 @@ def ambience_beds():
     save("amb_burial", loop_fix(bu), 0.5)
 
 
+def taiko(d=0.9, f=62.0, hard=1.0):
+    tt = t_(d)
+    body = np.sin(2 * np.pi * np.cumsum(f * (1 + 0.6 * np.exp(-tt * 30))) / SR) * np.exp(-tt / 0.28)
+    skin = bp(noise(d), 120, 900) * np.exp(-tt / 0.04) * 0.6 * hard
+    return (body + skin) * env(len(tt), 0.001, d)
+
+
+def gong(d=4.0, f=110.0):
+    return modal(d, [f, f * 1.47, f * 2.09, f * 2.56, f * 3.31, f * 4.2], [3.0, 2.4, 1.8, 1.4, 1.0, 0.7],
+                 [1, 0.7, 0.55, 0.4, 0.3, 0.2]) + 0.3 * bp(noise(d), 800, 5000) * env(int(SR * d), 0.01, 0.6)
+
+
+def bowed(f, d, amp=1.0):
+    tt = t_(d)
+    vib = 1 + 0.004 * np.sin(2 * np.pi * 5.2 * tt)
+    ph = np.cumsum(2 * np.pi * f * vib / SR)
+    saw = sum(np.sin(ph * h) / h for h in range(1, 9))
+    return lp_fast(saw, f * 6) * (0.5 + 0.5 * np.sin(2 * np.pi * tt / d - np.pi / 2)) ** 1.2 * amp
+
+
+def boss_music(name, dur=40.0, bpm=96, root=82.4, intensity=1.0, seed=21):
+    """Boss battle: taiko pattern, bowed drone, driving low guqin ostinato,
+    dissonant stabs and gong swells. intensity>1 = phase-2 variant."""
+    r = np.random.default_rng(seed)
+    n = int(SR * dur)
+    mix = np.zeros(n + SR * 5)
+    beat = 60.0 / bpm
+    bars = int(dur / (beat * 4))
+    # drone: root + fifth, swelling per 4 bars
+    for b in range(0, bars, 4):
+        i = int(b * 4 * beat * SR)
+        seg = bowed(root, beat * 16, 0.5) + bowed(root * 1.5, beat * 16, 0.25) + bowed(root * 2.0 * 2 ** (1 / 12), beat * 16, 0.08 * intensity)
+        mix[i:i + len(seg)] += seg * 0.35
+    # taiko: ka-don pattern, doubled in phase 2
+    pat = [1.0, 0, 0, 0.5, 1.0, 0, 0.6, 0] if intensity <= 1.0 else [1.0, 0.4, 0.5, 0.6, 1.0, 0.4, 0.8, 0.6]
+    for b in range(bars):
+        for k, a in enumerate(pat):
+            if a <= 0:
+                continue
+            i = int((b * 4 + k * 0.5) * beat * SR)
+            dr = taiko(0.8, 58.0 if k % 4 == 0 else 74.0, a) * a
+            mix[i:i + len(dr)] += dr * 0.9
+    # ostinato: low pentatonic plucks on 8ths, minor-ish (yu mode)
+    scale = [0, 3, 5, 7, 10]
+    for b in range(bars):
+        for k in range(8):
+            if r.random() < (0.55 if intensity <= 1.0 else 0.85):
+                deg = scale[int(r.integers(0, 3)) if k % 2 == 0 else int(r.integers(1, 5))]
+                f = root * 2 * 2 ** (deg / 12)
+                p = ks_pluck(f, 0.6, bright=0.6) * 0.5
+                i = int((b * 4 + k * 0.5) * beat * SR)
+                mix[i:i + len(p)] += p
+    # dissonant stab + gong every 8 bars
+    for b in range(0, bars, 8):
+        i = int(b * 4 * beat * SR)
+        g = gong(4.0, root * 1.33) * 0.35
+        mix[i:i + len(g)] += g
+        st = sum(ks_pluck(root * 4 * 2 ** (s / 12), 1.2, 0.8) for s in (0, 1, 6)) * 0.25 * intensity
+        j = i + int(beat * 14 * SR)
+        mix[j:j + len(st)] += st
+    tail = mix[n:]
+    mix = mix[:n]
+    mix[:len(tail)] += tail
+    rev = np.zeros_like(mix)
+    for dly, gg in [(0.07, 0.25), (0.13, 0.18), (0.21, 0.12)]:
+        k = int(dly * SR)
+        rev[k:] += mix[:-k] * gg
+        rev[:k] += mix[-k:] * gg
+    save(name, loop_fix(hp_fast(lp_fast(mix + rev, 6000), 35), 0.05))
+
+
+def mixl(*parts):
+    n = max(len(p) for p in parts)
+    out = np.zeros(n)
+    for p in parts:
+        out[:len(p)] += p
+    return out
+
+
+def stingers():
+    save("stinger_boss", mixl(taiko(1.5, 50.0, 1.4), gong(3.0, 98.0) * 0.6, bowed(98.0, 3.0, 0.3)))
+    tt = t_(3.0)
+    up = sum(ks_pluck(f, 3.0, 0.7) * a for f, a in [(392, 1.0), (523, 0.8), (659, 0.7), (784, 0.6)])
+    save("stinger_victory", mixl(up, modal(3.0, [523, 784, 1047], [2.0, 1.6, 1.2], [0.5, 0.4, 0.3])))
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 2 and sys.argv[2] == "beds":
         ambience_beds()
+        sys.exit(0)
+    if len(sys.argv) > 2 and sys.argv[2] == "boss":
+        boss_music("music_boss")
+        boss_music("music_boss2", bpm=112, intensity=1.4, seed=22)
+        stingers()
         sys.exit(0)
     ambience_beds()
     make_sfx()
@@ -387,4 +511,7 @@ if __name__ == "__main__":
     music("music_wander", 220.0, 48.0, 66, 0.8, 3, 12)
     music("music_taint", 185.0, 48.0, 60, 0.7, 0, 13, wood=True)
     music("music_temple", 174.6, 48.0, 58, 0.75, 1, 14, bells=True)
+    boss_music("music_boss")
+    boss_music("music_boss2", bpm=112, intensity=1.4, seed=22)
+    stingers()
     print("audio done")

@@ -123,5 +123,7 @@ func _crossfade(p: AudioStreamPlayer, s: AudioStream, vol_db: float) -> void:
 
 
 func stop_music() -> void:
-	music.stop()
 	music_name = ""
+	var tw := create_tween()
+	tw.tween_property(music, "volume_db", -40.0, 1.2)
+	tw.tween_callback(music.stop)

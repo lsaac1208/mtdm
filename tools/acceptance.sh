@@ -39,6 +39,14 @@ for f in "$OUT"/bot_*.log; do
   grep -q PASS <<< "$r" && gate "$(basename "$f" .log): $r" PASS || gate "$(basename "$f" .log): $r" FAIL
 done
 
+echo "== audio review"
+if $PY -I "$ROOT/tools/audio/audio_review.py" "$ROOT/game/assets/audio" "$OUT/audio" > "$OUT/audio_review.log" 2>&1; then
+  r=$(tail -n +1 "$OUT/audio_review.log" | head -1)
+  grep -q " 0 flagged" <<< "$r" && gate "Audio review: $r" PASS || gate "Audio review: $r" FAIL
+else
+  gate "Audio review (needs numpy/scipy)" SKIPPED
+fi
+
 echo "== soak (two full playthroughs in one process)"
 timeout 2400 "$G" --headless --fixed-fps 60 --path . -- --test=soak --mute --bot_limit=1500 > "$OUT/soak.log" 2>&1
 r=$(grep "^TEST soak_no_leak" "$OUT/soak.log" | sed 's/  */ /g')

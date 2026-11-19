@@ -304,7 +304,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1220,6 +1220,29 @@ func t_elite_fairness() -> void:
 	_log("elite_sweep_jumpable", w_jump >= 0.3, "window ~%.2fs" % w_jump)
 	_log("elite_chop_escapable", w_chop >= 0.15, "window ~%.2fs" % w_chop)
 	_log("elite_sweep_dash_through", w_sdash >= 0.15, "window ~%.2fs" % w_sdash)
+
+
+func t_boss_music() -> void:
+	var p := await _fresh_level(9950.0)
+	p.max_hp = 99999.0
+	p.hp = 99999.0
+	hold(p, {"move_right": true})
+	await _wait(1.2)
+	hold(p, {})
+	var started := Sfx.music_name == "music_boss"
+	var enc: Encounter = Game.level.encounters[Game.level.encounters.size() - 1]
+	var e: Node = enc.boss
+	if is_instance_valid(e):
+		e.hp = e.max_hp * 0.45
+		e._roar()
+	await _wait(0.5)
+	var p2 := Sfx.music_name == "music_boss2"
+	for i in 8:
+		_kill_all()
+		await _wait(0.6)
+	await _wait(3.6)
+	var back := Sfx.music_name == "music_temple"
+	_log("boss_music_flow", started and p2 and back, "start=%s phase2=%s resume=%s (now %s)" % [started, p2, back, Sfx.music_name])
 
 
 func t_spawn_surface() -> void:

@@ -35,6 +35,8 @@ func setup(d: Dictionary) -> void:
 
 
 func reset() -> void:
+	if data.get("boss", false) and state == "active" and Game.level and Game.level.has_method("resume_zone_music"):
+		Game.level.resume_zone_music()
 	# called on player respawn: undo a failed attempt
 	for a in alive:
 		if is_instance_valid(a):
@@ -128,6 +130,9 @@ func _start() -> void:
 		Sfx.play("barrier_up", -2.0)
 	if data.get("boss", false) and boss:
 		Game.boss_changed.emit(boss)
+		Sfx.play("stinger_boss", 0.0, 0.0)
+		Sfx.play_music("music_boss", -7.0)
+		boss.phase_changed.connect(func(_ph): Sfx.play_music("music_boss2", -6.0))
 	started.emit(self)
 
 
@@ -155,6 +160,12 @@ func _clear() -> void:
 		Sfx.play("barrier_down", -2.0)
 	if data.get("boss", false):
 		Game.boss_changed.emit(null)
+		Sfx.play("stinger_victory", 0.0, 0.0)
+		Sfx.stop_music()
+		var lvl = Game.level
+		get_tree().create_timer(3.0).timeout.connect(func():
+			if is_instance_valid(lvl) and lvl.has_method("resume_zone_music"):
+				lvl.resume_zone_music())
 	cleared.emit(self)
 
 

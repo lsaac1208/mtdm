@@ -434,6 +434,10 @@ func _update_signs() -> void:
 			_sign_shown[s.x] = false
 
 
+func resume_zone_music() -> void:
+	Sfx.play_music(LevelData.ZONES[maxi(zone_idx, 0)].music)
+
+
 func active_encounter_id() -> String:
 	for enc in encounters:
 		if enc.state == "active":
