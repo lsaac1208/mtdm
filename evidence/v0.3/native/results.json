@@ -1,0 +1,328 @@
+{
+  "mac-m6": {
+    "archive": "TaoistWanderer-v0.3.0-macos-universal.zip",
+    "sha256": "691ceddc424dd69ab1ca6b4602a18ccfe915364ae3400308e03919b723afc498",
+    "os": "macOS-27.2.1-arm64-arm-64bit",
+    "architecture": "arm64",
+    "checks": {
+      "archive-digest": {
+        "pass": true,
+        "expected": "691ceddc424dd69ab1ca6b4602a18ccfe915364ae3400308e03919b723afc498"
+      },
+      "engine": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "normal-route": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "title": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": [
+          "shot_00.png"
+        ],
+        "renderer": "OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6"
+      },
+      "village": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": [
+          "village.png"
+        ],
+        "renderer": "OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6"
+      }
+    }
+  },
+  "mac-hosted": {
+    "archive": "TaoistWanderer-v0.3.0-macos-universal.zip",
+    "sha256": "691ceddc424dd69ab1ca6b4602a18ccfe915364ae3400308e03919b723afc498",
+    "os": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+    "architecture": "arm64",
+    "checks": {
+      "archive-digest": {
+        "pass": true,
+        "expected": "691ceddc424dd69ab1ca6b4602a18ccfe915364ae3400308e03919b723afc498"
+      },
+      "engine": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "normal-route": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "title": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": [
+          "shot_00.png"
+        ],
+        "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Apple) - ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.8.2 (Build 24H232))"
+      },
+      "village": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": [
+          "village.png"
+        ],
+        "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Apple) - ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.8.2 (Build 24H232))"
+      }
+    }
+  },
+  "linux": {
+    "archive": "TaoistWanderer-v0.3.0-linux-x86_64.zip",
+    "sha256": "15378af123e24cafdc47804da8c5022dffbbea08a35346678a3a80a1fb29c163",
+    "os": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "architecture": "x86_64",
+    "checks": {
+      "archive-digest": {
+        "pass": true,
+        "expected": "15378af123e24cafdc47804da8c5022dffbbea08a35346678a3a80a1fb29c163"
+      },
+      "archive-executable": {
+        "pass": true,
+        "mode": "0o755",
+        "zip_host": 3
+      },
+      "engine": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "normal-route": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "soak": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "title": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": [
+          "shot_00.png"
+        ],
+        "renderer": "OpenGL API 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.5 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 20.1.2, 256 bits)"
+      },
+      "village": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": [
+          "village.png"
+        ],
+        "renderer": "OpenGL API 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.5 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 20.1.2, 256 bits)"
+      }
+    }
+  },
+  "windows": {
+    "archive": "TaoistWanderer-v0.3.0-windows-x86_64.zip",
+    "sha256": "71fedf6a14bbc7a0653a726aaa1c98dacb7311af9a2a7801e6798df22404ca14",
+    "os": "Windows-2025Server-10.0.26100-SP0",
+    "architecture": "AMD64",
+    "checks": {
+      "archive-digest": {
+        "pass": true,
+        "expected": "71fedf6a14bbc7a0653a726aaa1c98dacb7311af9a2a7801e6798df22404ca14"
+      },
+      "engine": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "normal-route": {
+        "pass": true,
+        "exit": 0,
+        "timed_out": false,
+        "errors": [],
+        "screens": []
+      },
+      "title": {
+        "pass": false,
+        "exit": null,
+        "timed_out": true,
+        "errors": [
+          "ERROR: Failed to create native OpenGL window.",
+          "ERROR: Unexpected window message 0x1f received for window we cannot recognize in our collection; sequence error.",
+          "Case exceeded 300 seconds"
+        ],
+        "screens": [],
+        "renderer": "unreported"
+      },
+      "village": {
+        "pass": false,
+        "exit": null,
+        "timed_out": true,
+        "errors": [
+          "ERROR: Failed to create native OpenGL window.",
+          "ERROR: Unexpected window message 0x1f received for window we cannot recognize in our collection; sequence error.",
+          "Case exceeded 300 seconds"
+        ],
+        "screens": [],
+        "renderer": "unreported"
+      }
+    }
+  },
+  "windows-player-default": {
+    "2022": {
+      "os": "Windows-2022Server-10.0.20348-SP0",
+      "architecture": "AMD64",
+      "archive": "TaoistWanderer-v0.3.0-windows-x86_64.zip",
+      "sha256": "71fedf6a14bbc7a0653a726aaa1c98dacb7311af9a2a7801e6798df22404ca14",
+      "expected_sha256": "71fedf6a14bbc7a0653a726aaa1c98dacb7311af9a2a7801e6798df22404ca14",
+      "selected": "player-default",
+      "attempts": [
+        {
+          "backend": "player-default",
+          "pass": true,
+          "renderer_flags": [],
+          "driver_environment": {},
+          "sidecars": [],
+          "title": {
+            "pass": true,
+            "renderer_flags": [],
+            "timed_out": false,
+            "errors": [],
+            "exit": 0,
+            "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.20348.5756)",
+            "image": {
+              "size": [
+                1028,
+                720
+              ],
+              "requested_size": [
+                1280,
+                720
+              ],
+              "colors_at_160px": 4895,
+              "luminance_stddev": 62.8,
+              "sha256": "03435c8663973202e1e6263f65e9730c1922602417697ed6d4d649698c3b69b3",
+              "path": "player-default\\title.png"
+            }
+          },
+          "village": {
+            "pass": true,
+            "renderer_flags": [],
+            "timed_out": false,
+            "errors": [],
+            "exit": 0,
+            "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.20348.5756)",
+            "image": {
+              "size": [
+                1028,
+                720
+              ],
+              "requested_size": [
+                1280,
+                720
+              ],
+              "colors_at_160px": 9385,
+              "luminance_stddev": 39.4,
+              "sha256": "0ddfbb37dc439b567211c5125a08fa4793d42f5f37ff14a09c347ee91f4ac673",
+              "path": "player-default\\village.png"
+            }
+          }
+        }
+      ],
+      "pass": true
+    },
+    "2025": {
+      "os": "Windows-2025Server-10.0.26100-SP0",
+      "architecture": "AMD64",
+      "archive": "TaoistWanderer-v0.3.0-windows-x86_64.zip",
+      "sha256": "71fedf6a14bbc7a0653a726aaa1c98dacb7311af9a2a7801e6798df22404ca14",
+      "expected_sha256": "71fedf6a14bbc7a0653a726aaa1c98dacb7311af9a2a7801e6798df22404ca14",
+      "selected": "player-default",
+      "attempts": [
+        {
+          "backend": "player-default",
+          "pass": true,
+          "renderer_flags": [],
+          "driver_environment": {},
+          "sidecars": [],
+          "title": {
+            "pass": true,
+            "renderer_flags": [],
+            "timed_out": false,
+            "errors": [],
+            "exit": 0,
+            "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.26100.33648)",
+            "image": {
+              "size": [
+                1028,
+                720
+              ],
+              "requested_size": [
+                1280,
+                720
+              ],
+              "colors_at_160px": 4894,
+              "luminance_stddev": 62.8,
+              "sha256": "cd360bf6736766219357e35980407968c6733e40faff91244469d3880a05d2d0",
+              "path": "player-default\\title.png"
+            }
+          },
+          "village": {
+            "pass": true,
+            "renderer_flags": [],
+            "timed_out": false,
+            "errors": [],
+            "exit": 0,
+            "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.26100.33648)",
+            "image": {
+              "size": [
+                1028,
+                720
+              ],
+              "requested_size": [
+                1280,
+                720
+              ],
+              "colors_at_160px": 9384,
+              "luminance_stddev": 39.4,
+              "sha256": "4eb93c62a3128edb59766466986c81a01511675701ae060398715df9c102abcd",
+              "path": "player-default\\village.png"
+            }
+          }
+        }
+      ],
+      "pass": true
+    }
+  }
+}
