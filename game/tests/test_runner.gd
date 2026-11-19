@@ -91,6 +91,15 @@ func _run() -> void:
 			await _shot("title_%d" % k)
 		Game.quit()
 		return
+	if only == "sealcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		await _fresh_level(1500.0)
+		await _wait(0.4)
+		Game.level.hud.boss_defeated("尸将", "UNDEAD WARRIOR ELITE")
+		await _wait(1.2)
+		await _shot("seal")
+		Game.quit()
+		return
 	if only == "platcap":
 		# every painted platform, one shot each, hero standing beside it
 		shot_dir = Game.args.get("shots", "user://shots")

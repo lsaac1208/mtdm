@@ -422,7 +422,7 @@ func boss_defeated(cn: String, en: String) -> void:
 	ch.size = Vector2(150, 150)
 	seal.add_child(ch)
 	var cap := Label.new()
-	cap.text = "%s · 已镇\n%s SEALED" % [cn, en]
+	cap.text = "%s · 已镇" % cn
 	cap.add_theme_font_override("font", BRUSH_FONT)
 	cap.add_theme_font_size_override("font_size", 34)
 	cap.add_theme_color_override("font_color", Color(0.93, 0.86, 0.7))
@@ -430,8 +430,20 @@ func boss_defeated(cn: String, en: String) -> void:
 	cap.add_theme_constant_override("outline_size", 8)
 	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cap.position = Vector2(-300, 44)
-	cap.size = Vector2(600, 100)
+	cap.size = Vector2(600, 50)
 	seal.add_child(cap)
+	# The brush face has no proper Latin glyphs; the English line uses the
+	# body serif, small caps-sized and tracked, like the zone cards.
+	var cap_en := Label.new()
+	cap_en.text = "%s  SEALED" % en.to_upper()
+	cap_en.add_theme_font_size_override("font_size", 17)
+	cap_en.add_theme_color_override("font_color", Color(0.88, 0.80, 0.64))
+	cap_en.add_theme_color_override("font_outline_color", Color(0.04, 0.03, 0.03))
+	cap_en.add_theme_constant_override("outline_size", 6)
+	cap_en.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cap_en.position = Vector2(-300, 96)
+	cap_en.size = Vector2(600, 30)
+	seal.add_child(cap_en)
 	seal.scale = Vector2(2.4, 2.4)
 	seal.modulate.a = 0.0
 	seal.rotation = -0.12
