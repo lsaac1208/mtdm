@@ -50,14 +50,6 @@ jobs:
       - name: Install Linux desktop renderer
         if: runner.os == 'Linux'
         run: sudo apt-get update -qq && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
-      - name: Install Windows software OpenGL
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          C:\msys64\usr\bin\bash.exe -lc 'pacman --noconfirm --needed -S mingw-w64-x86_64-mesa'
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          'C:\msys64\mingw64\bin' >> $env:GITHUB_PATH
-          'MESA_BIN=C:\msys64\mingw64\bin' >> $env:GITHUB_ENV
       - name: Exercise downloaded package
         shell: bash
         run: |

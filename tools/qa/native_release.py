@@ -57,22 +57,12 @@ def test_package(archive, out, expected_sha256=None):
                     # Python's extractall does not restore ZIP Unix permissions.
                     (root / entry.filename).chmod(stored_mode)
             app = next(root.glob("*.exe" if os.name == "nt" else "*.x86_64"))
-            if os.name == "nt" and os.getenv("MESA_BIN"):
-                # Win32 resolves system OpenGL before PATH. Place Mesa alongside
-                # the executable for this hosted runner only.
-                mesa = Path(os.environ["MESA_BIN"])
-                for dll in ("opengl32.dll", "libgallium_wgl.dll"):
-                    shutil.copy2(mesa / dll, root / dll)
 
         def run(name, flags, expected, render=False, timeout=300):
             log = out / (name + ".log")
             pictures = root / (name + "-shots")
             pictures.mkdir(exist_ok=True)
             godot_flags = ["--resolution", "1280x720"] if render else ["--headless"]
-            if os.name == "nt" and render:
-                # Microsoft-hosted Windows runners have no accelerated desktop GPU.
-                # Mesa's native OpenGL implementation is installed by the workflow.
-                godot_flags += ["--rendering-driver", "opengl3"]
             if os.getenv("CI"):
                 godot_flags += ["--audio-driver", "Dummy"]
             game_flags = [x.replace("{out}", pictures.as_posix()) for x in flags]
