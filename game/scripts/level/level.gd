@@ -9,6 +9,32 @@ const Puddle := preload("res://scripts/fx/taint_puddle.gd")
 const Hud := preload("res://scripts/ui/hud.gd")
 const PauseMenu := preload("res://scripts/ui/pause_menu.gd")
 const ENV := "res://assets/env/"
+const ZONE_KEYS := ["village", "road", "lowland", "temple", "burial"]
+const ZONE_BLEND := 320.0
+
+
+## Weight of each zone's background set at world x (smooth crossfade at borders).
+func zone_weights(x: float) -> Array:
+	var n: int = LevelData.ZONES.size()
+	var w := []
+	w.resize(n)
+	w.fill(0.0)
+	var i := 0
+	for k in n:
+		if x >= LevelData.ZONES[k].x:
+			i = k
+	w[i] = 1.0
+	if i + 1 < n:
+		var b: float = LevelData.ZONES[i + 1].x
+		var t := smoothstep(b - ZONE_BLEND, b + ZONE_BLEND, x)
+		w[i] = 1.0 - t
+		w[i + 1] = t
+	if i > 0:
+		var b0: float = LevelData.ZONES[i].x
+		var t0 := smoothstep(b0 - ZONE_BLEND, b0 + ZONE_BLEND, x)
+		w[i - 1] = 1.0 - t0
+		w[i] = minf(w[i], t0)
+	return w
 
 var player: Player
 var cam: Camera2D
@@ -109,17 +135,26 @@ func _build_background() -> void:
 	cl.add_child(sky)
 	bg_layers.append({"node": sky, "factor": 0.0, "sky": true})
 	# [texture, scroll factor, top y on screen at rest, vertical factor]
-	for l in [["far", 0.08, 150.0, 0.03], ["mid", 0.22, 205.0, 0.08], ["near", 0.45, 262.0, 0.2]]:
-		var t := _tex(l[0])
-		if t == null:
-			continue
-		var s := Sprite2D.new()
-		s.texture = t
-		s.centered = false
-		s.region_enabled = true
-		s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-		cl.add_child(s)
-		bg_layers.append({"node": s, "factor": l[1], "y": l[2], "yf": l[3]})
+	for l in [["far", 0.08, 150.0, 0.03], ["mid", 0.22, 70.0, 0.08], ["near", 0.45, 46.0, 0.2]]:
+		# per-zone variants (mid_village, near_road, ...) crossfade at zone borders
+		var variants := []
+		for zi in ZONE_KEYS.size():
+			var vt := _tex("%s_%s" % [l[0], ZONE_KEYS[zi]])
+			if vt:
+				variants.append([zi, vt])
+		if variants.is_empty():
+			var t := _tex(l[0])
+			if t == null:
+				continue
+			variants.append([-1, t])
+		for v in variants:
+			var s := Sprite2D.new()
+			s.texture = v[1]
+			s.centered = false
+			s.region_enabled = true
+			s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+			cl.add_child(s)
+			bg_layers.append({"node": s, "factor": l[1], "y": l[2], "yf": l[3], "zone": v[0]})
 
 
 func _build_foreground() -> void:
@@ -365,11 +400,24 @@ func _process(delta: float) -> void:
 	var vs := get_viewport().get_visible_rect().size
 	var left := cam.global_position.x - vs.x / 2.0
 	var dy := cam.global_position.y - (Game.GROUND_Y - 190)
+	var zw := zone_weights(cam.global_position.x)
+	if Game.args.has("zwdebug") and Engine.get_process_frames() % 60 == 0:
+		var vis_n := []
+		for l in bg_layers:
+			if l.get("zone", -1) >= 0 and l.node.visible:
+				vis_n.append("%s a=%.2f" % [l.node.texture.resource_path.get_file(), l.node.self_modulate.a])
+		print("ZW x=%.0f w=%s vis=%s" % [cam.global_position.x, zw, vis_n])
 	for l in bg_layers + fg_layers:
 		var n = l.node
 		if l.get("sky", false):
 			continue
 		var s: Sprite2D = n
+		var zi: int = l.get("zone", -1)
+		if zi >= 0:
+			s.self_modulate.a = zw[zi]
+			s.visible = zw[zi] > 0.004
+			if not s.visible:
+				continue
 		s.region_rect = Rect2(left * l.factor, 0, vs.x + 4, s.texture.get_height())
 		s.position = Vector2(0, l.y - dy * l.yf + (vs.y - 720.0) * 0.5)
 

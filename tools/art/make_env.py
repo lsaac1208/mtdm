@@ -116,7 +116,7 @@ def mask_from(draw_fn, w, h, ss=2):
 
 
 def save(arr, name):
-    if name in ("far", "mid", "near", "fore"):
+    if name in ("far", "mid", "near", "fore") or name.startswith("near_") or name.startswith("mid_"):
         # texture_repeat + linear filtering would bleed the bottom row onto the top edge
         arr = arr.copy()
         arr[:2, :, 3] = 0
@@ -311,6 +311,72 @@ def mountains(w=2048, h=420):
     save(out, "far")
 
 
+def reeds(d, ss, x, base, h, seed):
+    r = random.Random(seed)
+    for _ in range(r.randint(7, 14)):
+        bx = x + r.uniform(-14, 14)
+        ln = h * r.uniform(0.5, 1.0)
+        ang = -math.pi / 2 + r.uniform(-0.35, 0.35)
+        tx, ty = bx + math.cos(ang) * ln, base + math.sin(ang) * ln
+        d.line([(bx * ss, base * ss), (tx * ss, ty * ss)], fill=255, width=max(1, int(2 * ss)))
+        if r.random() < 0.4:   # seed head
+            d.ellipse([(tx - 3) * ss, (ty - 9) * ss, (tx + 3) * ss, (ty + 3) * ss], fill=255)
+
+
+def wreck_cart(d, ss, x, base, w, seed):
+    r = random.Random(seed)
+    tilt = r.uniform(-8, 8)
+    d.polygon([(x * ss, (base - w * 0.25) * ss), ((x + w) * ss, (base - w * 0.25 + tilt) * ss),
+               ((x + w * 0.95) * ss, (base - w * 0.1 + tilt) * ss), ((x + w * 0.05) * ss, (base - w * 0.1) * ss)], fill=255)
+    for cx in (x + w * 0.2, x + w * 0.75):
+        rr = w * 0.16
+        d.ellipse([(cx - rr) * ss, (base - rr * 2) * ss, (cx + rr) * ss, base * ss], outline=255, width=max(1, int(3 * ss)))
+        for k in range(4):
+            a = k * math.pi / 4
+            d.line([((cx - math.cos(a) * rr) * ss, (base - rr - math.sin(a) * rr) * ss), ((cx + math.cos(a) * rr) * ss, (base - rr + math.sin(a) * rr) * ss)], fill=255, width=max(1, int(1.5 * ss)))
+    d.line([((x + w) * ss, (base - w * 0.2) * ss), ((x + w * 1.4) * ss, (base - w * 0.02) * ss)], fill=255, width=max(1, int(4 * ss)))
+
+
+def hall(d, ss, x, base, w, h, seed):
+    r = random.Random(seed)
+    wall = h * 0.5
+    d.rectangle([(x + w * 0.1) * ss, (base - wall) * ss, (x + w * 0.9) * ss, base * ss], fill=255)
+    # two-tier roof with upturned eaves
+    for k, (rw, ry) in enumerate([(1.15, wall), (0.8, wall + h * 0.25)]):
+        cx = x + w / 2
+        y0 = base - ry
+        hw = w * rw / 2
+        d.polygon([((cx - hw) * ss, (y0 + 6) * ss), ((cx - hw * 0.85) * ss, (y0 - 4) * ss), ((cx - hw * 0.5) * ss, (y0 - h * 0.16) * ss),
+                   ((cx + hw * 0.5) * ss, (y0 - h * 0.16) * ss), ((cx + hw * 0.85) * ss, (y0 - 4) * ss), ((cx + hw) * ss, (y0 + 6) * ss),
+                   ((cx + hw * 0.7) * ss, (y0) * ss), ((cx - hw * 0.7) * ss, (y0) * ss)], fill=255)
+        if k == 0:
+            d.rectangle([(cx - hw * 0.4) * ss, (y0 - h * 0.25) * ss, (cx + hw * 0.4) * ss, (y0 - h * 0.1) * ss], fill=255)
+    # columns / dark doorway
+    d.rectangle([(x + w * 0.42) * ss, (base - wall * 0.75) * ss, (x + w * 0.58) * ss, base * ss], fill=0)
+    if r.random() < 0.6:   # collapsed corner
+        d.polygon([((x + w * 0.85) * ss, (base - h) * ss), ((x + w * 1.1) * ss, (base - h * 0.5) * ss), ((x + w * 0.9) * ss, (base - h * 0.45) * ss)], fill=0)
+
+
+def mound(d, ss, x, base, w, seed):
+    r = random.Random(seed)
+    h = w * r.uniform(0.25, 0.4)
+    d.ellipse([x * ss, (base - h) * ss, (x + w) * ss, (base + h) * ss], fill=255)
+    sx = x + w * r.uniform(0.35, 0.6)
+    sh = h * r.uniform(1.3, 2.0)
+    d.polygon([(sx * ss, (base - h * 0.6) * ss), ((sx + 2) * ss, (base - h * 0.6 - sh) * ss), ((sx + 16) * ss, (base - h * 0.6 - sh - 4) * ss), ((sx + 16) * ss, (base - h * 0.6) * ss)], fill=255)
+
+
+def banner_pole(d, ss, x, base, h, seed):
+    r = random.Random(seed)
+    d.line([(x * ss, base * ss), ((x + r.uniform(-6, 6)) * ss, (base - h) * ss)], fill=255, width=max(1, int(3 * ss)))
+    top = base - h + 6
+    pts = [(x, top), (x + h * 0.22, top + 4)]
+    for k in range(5):
+        pts.append((x + h * 0.22 - k * 4 + r.uniform(-3, 3), top + 12 + k * h * 0.09))
+    pts.append((x, top + h * 0.5))
+    d.polygon([(px * ss, py * ss) for px, py in pts], fill=255)
+
+
 def ruins_layer(w, h, name, tone, seed, density, kinds, base_y, scale, alpha, mist=0.55):
     r = random.Random(seed)
     dst = np.zeros((h, w, 4), np.float32)
@@ -355,6 +421,24 @@ def ruins_layer(w, h, name, tone, seed, density, kinds, base_y, scale, alpha, mi
                     bx = x + r.uniform(5, ww - 20); by = base_y - r.uniform(10, wh * 0.8)
                     d.rectangle([bx * ss, by * ss, (bx + 14) * ss, (by + 7) * ss], fill=0)
                 x += ww + r.uniform(10, 50) * density
+            elif k == "reeds":
+                reeds(d, ss, x + 15, base_y, r.uniform(50, 110) * s, r.random())
+                x += r.uniform(30, 90) * density
+            elif k == "cart":
+                cw = r.uniform(110, 160) * s
+                wreck_cart(d, ss, x, base_y, cw, r.random())
+                x += cw * 1.5 + r.uniform(20, 80) * density
+            elif k == "hall":
+                hw, hh = r.uniform(170, 240) * s, r.uniform(140, 200) * s
+                hall(d, ss, x, base_y, hw, hh, r.random())
+                x += hw * 1.15 + r.uniform(20, 60) * density
+            elif k == "mound":
+                mw = r.uniform(90, 170) * s
+                mound(d, ss, x, base_y, mw, r.random())
+                x += mw + r.uniform(5, 40) * density
+            elif k == "banner":
+                banner_pole(d, ss, x, base_y, r.uniform(150, 230) * s, r.random())
+                x += r.uniform(60, 160) * density
             elif k == "gap":
                 x += r.uniform(60, 200) * density
         # ground strip
@@ -680,11 +764,31 @@ def title_bg():
     save(np.dstack([end[..., :3] * 255, np.full((720, 1280), 255)]).clip(0, 255).astype(np.uint8), "ending_bg")
 
 
+ZONE_SETS = {
+    # zone: (near kinds, near tone, mid kinds, mid tone)
+    "village": (["house", "house", "tree", "wall", "gap", "house", "tree"], "#2c2622", ["house", "tower", "tree", "chimney", "gap"], "#5f5850"),
+    "road": (["cart", "pylon", "tree", "gap", "wall", "cart", "reeds"], "#2b2621", ["pylon", "tower", "chimney", "gap", "pylon"], "#5e5850"),
+    "lowland": (["reeds", "reeds", "tree", "reeds", "gap", "reeds", "tree"], "#252a20", ["tree", "reeds", "gap", "tree", "tower"], "#56604c"),
+    "temple": (["hall", "tree", "wall", "pagoda", "gap", "hall"], "#2e2420", ["pagoda", "hall", "pagoda", "gap", "tree"], "#64554c"),
+    "burial": (["mound", "mound", "banner", "tree", "mound", "gap", "banner"], "#24222a", ["mound", "tree", "banner", "gap", "mound"], "#56565e"),
+}
+
+
+def zone_layers():
+    for i, (zone, (nk, nt, mk, mt)) in enumerate(ZONE_SETS.items()):
+        ruins_layer(2048, 520, "near_" + zone, nt, 160 + i, 1.2, nk, 512, 1.15, 0.95, mist=0.3)
+        ruins_layer(2048, 480, "mid_" + zone, mt, 260 + i, 1.0, mk, 470, 1.0, 0.85)
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[2] == "zones":
+        zone_layers()
+        sys.exit(0)
     make_sky()
     mountains()
     ruins_layer(2048, 480, "mid", "#5f5850", 51, 1.0, ["tower", "chimney", "pylon", "pagoda", "gap", "tower", "tree"], 470, 1.0, 0.85)
     ruins_layer(2048, 520, "near", "#2c2622", 61, 1.3, ["house", "tree", "wall", "gap", "pagoda", "tree", "tower", "gap"], 512, 1.15, 0.95, mist=0.3)
+    zone_layers()
     foreground()
     ground()
     debris()
