@@ -90,6 +90,7 @@ var _last_clip_pos := 0.0
 ## three-quarter idle. The relaxed idle sheet is drawn facing the viewer, so
 ## dropping into it between strikes made the body swing round for one beat.
 var guard_t := 0.0
+var _taint_fx_t := 0.0
 const GUARD_HOLD := 2.6
 const GUARD_RANGE := 430.0
 
@@ -867,7 +868,15 @@ func _animate(delta: float) -> void:
 	vis.ribbon = clampf(absf(velocity.x) / 260.0, 0.0, 1.5) * 0.005
 	vis.bob = 0.0
 	vis.breathe = 0.0
-	vis.tint = Color(0.82, 1.0, 0.7) if in_taint > 0.0 else Color.WHITE
+	# Standing in taint: a light sickly cast plus vapour curling off the legs.
+	# A full green multiply turned the painted costume into olive mud.
+	vis.tint = Color(0.91, 0.98, 0.86) if in_taint > 0.0 else Color.WHITE
+	if in_taint > 0.0:
+		_taint_fx_t -= delta
+		if _taint_fx_t <= 0.0:
+			_taint_fx_t = 0.16
+			Fx.particles(global_position + Vector2(randf_range(-22, 22), -6), 3,
+				Color(0.55, 0.78, 0.22, 0.55), 70.0, 25.0, Vector2.UP, -40.0, 0.8, 9.0, 9)
 	vis.alpha = 0.7 if (invuln > 0.0 and state != "dash" and state != "dash_attack" and int(invuln * 20) % 2 == 0) else 1.0
 	vis.clip_speed_scale = 1.0
 	if state in ["attack", "dash_attack", "jump_attack", "block", "hit", "talisman", "gourd", "beads_a", "beads_b"] or _enemy_near():

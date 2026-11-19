@@ -127,10 +127,10 @@ func zone_light(world_pos: Vector2) -> Dictionary:
 		var d: Vector2 = (pd.global_position + Vector2(0.0, -8.0)) - chest
 		var dist := d.length()
 		if dist < max_r:
-			var f := pow(1.0 - dist / max_r, 1.7) * 0.52
+			var f := pow(1.0 - dist / max_r, 1.7) * 0.26   # was 0.52: dyed the whole costume olive
 			if f > pt_str:
 				pt_str = f
-				pt_col = Color(0.54, 0.96, 0.28)
+				pt_col = Color(0.62, 0.92, 0.40)
 				pt_dir = Vector3(d.x, d.y, 90.0).normalized()
 
 	return {
