@@ -16,7 +16,8 @@ var interrupt_poise := 1.0       # single-hit poise needed to cancel a wind-up
 var armored_states: Array = []   # states that ignore stagger unless poise breaks
 var uninterruptible_states: Array = []  # states that never stagger
 var topple_on_death := true
-var rig_type := ""            # "grunt" / "elite" / ... -> skinned cut-out rig
+var rig_type := ""
+var hit_material := "flesh"     # flesh / paper / taint / armor (hit VFX)
 var walk_speed := 100.0
 
 
@@ -171,7 +172,7 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 	var dir: int = atk.dir
 	if atk.kind == "aoe" and atk.has("centre"):
 		dir = 1 if global_position.x >= atk.centre.x else -1
-	Fx.hit_ink(global_position + Vector2(0, -hurt_size.y * 0.55), dir)
+	Fx.material_hit(global_position + Vector2(0, -hurt_size.y * 0.55), dir, hit_material, atk.damage >= 16.0)
 	Fx.slash(global_position + Vector2(0, -hurt_size.y * 0.55), dir, -20.0, 20.0, 18.0, 10.0, 0.12,
 		Color(0.9, 0.85, 0.75), Color(1, 1, 1), 1.0)
 	Sfx.play(_hit_sound(atk), -2.0)

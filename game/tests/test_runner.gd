@@ -136,6 +136,34 @@ func _run() -> void:
 		await _shot("options")
 		get_tree().quit()
 		return
+	if only == "deathcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(1500.0)
+		p.max_hp = 9999.0
+		p.hp = 9999.0
+		p.facing = 1
+		for ty in ["grunt", "husk", "spitter", "elite"]:
+			var e := await spawn(ty, 1600.0, true)
+			await _frames(3)
+			var hs := {}
+			Combat.strike({"owner": p, "team": Combat.TEAM_PLAYER, "rect": e.get_hurtbox(), "damage": 5.0 if ty != "elite" else 18.0,
+				"poise": 0.0, "knock": 0.0, "dir": 1, "kind": "melee", "unblockable": false, "tag": "test"}, hs)
+			await _frames(5)
+			await _shot("hit_" + ty)
+			if ty != "elite":
+				e.queue_free()
+				await _wait(0.8)
+			else:
+				await _wait(0.5)
+				e.hp = 1.0
+				var hs2 := {}
+				Combat.strike({"owner": p, "team": Combat.TEAM_PLAYER, "rect": e.get_hurtbox(), "damage": 50.0,
+					"poise": 0.0, "knock": 0.0, "dir": 1, "kind": "melee", "unblockable": false, "tag": "test"}, hs2)
+				for tt in [0.15, 0.5, 0.9, 1.6, 2.6]:
+					await get_tree().create_timer(tt, true, false, true).timeout
+					await _shot("bossdeath_%.2f" % tt)
+		get_tree().quit()
+		return
 	if only == "pausecap":
 		shot_dir = Game.args.get("shots", "user://shots")
 		var p := await _fresh_level(700.0)

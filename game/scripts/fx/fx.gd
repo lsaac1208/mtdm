@@ -92,6 +92,77 @@ static func ash(pos: Vector2, n := 24, color := Color(0.2, 0.18, 0.16, 0.8)) -> 
 	particles(pos, n, color, 90.0, 80.0, Vector2.UP, -60.0, 1.4, 4.0)
 
 
+static var _shard_tex: Texture2D
+static var _paper_tex: Texture2D
+
+
+static func _rect_tex(w: int, h: int, col: Color, edge: Color) -> Texture2D:
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(col)
+	for x in w:
+		img.set_pixel(x, 0, edge)
+		img.set_pixel(x, h - 1, edge)
+	for y in h:
+		img.set_pixel(0, y, edge)
+		img.set_pixel(w - 1, y, edge)
+	return ImageTexture.create_from_image(img)
+
+
+## Tumbling debris pieces (paper scraps, armour shards).
+static func debris(pos: Vector2, n: int, tex: Texture2D, speed: float, gravity: float, life: float, dir := Vector2.UP, spread := 80.0, scale := 1.0) -> void:
+	var p := CPUParticles2D.new()
+	p.position = pos
+	p.amount = n
+	p.one_shot = true
+	p.explosiveness = 0.9
+	p.lifetime = life
+	p.texture = tex
+	p.direction = dir
+	p.spread = spread
+	p.initial_velocity_min = speed * 0.4
+	p.initial_velocity_max = speed
+	p.gravity = Vector2(0, gravity)
+	p.angular_velocity_min = -540.0
+	p.angular_velocity_max = 540.0
+	p.angle_min = 0.0
+	p.angle_max = 360.0
+	p.damping_min = 20.0
+	p.damping_max = 60.0
+	p.scale_amount_min = 0.6 * scale
+	p.scale_amount_max = 1.2 * scale
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(1, 1, 1, 1))
+	ramp.add_point(0.7, Color(1, 1, 1, 1))
+	ramp.set_color(ramp.get_point_count() - 1, Color(1, 1, 1, 0))
+	p.color_ramp = ramp
+	p.z_index = 9
+	p.emitting = true
+	layer().add_child(p)
+	p.finished.connect(p.queue_free)
+
+
+## Hit effect by material: flesh / paper / taint / armor.
+static func material_hit(pos: Vector2, dir: int, material: String, heavy := false) -> void:
+	var d := Vector2(dir, -0.35).normalized()
+	match material:
+		"paper":
+			if _paper_tex == null:
+				_paper_tex = _rect_tex(5, 8, Color(0.82, 0.68, 0.32), Color(0.5, 0.12, 0.08))
+			debris(pos, 8 if not heavy else 14, _paper_tex, 260.0, 260.0, 1.1, d, 70.0)
+			particles(pos, 6, Color(0.75, 0.68, 0.55, 0.6), 120.0, 90.0, d, -40.0, 0.6, 6.0)
+		"taint":
+			particles(pos, 16, Color(0.55, 0.74, 0.2, 0.95), 320.0, 50.0, d, 900.0, 0.5, 5.0)
+			particles(pos, 6, Color(0.35, 0.45, 0.12, 0.6), 80.0, 120.0, Vector2.UP, -60.0, 0.9, 9.0)
+		"armor":
+			spark(pos, Color(1.0, 0.72, 0.35), 12 if not heavy else 20)
+			if _shard_tex == null:
+				_shard_tex = _rect_tex(6, 4, Color(0.28, 0.24, 0.22), Color(0.6, 0.35, 0.2))
+			debris(pos, 3 if not heavy else 8, _shard_tex, 300.0, 1200.0, 0.8, d, 60.0)
+		_:
+			hit_ink(pos, dir, Color(0.22, 0.05, 0.04))
+			particles(pos, 4, Color(0.85, 0.82, 0.74), 260.0, 40.0, d, 1100.0, 0.4, 3.0)
+
+
 static func splat(pos: Vector2, size := 18.0, color := Color(0.12, 0.05, 0.04, 0.8)) -> void:
 	var s = preload("res://scripts/fx/ink_splat.gd").new()
 	s.position = pos + Vector2(0, 2)

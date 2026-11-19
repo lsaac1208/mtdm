@@ -13,6 +13,7 @@ var awake := false
 
 
 func _init() -> void:
+	hit_material = "paper"
 	rig_type = "husk"
 	walk_speed = 65.0
 	enemy_name = "封印残尸"

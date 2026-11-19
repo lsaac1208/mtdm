@@ -19,6 +19,7 @@ var summoned := false
 
 
 func _init() -> void:
+	hit_material = "armor"
 	rig_type = "elite"
 	walk_speed = 85.0
 	enemy_name = "尸将"
@@ -303,6 +304,13 @@ func _die(dir := 0) -> void:
 	anim("dead", 0.1, true)
 	Fx.shake(10.0, 0.6)
 	Fx.punch(0.08, 0.9)
-	Game.hitstop(0.3, 0.08)
+	Game.hitstop(1.1, 0.25)   # slow-motion fall
+	var c := global_position + Vector2(0, -100)
+	Fx.ring(c, 20.0, 340.0, Color(0.06, 0.05, 0.04, 0.85), 0.9, 22.0, 0.55)
+	Fx.ring(c, 10.0, 260.0, Color(0.7, 0.14, 0.08, 0.8), 0.7, 10.0, 0.55)
+	Fx.material_hit(c, -facing, "armor", true)
+	Fx.debris(c, 26, Fx._shard_tex if Fx._shard_tex else null, 520.0, 1300.0, 1.4, Vector2.UP, 160.0, 1.6)
+	if Game.level and Game.level.hud and Game.level.hud.has_method("boss_defeated"):
+		Game.level.hud.boss_defeated("尸将", "UNDEAD WARRIOR ELITE")
 	Fx.particles(global_position + Vector2(0, -120), 50, Color(0.35, 0.2, 0.15), 380.0, 150.0, Vector2.UP, 900.0, 1.2, 7.0)
 	_dissolve_t = -1.2   # linger longer before burning away

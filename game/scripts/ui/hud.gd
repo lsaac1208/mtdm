@@ -277,3 +277,88 @@ func fade_in(dur: float) -> void:
 	var tw := create_tween()
 	tw.tween_property(fade, "color:a", 0.0, dur)
 	await tw.finished
+
+
+## Boss defeat: white flash, letterbox, red 镇 seal stamp with caption.
+func boss_defeated(cn: String, en: String) -> void:
+	var flash := ColorRect.new()
+	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	flash.color = Color(1, 0.97, 0.9, 0.85)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(flash)
+	create_tween().set_ignore_time_scale(true).tween_property(flash, "color:a", 0.0, 0.6)
+	var bars := []
+	for top in [true, false]:
+		var b := ColorRect.new()
+		b.color = Color(0.03, 0.03, 0.03, 1)
+		b.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		b.anchor_right = 1.0
+		if top:
+			b.offset_bottom = 0.0
+		else:
+			b.anchor_top = 1.0
+			b.anchor_bottom = 1.0
+			b.offset_top = 0.0
+		add_child(b)
+		bars.append(b)
+		var tw := create_tween().set_ignore_time_scale(true)
+		if top:
+			tw.tween_property(b, "offset_bottom", 70.0, 0.4)
+		else:
+			tw.tween_property(b, "offset_top", -70.0, 0.4)
+	var seal := Control.new()
+	seal.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	seal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(seal)
+	var sq := ColorRect.new()
+	sq.color = Color(0.62, 0.12, 0.08, 0.92)
+	sq.size = Vector2(150, 150)
+	sq.position = Vector2(-75, -120)
+	seal.add_child(sq)
+	var inner := ReferenceRect.new()
+	inner.border_color = Color(0.95, 0.85, 0.7, 0.9)
+	inner.border_width = 4.0
+	inner.editor_only = false
+	inner.size = Vector2(130, 130)
+	inner.position = Vector2(-65, -110)
+	seal.add_child(inner)
+	var ch := Label.new()
+	ch.text = "镇"
+	ch.add_theme_font_override("font", BRUSH_FONT)
+	ch.add_theme_font_size_override("font_size", 112)
+	ch.add_theme_color_override("font_color", Color(0.97, 0.9, 0.78))
+	ch.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ch.position = Vector2(-75, -128)
+	ch.size = Vector2(150, 150)
+	seal.add_child(ch)
+	var cap := Label.new()
+	cap.text = "%s · 已镇\n%s SEALED" % [cn, en]
+	cap.add_theme_font_override("font", BRUSH_FONT)
+	cap.add_theme_font_size_override("font_size", 34)
+	cap.add_theme_color_override("font_color", Color(0.93, 0.86, 0.7))
+	cap.add_theme_color_override("font_outline_color", Color(0.04, 0.03, 0.03))
+	cap.add_theme_constant_override("outline_size", 8)
+	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cap.position = Vector2(-300, 44)
+	cap.size = Vector2(600, 100)
+	seal.add_child(cap)
+	seal.scale = Vector2(2.4, 2.4)
+	seal.modulate.a = 0.0
+	seal.rotation = -0.12
+	var st := create_tween().set_ignore_time_scale(true)
+	st.tween_interval(0.5)
+	st.tween_property(seal, "modulate:a", 1.0, 0.08)
+	st.parallel().tween_property(seal, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	st.parallel().tween_property(seal, "rotation", -0.05, 0.18)
+	st.tween_callback(func(): Sfx.play("seal_burst", -4.0, 0.0, 0.7); Fx.shake(5.0, 0.2))
+	st.tween_interval(2.4)
+	st.tween_property(seal, "modulate:a", 0.0, 0.8)
+	for b in bars:
+		var bt := create_tween().set_ignore_time_scale(true)
+		bt.tween_interval(3.0)
+		if b.anchor_top == 0.0:
+			bt.tween_property(b, "offset_bottom", 0.0, 0.6)
+		else:
+			bt.tween_property(b, "offset_top", 0.0, 0.6)
+		bt.tween_callback(b.queue_free)
+	st.tween_callback(func(): seal.queue_free(); flash.queue_free())

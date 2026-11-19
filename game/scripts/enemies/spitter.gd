@@ -12,6 +12,7 @@ var glow_amt := 0.0
 
 
 func _init() -> void:
+	hit_material = "taint"
 	rig_type = "spitter"
 	walk_speed = 75.0
 	enemy_name = "瘴吐者"
