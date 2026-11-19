@@ -161,6 +161,30 @@ func _separate(delta: float) -> void:
 			var push := (min_d - absf(d)) * (1.0 if d >= 0 else -1.0)
 			if o.team == team:
 				global_position.x += push * minf(1.0, delta * 6.0)
+	_keep_personal_space(delta)
+
+
+## Bodies of the hero and an upright enemy should not sink into each other:
+## two full painted figures on top of one another hide both the telegraph and
+## the strike. Only the enemy yields, only in neutral states, and never while
+## the hero dashes through or is airborne, so every attack window, dash-through
+## and jump-over answer keeps its measured timing.
+const _YIELD_STATES := ["chase", "alert", "idle", "wander", "detect", "recover", "stagger", "retreat"]
+
+
+func _keep_personal_space(delta: float) -> void:
+	var p = Game.player
+	if p == null or not is_instance_valid(p) or p.dead or hurt_size.y < 100.0:
+		return
+	if not (state in _YIELD_STATES) or p.state in ["dash", "dash_attack"]:
+		return
+	if absf(global_position.y - p.global_position.y) > 24.0:
+		return
+	var d: float = global_position.x - p.global_position.x
+	var min_d: float = (hurt_size.x + p.hurt_size.x) * 0.42
+	if absf(d) < min_d:
+		var side := 1.0 if d >= 0.0 else -1.0
+		global_position.x += (min_d - absf(d)) * side * minf(1.0, delta * 30.0)
 
 
 # ---------------------------------------------------------------- damage

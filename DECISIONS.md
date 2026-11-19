@@ -96,3 +96,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D23 · One UI theme (0.3.1)
 - `InkTheme.shared()` (code-built `Theme`) is set on the root window and on the pause/options roots (CanvasLayer children do not inherit the window theme). Screens keep their own font sizes/colours; only widget skins come from the theme.
+
+## D24 · Enemy personal space (0.3.1)
+- Upright enemies (hurtbox height ≥ 100) yield to the hero in neutral states only (chase/alert/idle/wander/detect/recover/stagger/retreat), to (hurt widths)·0.42 apart; never during the hero's dash/dash-attack or when heights differ (airborne), and never during enemy wind-ups/attacks. Attack timing windows are unchanged (`elite_fairness` passes). Crawlers are exempt (designed to be jumped over).

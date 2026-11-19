@@ -365,7 +365,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1113,6 +1113,28 @@ func t_guard_stance() -> void:
 	var y1 := Fx._number_slot(Vector2(5004, 302)).y
 	_log("guard_stance", guard_ok and relaxed_ok and y1 < y0 - 20.0,
 		"guard=%s relaxed=%s stack_dy=%.0f" % [guard_ok, relaxed_ok, y0 - y1])
+
+
+## Walking into an upright enemy must not stack the two figures; a dash still
+## passes through.
+func t_personal_space() -> void:
+	var p := await _fresh_level(1250.0)
+	p.max_hp = 9999.0
+	p.hp = 9999.0
+	await _wait(0.3)
+	var g := await spawn("grunt", 1370.0)
+	g.state = "stagger"
+	g.state_t = -99.0
+	hold(p, {"move_right": true})
+	var closest := 999.0
+	for i in 60:
+		await _frames(1)
+		g.state = "stagger"
+		closest = minf(closest, absf(g.global_position.x - p.global_position.x))
+	hold(p, {})
+	_log("personal_space", closest > 30.0, "closest=%.0f px" % closest)
+	g.queue_free()
+	await _frames(1)
 
 
 func t_enemy_ledge() -> void:
