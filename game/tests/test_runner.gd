@@ -30,9 +30,10 @@ func _frames(n: int) -> void:
 
 func _fresh_level(startx := 600.0) -> Player:
 	Game.args["startx"] = str(startx)
+	var old = Game.level
 	Game.new_run()
 	await _frames(3)
-	while Game.level == null or not is_instance_valid(Game.level) or Game.level.player == null:
+	while Game.level == null or not is_instance_valid(Game.level) or Game.level == old or Game.level.player == null:
 		await _frames(1)
 	await _frames(5)
 	var p: Player = Game.level.player
@@ -162,6 +163,30 @@ func _run() -> void:
 				for tt in [0.15, 0.5, 0.9, 1.6, 2.6]:
 					await get_tree().create_timer(tt, true, false, true).timeout
 					await _shot("bossdeath_%.2f" % tt)
+		get_tree().quit()
+		return
+	if only == "readcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var cases := [[900.0, "grunt"], [3000.0, "crawler"], [5300.0, "spitter"], [7300.0, "husk"], [10200.0, "elite"]]
+		for c in cases:
+			Game.args["skip_cleared"] = "1"
+			var p := await _fresh_level(c[0])
+			p.set_physics_process(false)
+			for other in Combat.enemies_alive():
+				other.visible = false
+				other.set_physics_process(false)
+			await _frames(2)
+			var e := await spawn(c[1], c[0] + 170.0, true)
+			if Game.level.hud:
+				Game.level.hud.visible = false
+			Game.level.fog_rect.visible = true
+			await _wait(1.2)
+			await _shot("read_%s_with" % c[1])
+			p.visible = false
+			if is_instance_valid(e):
+				e.visible = false
+			await _frames(3)
+			await _shot("read_%s_bg" % c[1])
 		get_tree().quit()
 		return
 	if only == "pausecap":

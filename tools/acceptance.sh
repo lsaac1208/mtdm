@@ -77,6 +77,13 @@ if command -v xvfb-run > /dev/null; then
   run_x -- --test=ending_shot --shots="$OUT/shots/ending" > "$OUT/r_end.log" 2>&1
   run_x --fixed-fps 60 -- --test=combocap --shots="$OUT/shots/combo" --nohitstop --noshake --frames=48 > "$OUT/r_combo.log" 2>&1
   timeout 120 xvfb-run -a -s "-screen 0 1280x720x24" "$G" --path . --rendering-driver opengl3 --resolution 1280x720 -- --autostart --startx=9150 --skip_cleared --fpslog --quit_after=14 > "$OUT/fps.log" 2>&1
+  run_x -- --test=readcap --shots="$OUT/read" --noshake > "$OUT/r_read.log" 2>&1
+  if $PY -I "$ROOT/tools/readability.py" "$OUT/read" "$OUT/readability" > "$OUT/readability.log" 2>&1 && tail -1 "$OUT/readability.log" | grep -q PASS; then
+    gate "Readability at 33% scale (all 5 zones)" PASS
+  else
+    gate "Readability at 33% scale" FAIL
+  fi
+  rm -f "$OUT"/read/*.png
   n=$(find "$OUT/shots" -name "*.png" | wc -l)
   [ "$n" -ge 20 ] && gate "Rendered captures under Xvfb ($n frames)" PASS || gate "Rendered captures ($n frames)" FAIL
   if command -v "$PY" > /dev/null; then
