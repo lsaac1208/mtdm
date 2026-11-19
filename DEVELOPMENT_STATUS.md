@@ -17,6 +17,9 @@ _Last updated: 2026-11-19 (v0.2.0) · branch `dev/vertical-slice-20261118` · en
 | `tools/audio/make_audio.py`, `tools/build/make_fonts.py` | audio + font generation |
 | `build/` (git-ignored) | exported binaries and zips |
 
+## Published
+- **v0.2.0 pre-release**: https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0 — tag `v0.2.0` → `e312e39` (the validated commit); 3 assets (Linux / Windows / macOS universal), SHA-256 in the release notes and identical to the acceptance-run builds. The downloaded Linux asset was re-run end to end (bot clear). Windows/macOS runtime still unverified. `main` untouched.
+
 ## v0.2.0 — what changed and how it was verified
 - **M7 animation (done):** real skinned cut-out rigs for the hero and all five enemies (`Skeleton2D`/`Bone2D`, weighted `Polygon2D` meshes built by `tools/rig/make_rig.py`, `AnimationPlayer` clips with crossfades, spring cloth). Hero: idle/walk/run/jump/fall/land/hit/block/dash/dead + attack wind-ups/recovery; enemies: distinct gaits (lurching shamble, ritual step, hunched waddle, heavy stomp, quadruped scuttle), wind-ups, elite rig-driven sweep, kneel, roar, death. Verified by frame-by-frame captures (`rigcap`, `combocap`, `walkcap`, `chopcap`, `crawlcap`, `jumpcap`) and tests (`hero_anim_no_pops`, `spec_conformance` heights). Painted concept poses remain as attack contact frames.
 - **M6 gameplay (done):** options menu (3 buses, shake, hit-stop, fullscreen, key rebinding; live key names in hints); run telemetry + `tools/telemetry_report.py`; balance pass (docs/BALANCE.md: human-like bot deaths 21 → 6 over 10 runs; elite 1.8 → 0.2 deaths/run); `elite_fairness` (sweep-jump window 0.36 s, dash windows 0.18 s); enemies hop ledges.
