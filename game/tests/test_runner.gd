@@ -123,6 +123,19 @@ func _run() -> void:
 				k += 1
 		get_tree().quit()
 		return
+	if only == "optcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(700.0)
+		await _wait(1.0)
+		var o := OptionsMenu.new()
+		var cl := CanvasLayer.new()
+		cl.layer = 30
+		Game.level.add_child(cl)
+		cl.add_child(o)
+		await _wait(0.4)
+		await _shot("options")
+		get_tree().quit()
+		return
 	if only == "pausecap":
 		shot_dir = Game.args.get("shots", "user://shots")
 		var p := await _fresh_level(700.0)
@@ -291,7 +304,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1115,6 +1128,49 @@ func t_soak() -> void:
 	var grow: float = counts[1][2] - counts[0][2]
 	_log("soak_no_leak", counts[1][0] - counts[0][0] < 20 and counts[1][1] < 20 and grow < 400,
 		"nodes %d->%d orphans %d->%d objects %d->%d" % [counts[0][0], counts[1][0], counts[0][1], counts[1][1], counts[0][2], counts[1][2]])
+
+
+func t_options() -> void:
+	# rebinding: attack -> H, check the action fires on H and no longer on J, persists, resets
+	Game.rebind("attack", KEY_H)
+	var ev := InputEventKey.new()
+	ev.physical_keycode = KEY_H
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	Input.flush_buffered_events()
+	var on_h := Input.is_action_pressed("attack")
+	ev.pressed = false
+	Input.parse_input_event(ev)
+	Input.flush_buffered_events()
+	Game.save_settings()
+	Game.reset_bindings()
+	Game.load_settings()
+	var persisted := Game.action_keys("attack") == [KEY_H]
+	Game.reset_bindings()
+	Game.save_settings()
+	_log("rebind_key_works_and_persists", on_h and persisted and Game.action_keys("attack") == [KEY_J], "H fired=%s persisted=%s" % [on_h, persisted])
+	# shake scale 0 disables camera shake
+	var p := await _fresh_level(700.0)
+	Game.shake_scale = 0.0
+	Game.level.shake(10.0, 0.5)
+	await _frames(3)
+	var off: Vector2 = Game.level.cam.offset
+	Game.shake_scale = 1.0
+	_log("shake_setting_respected", off == Vector2.ZERO, "offset=%s" % off)
+	# separate music/sfx buses
+	Game.set_bus_volume("Music", 0.3)
+	var mv := Game.bus_volume("Music")
+	Game.set_bus_volume("Music", 1.0)
+	_log("audio_buses", AudioServer.get_bus_index("Music") > 0 and AudioServer.get_bus_index("SFX") > 0 and absf(mv - 0.3) < 0.01
+		and Sfx.music.bus == "Music", "music=%.2f" % mv)
+	# the options menu builds and closes
+	var o := OptionsMenu.new()
+	Game.level.add_child(o)
+	await _frames(2)
+	var ok := o.get_child_count() > 0
+	o.close()
+	await _frames(2)
+	_log("options_menu_opens", ok, "")
 
 
 func t_spawn_surface() -> void:

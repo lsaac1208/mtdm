@@ -322,16 +322,18 @@ var _punch_len := 0.2
 
 
 func punch(amount: float, dur: float) -> void:
-	if Game.args.has("noshake"):
+	if Game.args.has("noshake") or Game.shake_scale <= 0.0:
 		return
+	amount *= Game.shake_scale
 	_punch = maxf(_punch if _punch_t > 0.0 else 0.0, amount)
 	_punch_t = dur
 	_punch_len = dur
 
 
 func shake(amount: float, dur: float) -> void:
-	if Game.args.has("noshake"):
+	if Game.args.has("noshake") or Game.shake_scale <= 0.0:
 		return
+	amount *= Game.shake_scale
 	_shake = maxf(_shake, amount)
 	_shake_t = maxf(_shake_t, dur)
 

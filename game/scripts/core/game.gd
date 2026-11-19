@@ -118,21 +118,101 @@ func _process(delta: float) -> void:
 const SETTINGS_PATH := "user://settings.cfg"
 
 
+var shake_scale := 1.0
+var hitstop_on := true
+const REBINDABLE := ["move_left", "move_right", "move_down", "jump", "attack", "dash", "block", "talisman", "gourd", "beads"]
+const BUS_NAMES := ["Master", "Music", "SFX"]
+
+
+func bus_volume(bus: String) -> float:
+	var i := AudioServer.get_bus_index(bus)
+	return db_to_linear(AudioServer.get_bus_volume_db(i)) if i >= 0 else 1.0
+
+
+func set_bus_volume(bus: String, v: float) -> void:
+	var i := AudioServer.get_bus_index(bus)
+	if i < 0:
+		i = Sfx.ensure_bus(bus) if bus != "Master" else 0
+	AudioServer.set_bus_volume_db(i, linear_to_db(maxf(v, 0.0001)))
+	AudioServer.set_bus_mute(i, v <= 0.001 or (i == 0 and args.has("mute")))
+
+
+## Keyboard keycodes currently bound to an action (pad bindings are untouched).
+func action_keys(action: String) -> Array:
+	var out := []
+	for ev in InputMap.action_get_events(action):
+		if ev is InputEventKey:
+			out.append(ev.physical_keycode)
+	return out
+
+
+func rebind(action: String, keycode: int) -> void:
+	for ev in InputMap.action_get_events(action):
+		if ev is InputEventKey:
+			InputMap.action_erase_event(action, ev)
+	var k := InputEventKey.new()
+	k.physical_keycode = keycode
+	InputMap.action_add_event(action, k)
+
+
+func reset_bindings() -> void:
+	for action in REBINDABLE:
+		for ev in InputMap.action_get_events(action):
+			if ev is InputEventKey:
+				InputMap.action_erase_event(action, ev)
+		for kc in BINDINGS[action]:
+			var k := InputEventKey.new()
+			k.physical_keycode = kc
+			InputMap.action_add_event(action, k)
+
+
+## Replace {action} placeholders with the currently bound key names.
+func fmt_keys(text: String) -> String:
+	var out := text
+	for action in REBINDABLE:
+		var tag := "{%s}" % action
+		if out.contains(tag):
+			var names := []
+			for kc in action_keys(action):
+				names.append(OS.get_keycode_string(kc))
+			out = out.replace(tag, " / ".join(names) if not names.is_empty() else "?")
+	return out
+
+
 func load_settings() -> void:
 	var cf := ConfigFile.new()
 	if cf.load(SETTINGS_PATH) != OK:
 		return
-	var v: float = cf.get_value("audio", "volume", 1.0)
-	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(v, 0.0001)))
-	AudioServer.set_bus_mute(0, v <= 0.001 or args.has("mute"))
+	set_bus_volume("Master", cf.get_value("audio", "volume", 1.0))
+	set_bus_volume("Music", cf.get_value("audio", "music", 1.0))
+	set_bus_volume("SFX", cf.get_value("audio", "sfx", 1.0))
+	shake_scale = cf.get_value("video", "shake", 1.0)
+	hitstop_on = cf.get_value("video", "hitstop", true)
 	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
 		get_window().mode = Window.MODE_FULLSCREEN
+	if cf.has_section("keys"):
+		for action in REBINDABLE:
+			if cf.has_section_key("keys", action):
+				var codes: Array = cf.get_value("keys", action)
+				for ev in InputMap.action_get_events(action):
+					if ev is InputEventKey:
+						InputMap.action_erase_event(action, ev)
+				for kc in codes:
+					var k := InputEventKey.new()
+					k.physical_keycode = kc
+					InputMap.action_add_event(action, k)
 
 
 func save_settings() -> void:
 	var cf := ConfigFile.new()
-	cf.set_value("audio", "volume", db_to_linear(AudioServer.get_bus_volume_db(0)))
+	cf.set_value("audio", "volume", bus_volume("Master"))
+	cf.set_value("audio", "music", bus_volume("Music"))
+	cf.set_value("audio", "sfx", bus_volume("SFX"))
+	cf.set_value("video", "shake", shake_scale)
+	cf.set_value("video", "hitstop", hitstop_on)
 	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
+	for action in REBINDABLE:
+		cf.set_value("keys", action, action_keys(action))
 	cf.save(SETTINGS_PATH)
 
 
@@ -146,7 +226,7 @@ func _input(e: InputEvent) -> void:
 
 ## Freeze-frame for impact weight. Uses real time so it always recovers.
 func hitstop(duration: float, scale := 0.05) -> void:
-	if args.has("nohitstop"):
+	if args.has("nohitstop") or not hitstop_on:
 		return
 	var now := Time.get_ticks_msec() / 1000.0
 	_hitstop_until = maxf(_hitstop_until, now + duration)
@@ -187,7 +267,7 @@ func set_checkpoint(id: int) -> void:
 
 
 func show_hint(text: String, duration := 4.0) -> void:
-	hint.emit(text, duration)
+	hint.emit(fmt_keys(text), duration)
 
 
 func format_time(t: float) -> String:

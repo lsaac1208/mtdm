@@ -13,17 +13,31 @@ var muted := false
 var _last_play := {}
 
 
+static func ensure_bus(name_: String) -> int:
+	var i := AudioServer.get_bus_index(name_)
+	if i == -1:
+		AudioServer.add_bus()
+		i = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(i, name_)
+		AudioServer.set_bus_send(i, "Master")
+	return i
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	ensure_bus("Music")
+	ensure_bus("SFX")
 	for i in POOL:
 		var p := AudioStreamPlayer.new()
-		p.bus = "Master"
+		p.bus = "SFX"
 		add_child(p)
 		_players.append(p)
 	music = AudioStreamPlayer.new()
+	music.bus = "Music"
 	music.volume_db = -9.0
 	add_child(music)
 	ambience = AudioStreamPlayer.new()
+	ambience.bus = "SFX"
 	ambience.volume_db = -14.0
 	add_child(ambience)
 	# master bus safety: soft compression + hard limiter so stacked hits never clip

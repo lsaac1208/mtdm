@@ -55,7 +55,7 @@ func _ready() -> void:
 	menu.position = Vector2(130, 410)
 	menu.add_theme_constant_override("separation", 10)
 	add_child(menu)
-	for b in [["开始游戏  ·  Start", "_start"], ["操作说明  ·  Controls", "_help"], ["退出  ·  Quit", "_quit"]]:
+	for b in [["开始游戏  ·  Start", "_start"], ["操作说明  ·  Controls", "_help"], ["设置  ·  Options", "_options"], ["退出  ·  Quit", "_quit"]]:
 		var btn := Button.new()
 		btn.text = b[0]
 		btn.custom_minimum_size = Vector2(300, 48)
@@ -63,7 +63,7 @@ func _ready() -> void:
 		btn.pressed.connect(Callable(self, b[1]))
 		menu.add_child(btn)
 	help = Label.new()
-	help.text = preload("res://scripts/ui/pause_menu.gd").CONTROLS
+	help.text = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").CONTROLS)
 	help.add_theme_font_size_override("font_size", 17)
 	help.add_theme_color_override("font_color", Color(0.12, 0.1, 0.08))
 	help.position = Vector2(470, 410)
@@ -95,8 +95,15 @@ func _start() -> void:
 
 
 func _help() -> void:
+	help.text = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").CONTROLS)
 	help.visible = not help.visible
 	Sfx.play("ui_move", -6.0)
+
+
+func _options() -> void:
+	var o := OptionsMenu.new()
+	add_child(o)
+	o.closed.connect(func(): (menu.get_child(2) as Button).grab_focus())
 
 
 func _quit() -> void:
