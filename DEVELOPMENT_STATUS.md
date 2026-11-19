@@ -17,6 +17,11 @@ _Last updated: 2026-11-19 (session 3) · branch `dev/vertical-slice-20261118` ·
 | `tools/audio/make_audio.py`, `tools/build/make_fonts.py` | audio + font generation |
 | `build/` (git-ignored) | exported binaries and zips |
 
+## v0.2.0 progress (in development)
+- **M7 animation — done (verified by rendered captures + tests):** real cut-out rigs replace single-pose deformation. `tools/rig/make_rig.py` splits a concept pose into part layers (inpaints what each part hides, synthesizes hidden thigh fabric), builds grid meshes with inverse-distance bone weights; `CutoutRig` = `Skeleton2D`/`Bone2D` + skinned `Polygon2D` in a `CanvasGroup` (ink outline/flash/burn on the composite) + `AnimationPlayer` clips with crossfades + spring cloth (ribbon, robe panels). Rigs: hero, elite, grunt, husk, spitter, crawler (quadruped). Clips: hero idle/walk/run/jump/fall/land/hit/block/dash/dead + attack wind-ups/recovery; per-enemy locomotion and attack anticipation (elite chop/sweep wind-ups, rig-driven sweep, kneel, roar, death). Painted concept poses remain as attack contact frames (35 ms cut). Limits: one source pose per character — no turnaround, hands/fingers don't articulate, the hero's base pose is three-quarter front.
+- **M6 gameplay — done:** options menu (Master/Music/SFX buses, shake strength, hit-stop, fullscreen, keyboard rebinding, persisted; live key names in hints); telemetry + balance pass (docs/BALANCE.md: deaths 21 → 6 over 10 human-like runs, elite 1.8 → 0.2/run); boss fairness gates (sweep jump window 0.36 s, dash windows 0.18 s).
+- Next: M8 audio, M9 visuals, M10 packaging (see ROADMAP).
+
 ## Acceptance evidence
 Run `GODOT=<godot> tools/acceptance.sh <version>` — it runs every executable gate and writes `evidence/acceptance-<date>/REPORT.md` (gates table, spec rows, test list, FPS, rendered frames, contact sheet). Latest: `evidence/acceptance-20261119/` at commit `556ec45` — **12/12 gates PASS**: 42 engine checks in source **and** inside the exported v0.1.3 Linux binary; 3 perfect + 3 human-like bot clears (human-like deaths 0/1/9 — the 9-death run died 8× at the elite, which has a campfire right before the arena); soak (2 full playthroughs in one process, nodes 37→37, 0 orphans); exported-build bot clear; 50 rendered frames; 61–73 FPS at 720p on software GL.
 

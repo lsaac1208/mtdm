@@ -19,6 +19,13 @@ Priorities follow the project directive: launchable → core combat → distinct
 ## Done in session 3 (v0.1.3)
 - Arm bones + attack arm curves (hero and enemies), enemy ledge hop, spec-conformance/continuity/ledge tests, acceptance.sh with committed evidence.
 
+## v0.2.0 (in progress)
+- [x] M7 skinned cut-out rigs + clips for hero and all five enemies
+- [x] M6 options menu, telemetry, balance pass, fairness tests
+- [ ] M8 audio refinement + boss music + audio review evidence
+- [ ] M9 environment art, material hit effects, boss death, scale readability, zone comparison
+- [ ] M10 packaging, Windows/macOS feasibility, v0.2.0 acceptance
+
 ## Next
 ### M6 · Playtest & tuning (highest value)
 - Human playtest of the full route; record time-to-clear, deaths per encounter, confusing moments.
