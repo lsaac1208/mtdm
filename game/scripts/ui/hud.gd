@@ -35,7 +35,7 @@ func _ready() -> void:
 	draw_root.draw.connect(_draw_hud)
 	add_child(draw_root)
 	if ResourceLoader.exists("res://assets/ui/portrait.png"):
-		portrait = load("res://assets/ui/portrait.png")
+		portrait = _round_portrait(load("res://assets/ui/portrait.png"))
 	for k in ["icon_gourd", "icon_talisman", "icon_beads"]:
 		icons[k] = PoseSprite.tex(k)
 	# hint strip
@@ -174,6 +174,30 @@ func _on_player_died() -> void:
 	zone_cn.text = "身 陨"
 	zone_en.text = "道心未灭 —— 篝火处再起"
 	zone_t = 2.6
+
+
+## Cut the square portrait to a soft-edged disc so it sits inside the brass
+## ring instead of poking its corners out of it.
+static func _round_portrait(tex: Texture2D) -> Texture2D:
+	var img := tex.get_image()
+	if img == null:
+		return tex
+	if img.is_compressed():
+		img.decompress()
+	img.convert(Image.FORMAT_RGBA8)
+	var w := img.get_width()
+	var h := img.get_height()
+	var c := Vector2(w, h) * 0.5
+	var r := minf(w, h) * 0.5
+	for y in h:
+		for x in w:
+			var d := Vector2(x + 0.5, y + 0.5).distance_to(c)
+			var a := clampf((r - d) / 1.5, 0.0, 1.0)
+			if a < 1.0:
+				var px := img.get_pixel(x, y)
+				px.a *= a
+				img.set_pixel(x, y, px)
+	return ImageTexture.create_from_image(img)
 
 
 func _on_hint(text: String, dur: float) -> void:
