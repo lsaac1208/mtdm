@@ -38,6 +38,7 @@ var tint := Color.WHITE
 var dissolve := 0.0
 var jitter := 0.0
 var alpha := 1.0
+var painted_mul := 1.0
 var _fade := 0.0
 var _fade_len := 0.0
 var _toff := randf() * 10.0
@@ -128,9 +129,9 @@ func _process(delta: float) -> void:
 		if _fade <= 0.0:
 			prev.visible = false
 	var fa := clampf(_fade / maxf(_fade_len, 0.001), 0.0, 1.0)
-	_set_params(cur, alpha * (1.0 - fa * 0.5))
+	_set_params(cur, alpha * painted_mul * (1.0 - fa * 0.5))
 	if prev.visible:
-		_set_params(prev, alpha * fa)
+		_set_params(prev, alpha * painted_mul * fa)
 	flash = maxf(0.0, flash - delta * 6.0)
 
 

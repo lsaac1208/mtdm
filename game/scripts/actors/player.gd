@@ -79,9 +79,18 @@ func _init() -> void:
 	shadow_w = 58.0
 
 
+func _make_visual() -> PoseSprite:
+	return HeroVisual.new()
+
+
+const WINDUP_CLIP := {"slash1": "windup_slash", "slash2": "windup_over", "down": "windup_over", "slash3": "windup_thrust"}
+var _last_clip_pos := 0.0
+
+
 func _ready() -> void:
 	super._ready()
 	vis.set_pose("hero_01_ready", 0.0)
+	vis.play_clip.call_deferred("idle", 0.0)
 	vis.sway = 0.005
 	Game.player = self
 
@@ -285,7 +294,7 @@ func _start_attack(name_: String) -> void:
 	var ax := _axis()
 	if ax != 0.0:
 		facing = int(signf(ax))
-	vis.set_pose(cur_atk.pre, 0.04)
+	vis.play_clip(WINDUP_CLIP.get(name_, "windup_slash"), 0.04, true)
 	Sfx.play("swing_pre", -12.0)
 
 
@@ -335,6 +344,8 @@ func _st_attack(delta: float) -> void:
 		set_state("block")
 		block_t = 0.0
 		return
+	if t >= st + ac + a.recover * 0.5 and not vis.rig_on:
+		vis.play_clip("recover", 0.06, true)
 	if t >= total:
 		set_state("idle")
 
@@ -438,7 +449,7 @@ func _st_jump_attack(delta: float) -> void:
 func _st_block(delta: float) -> void:
 	block_t += delta
 	velocity.x = move_toward(velocity.x, 0.0, 2400.0 * delta)
-	vis.set_pose("hero_11_defense", 0.04)
+	vis.play_clip("block", 0.05)
 	var ax := _axis()
 	if ax != 0.0 and block_t < 0.05:
 		facing = int(signf(ax))
@@ -563,7 +574,7 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 		if heavy:
 			set_state("hit")
 			_hit_stun = 0.45
-			vis.set_pose("hero_12_hit", 0.03)
+			vis.play_clip("hit", 0.03, true)
 		return {"blocked": true}
 	if state in ["beads_a", "beads_b"]:
 		# prayer-bead array grants super armour: take reduced damage, no stun
@@ -574,7 +585,7 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 		return {}
 	set_state("hit")
 	_hit_stun = 0.32 if atk.damage < 20 else 0.48
-	vis.set_pose("hero_12_hit", 0.02)
+	vis.play_clip("hit", 0.03, true)
 	var dir := 1 if global_position.x >= from_x else -1
 	facing = -dir
 	knock_v = dir * atk.knock * 1.2
@@ -624,7 +635,7 @@ func _st_hit(delta: float) -> void:
 func _die() -> void:
 	dead = true
 	set_state("dead")
-	vis.set_pose("hero_13_recovery", 0.1)
+	vis.play_clip("dead", 0.08, true)
 	Sfx.play("player_die", 0.0)
 	Fx.shake(8.0, 0.3)
 	Game.hitstop(0.2, 0.1)
@@ -642,7 +653,7 @@ func respawn_at(pos: Vector2) -> void:
 	vis.alpha = 1.0
 	vis.dissolve = 0.0
 	set_state("idle")
-	vis.set_pose("hero_01_ready", 0.0)
+	vis.play_clip("idle", 0.0, true)
 	hp_changed.emit(hp, max_hp)
 	qi_changed.emit(qi, MAX_QI)
 	gourd_changed.emit(gourd)
@@ -711,38 +722,39 @@ func _animate(delta: float) -> void:
 	vis.breathe = 0.0
 	vis.tint = Color(0.82, 1.0, 0.7) if in_taint > 0.0 else Color.WHITE
 	vis.alpha = 0.7 if (invuln > 0.0 and state != "dash" and state != "dash_attack" and int(invuln * 20) % 2 == 0) else 1.0
+	var cut: CutoutRig = vis.cut
+	cut.speed_scale = 1.0
 	match state:
 		"idle":
-			vis.set_pose("hero_01_ready", 0.08)
-			vis.breathe = 0.004
+			vis.play_clip("idle", 0.18)
 		"run":
-			vis.set_pose("hero_01_ready", 0.08)
-			_step_t += delta * 13.0 * _speed_mul()
-			vis.phase = _step_t
-			vis.stride = 0.0
-			vis.legs = 0.42
-			vis.leg_lift = 0.75
-			vis.torso_twist = -0.045
-			# legs swinging about the hip shorten vertically: drop the body to keep feet planted
-			var L := 150.0 * vis.hip_frac
-			vis.bob = -L * (1.0 - cos(vis.legs * sin(_step_t))) + absf(cos(_step_t)) * 2.0
-			target_lean = 7.0
-			if int(_step_t / PI) != int((_step_t - delta * 13.0) / PI):
-				Sfx.play("step", -18.0, 0.15)
-				Fx.dust(global_position + Vector2(-10 * facing, 0), 2, Vector2(-facing, -0.5))
+			var spd := absf(velocity.x)
+			if spd < 170.0:
+				vis.play_clip("walk", 0.15)
+				cut.speed_scale = clampf(spd / 140.0, 0.4, 1.3)
+			else:
+				vis.play_clip("run", 0.12)
+				cut.speed_scale = clampf(spd / 260.0, 0.6, 1.3)
+			# footfalls at the two contact keys of the cycle
+			var pos := cut.clip_progress()
+			for contact in [0.1, 0.6]:
+				if _last_clip_pos < contact and pos >= contact:
+					Sfx.play("step", -18.0, 0.15)
+					Fx.dust(global_position + Vector2(-10 * facing, 0), 2, Vector2(-facing, -0.5))
+			_last_clip_pos = pos
 		"air":
-			# plain jump: ready pose with knees drawn up (jump-attack keeps pose 07)
-			vis.set_pose("hero_01_ready", 0.06)
-			var rise := clampf(-velocity.y / 760.0, -1.0, 1.0)
-			vis.tuck = 0.55 + 0.25 * rise
-			vis.bob = 0.0
-			target_lean = clampf(velocity.y / 90.0, -6.0, 8.0) + 4.0
-		"land", "dead":
-			vis.set_pose("hero_13_recovery", 0.07)
+			vis.play_clip("jump" if velocity.y < 0.0 else "fall", 0.14)
+			target_lean = clampf(velocity.y / 120.0, -4.0, 6.0)
+		"land":
+			vis.play_clip("land", 0.04, state_t < 0.02)
+		"dead":
+			vis.play_clip("dead", 0.08)
+		"dash":
+			vis.set_pose("hero_06_dash", 0.03)
 		"attack":
-			target_lean = cur_atk.get("lean", 0.0) if state_t >= cur_atk.startup else -3.0
+			target_lean = cur_atk.get("lean", 0.0) if state_t >= cur_atk.startup else -2.0
 		"hit":
-			target_lean = -10.0
+			target_lean = -6.0
 	# arms: attacks drive _arm; locomotion swings arms against the legs
 	var ar0 := 0.0
 	var ar1 := 0.0

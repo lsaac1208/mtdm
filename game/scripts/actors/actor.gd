@@ -36,7 +36,7 @@ func _ready() -> void:
 	cs.shape = shape
 	cs.position = Vector2(0, -shape.size.y / 2.0)
 	add_child(cs)
-	vis = PoseSprite.new()
+	vis = _make_visual()
 	add_child(vis)
 	Combat.register(self)
 	z_index = 5
@@ -44,6 +44,10 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	Combat.unregister(self)
+
+
+func _make_visual() -> PoseSprite:
+	return PoseSprite.new()
 
 
 func get_hurtbox() -> Rect2:

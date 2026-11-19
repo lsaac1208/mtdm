@@ -247,6 +247,34 @@ func _run() -> void:
 				n += 1
 		get_tree().quit()
 		return
+	if only == "rigcap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(700.0)
+		p.set_physics_process(false)
+		p.vis.visible = false
+		var rig := CutoutRig.new()
+		p.add_child(rig)
+		rig.setup("res://assets/rig/hero", HeroClips.clips())
+		rig.z_index = 6
+		if Game.args.has("tintparts"):
+			var cols := [Color(1, 0.4, 0.4), Color(0.4, 1, 0.4), Color(0.4, 0.4, 1), Color(1, 1, 0.3), Color(1, 0.4, 1), Color(0.3, 1, 1), Color(1, 0.7, 0.3), Color(0.7, 0.7, 0.7), Color(0.6, 0.3, 1)]
+			var ci := 0
+			for n in rig.pivot.get_children():
+				if n is Polygon2D:
+					n.modulate = cols[ci % cols.size()]
+					print("PART ", n.name, " ", cols[ci % cols.size()])
+					ci += 1
+		var seq: Array = (Game.args.get("clips", "idle:2,run:8,jump:2,fall:2,land:2,block:2,hit:2,windup_slash:2,windup_over:2,windup_thrust:2,dead:2") as String).split(",")
+		for item in seq:
+			var kv := (item as String).split(":")
+			rig.play(kv[0], 0.08, true)
+			var n := int(kv[1])
+			var clip_len: float = rig.player.get_animation(kv[0]).length
+			for i in n:
+				await _wait(maxf(clip_len / n, 0.05) if kv[0] != "idle" else 0.6)
+				await _shot("rig_%s_%d" % [kv[0], i])
+		get_tree().quit()
+		return
 	if only == "debug":
 		var p := await _fresh_level(600.0)
 		await _wait(0.3)
@@ -972,9 +1000,7 @@ func t_anim_continuity() -> void:
 			p.input_override = {"block": true}
 		await _frames(1)
 		f += 1
-		var s: Sprite2D = p.vis.cur
-		var md := PoseSprite.meta(p.vis.pose)
-		var body_c: Vector2 = s.global_transform * Vector2(md.foot_x, md.foot_y - md.body_h * 0.5)
+		var body_c: Vector2 = p.vis.visual_center()
 		var rel := body_c - p.global_position
 		if last != Vector2.INF:
 			var d := rel.distance_to(last)
