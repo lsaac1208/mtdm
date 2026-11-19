@@ -1,5 +1,16 @@
 # 《道行者 / Taoist Wanderer》（项目代号：`mtdm`）— 第一批开发交付物料与核心设定总库
 
+## 下载试玩与开发工程
+
+目前可玩的版本是 **0.3.0 RC1**。从荒村入口向东，到第一场战斗体验道剑、符箓与弹反；完整试玩共五个区域，终点为尸将和光门。
+
+- [下载 macOS、Windows、Linux 试玩包，查看校验值和平台测试](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1)
+- [观看 21 秒荒村实机前后对照](https://github.com/lsaac1208/mtdm/releases/download/v0.3.0-rc.1/01-village-before-after.mp4)
+- [当前游戏工程](https://github.com/lsaac1208/mtdm/tree/codex/visual-polish-v03) · [用 Godot 运行与导出](https://github.com/lsaac1208/mtdm/blob/codex/visual-polish-v03/BUILD_AND_RUN.md) · [玩法、截图与验收报告](https://github.com/lsaac1208/mtdm/tree/codex/visual-polish-v03/evidence/v0.3)
+
+下文保留原始设定与第一批交付物，供开发人员查阅角色、敌人和世界观的设计依据。
+
+
 > **「末日废土之上，道法不灭，万物异变。」**  
 > *In the wasteland, the Tao endures, all things rot and transform.*
 >
