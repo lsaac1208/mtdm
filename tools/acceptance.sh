@@ -54,7 +54,7 @@ grep -q PASS <<< "$r" && gate "Soak: $r" PASS || gate "Soak: $r" FAIL
 
 echo "== export"
 mkdir -p "$ROOT/build"
-if GODOT="$G" $PY "$ROOT/tools/build/package.py" "$VER" > "$OUT/package.log" 2>&1; then gate "Export + package Linux/Windows ($VER)" PASS; else gate "Export + package" FAIL; fi
+if GODOT="$G" $PY "$ROOT/tools/build/package.py" "$VER" > "$OUT/package.log" 2>&1; then gate "Export + package Linux/Windows/macOS ($VER)" PASS; else gate "Export + package" FAIL; fi
 ls -la "$ROOT"/build/*.zip >> "$OUT/package.log" 2>&1
 
 echo "== exported linux build"
@@ -145,7 +145,8 @@ rm -f "$OUT"/import.log
   echo "## Not verifiable here"
   echo "- Human playtest (feel, difficulty, first-time readability)."
   echo "- Listening test of audio (mix verified numerically from a movie-writer recording only)."
-  echo "- Windows runtime (export built; no Windows/Wine available)."
+  echo "- Windows runtime (export built; no Windows machine, Wine install not permitted here)."
+  echo "- macOS runtime (universal .app exported, ad-hoc signed, not notarized; no Mac available)."
   echo "- Physical gamepad (bindings verified by injected joypad events)."
   echo "- Real-GPU frame rate."
 } > "$OUT/REPORT.md"

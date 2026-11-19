@@ -56,7 +56,7 @@ GODOT=$G PYTHON=python3 tools/acceptance.sh 0.1.3   # ~25 min; exit 0 = all gate
 ```
 Needs Pillow for the contact sheet and `xvfb-run` for rendered frames (skipped otherwise). Do not override `XDG_DATA_HOME` when running it — Godot looks for export templates there.
 
-Extra single checks: `spec`, `anim_continuity`, `enemy_ledge`, `spawn_surface`, `gamepad_map`, `flow`. Capture modes (Xvfb): `showcase`, `combocap`, `chopcap`, `crawlcap`, `walkcap`, `runcap`, `jumpcap`, `pausecap`, `ending_shot`.
+Extra single checks: `elite_fairness`, `boss_music`, `options`, `spec`, `anim_continuity`, `enemy_ledge`, `spawn_surface`, `gamepad_map`, `flow`. Capture modes (Xvfb): `rigcap` (`--clips=run:8,idle:2`, `--tintparts`), `deathcap`, `optcap`, `readcap`, `showcase`, `combocap`, `chopcap`, `crawlcap`, `walkcap`, `runcap`, `jumpcap`, `pausecap`, `ending_shot`.
 
 ## 4. Export
 ```bash
@@ -70,12 +70,25 @@ GODOT=$G python3 tools/build/package.py 0.1.0   # -> build/TaoistWanderer-v0.1.0
 ```
 Both presets embed the PCK (single file). Run the Linux build with `./build/linux/TaoistWanderer.x86_64`. The exported binary accepts the same test flags, e.g. `./TaoistWanderer.x86_64 --headless --fixed-fps 60 -- --test=bot --mute`.
 
+## 4b. macOS (from Linux, no Apple account)
+The `macOS` preset exports a universal (x86_64 + arm64) `.app`, ad-hoc signed by Godot's built-in signer, not notarized. Requires `rendering/textures/vram_compression/import_etc2_astc=true` (set). `tools/build/package.py` builds it alongside Linux/Windows. Users must right-click → Open the first time (Gatekeeper). A Developer ID + notarization is needed for a frictionless install — not available here.
+
 ## 5. Regenerating assets (optional)
 ```bash
 PY="python3 -I"
 $PY tools/art/extract.py tools/art/sprites.json game/assets/sprites   # pose cut-outs from concept_art/
 $PY tools/art/make_env.py game/assets/env                             # ink-wash backgrounds, props, title/ending, portrait
 $PY tools/audio/make_audio.py game/assets/audio                       # SFX + music
-$PY tools/build/make_fonts.py game/assets/fonts                       # needs Noto Serif CJK + Ma Shan Zheng installed
+$PY tools/build/make_fonts.py game/assets/fonts
+# cut-out rigs (parts, meshes, bone weights) from the concept poses
+for r in hero elite grunt husk spitter crawler; do $PY tools/rig/make_rig.py tools/rig/${r}_rig_def.py game/assets/rig/$r; done
+$PY tools/art/make_env.py game/assets/env zones          # per-zone parallax skylines only
+$PY tools/audio/audio_review.py game/assets/audio docs/audio_review   # automated audio review                       # needs Noto Serif CJK + Ma Shan Zheng installed
 ```
 `make_env.py` also writes `title_sky.png` / `ending_sky.png` intermediates; they are not used by the game and can be deleted.
+
+## 6. Balance telemetry
+```bash
+for i in $(seq 10); do $G --headless --fixed-fps 60 --path game -- --test=bot --mute --nohitstop --bot_skill=human > /tmp/tel_$i.log & done; wait
+python3 tools/telemetry_report.py /tmp/tel_*.log    # damage per attack, death causes, per-encounter stats
+```

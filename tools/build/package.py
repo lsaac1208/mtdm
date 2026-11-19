@@ -6,9 +6,10 @@ import os, subprocess, sys, zipfile
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 godot = os.environ.get("GODOT", "godot")
-ver = sys.argv[1] if len(sys.argv) > 1 else "0.1.0"
+ver = sys.argv[1] if len(sys.argv) > 1 else "0.2.0"
 targets = [("Linux", "linux", "TaoistWanderer.x86_64", "linux-x86_64"),
-           ("Windows", "windows", "TaoistWanderer.exe", "windows-x86_64")]
+           ("Windows", "windows", "TaoistWanderer.exe", "windows-x86_64"),
+           ("macOS", "macos", "TaoistWanderer.zip", "macos-universal")]
 for preset, sub, binary, tag in targets:
     out_dir = os.path.join(root, "build", sub)
     os.makedirs(out_dir, exist_ok=True)
@@ -21,11 +22,17 @@ for preset, sub, binary, tag in targets:
         sys.exit("export failed: " + preset)
     zpath = os.path.join(root, "build", f"TaoistWanderer-v{ver}-{tag}.zip")
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
-        zi = zipfile.ZipInfo(binary)
-        zi.external_attr = 0o755 << 16
-        zi.compress_type = zipfile.ZIP_DEFLATED
-        with open(out, "rb") as fh:
-            z.writestr(zi, fh.read())
+        if binary.endswith(".zip"):
+            # macOS: Godot already produced a zipped .app; copy its entries (keeps exec bits)
+            with zipfile.ZipFile(out) as src:
+                for info in src.infolist():
+                    z.writestr(info, src.read(info.filename))
+        else:
+            zi = zipfile.ZipInfo(binary)
+            zi.external_attr = 0o755 << 16
+            zi.compress_type = zipfile.ZIP_DEFLATED
+            with open(out, "rb") as fh:
+                z.writestr(zi, fh.read())
         for doc, name in [("RELEASE_NOTES.md", "README.md"), ("game/ASSETS_AND_CREDITS.md", "ASSETS_AND_CREDITS.md")]:
             z.write(os.path.join(root, doc), name)
     print(zpath, os.path.getsize(zpath) // 1048576, "MB")

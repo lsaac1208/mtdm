@@ -73,3 +73,20 @@ Significant technical and production decisions, newest last. Each entry: decisio
 ## D16 · Acceptance is a script, evidence is committed
 - `tools/acceptance.sh` is the release gate: engine tests, 6 bot runs (perfect + human-like), export + package, the same tests and a bot inside the exported binary, rendered captures, FPS log. It writes `evidence/acceptance-<date>/REPORT.md` with compact JPG frames (≈2 MB) so claims in DEVELOPMENT_STATUS are traceable to logs in git.
 - `package.py` deletes old binaries before exporting so a failed export can never be verified as stale.
+
+## D17 · Real cut-out rigs from single concept poses (v0.2.0, M7)
+- `tools/rig/make_rig.py` + `tools/rig/<char>_rig_def.py` (bones + part polygons in source pixels): pixels are assigned to parts; what each part hides is reconstructed (row-span inpaint under arms, synthesized trouser fabric under the skirt); each part gets a grid mesh with inverse-distance bone weights (per-part sharpness; smooth skirt/thigh coupling).
+- Runtime: `CutoutRig` (CanvasGroup) → `Skeleton2D`/`Bone2D` + skinned `Polygon2D` parts; clips are keyframe tables (`HeroClips`, `EnemyClips`) compiled into `Animation` resources for an `AnimationPlayer` (manual advance, crossfade blending); spring bones for ribbon/robe panels; the group shader draws the ink contour/flash/burn on the composited figure.
+- Why not new frames: no artist and no image-generation tool here; the rig keeps the exact concept-art look and gives continuous motion. Limits: one view per character, no hand articulation.
+
+## D18 · Hybrid: rig in-betweens, painted contact frames
+- `RigVisual` keeps the painted action poses (sheet 02, 06–10) as attack contact frames (35 ms cut) and uses the rig for anticipation, recovery, locomotion and reactions. `pose_map` routes existing AI `set_pose()` calls to clips; walk vs idle is chosen from actual speed and the cycle rate is scaled to ground speed.
+
+## D19 · Balance by telemetry + fairness gates (M6)
+- Every run records damage per attack source, death causes and per-encounter stats (`Game.telemetry`, printed by the bot). Tuning is justified in `docs/BALANCE.md`; boss heavies must be avoidable by their documented answer within a measured input window (`elite_fairness`).
+
+## D20 · Audio normalized by category (M8)
+- `save()` in the generator normalizes each file to a per-category loudest-400 ms RMS target and soft-limits to −1 dBFS; loops get no edge fades and a seam crossfade. `tools/audio/audio_review.py` is the gate (0 flagged). Music and SFX are separate buses (options menu).
+
+## D21 · macOS export without Apple credentials (M10)
+- Universal `.app`, ad-hoc signed by Godot's built-in signer; needs ETC2/ASTC import enabled. Not notarized → Gatekeeper requires right-click → Open. Not run on a Mac.
