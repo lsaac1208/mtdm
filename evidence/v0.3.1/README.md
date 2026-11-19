@@ -28,7 +28,7 @@
 | 菜单为 Godot 默认灰色方块 | 标题/暂停/设置 | `InkTheme`：墨色底板、朱砂聚焦印、金边；标题页闲置项为墨字细线 |
 
 ## 测试结果（本分支）
-- 源码 `--test=all`：53/53（新增 `guard_stance`）。
+- 源码 `--test=all`：54/54（新增 `guard_stance`、`personal_space`）。
 - 通关机器人：完美模式 3 次全部通关（0–1 死亡），拟人模式 1 次通关（1 死亡）。
 - 导出包：`package.py 0.3.1` 生成 Linux / Windows / macOS 三个 ZIP。从 Linux ZIP 解压出的可执行文件内运行 `--test=all` 53/53、通关机器人通关，并在 Xvfb 下渲染截图正常。
 - Linux ZIP（SHA-256 `4dd5c284…3ec2e6`）经 `tools/qa/native_release.py`（Xvfb + llvmpipe）：解压可执行、引擎检查、常规通关、浸泡测试均通过；`title`/`village` 两项被判失败，原因仅是容器无声卡（ALSA 打不开设备，Godot 回退到哑音频驱动并输出 ERROR），截图渲染正常（[native/linux-village.png](native/linux-village.png)，[原始结果](native/linux.json)）。
@@ -39,3 +39,19 @@
 - 敌我贴身时精灵大面积重叠，近身读招仍偏难（未改碰撞，避免影响已验证的判定）。
 - ~~念珠空中悬停~~：逐帧复查为正常下落弧线，非缺陷。
 - ~~关卡平台贴图被横向压缩~~（已修复，见 platforms.jpg，左旧右新）。
+
+## 后续追加（同一版本内）
+| 问题 | 修复 |
+| --- | --- |
+| 主角走进敌人时两个完整人物叠在同一位置 | 直立敌人在中立状态被推开到最小间距（冲刺/空中/敌方出招时不推），测试 `personal_space` |
+| 平台画作被横向压缩 | 按高度等比缩放，以画作左右两端拼合（[platforms.jpg](platforms.jpg)，左旧右新） |
+| HUD 头像方角露出铜环 | 头像裁成柔边圆形（[after/hud.png](after/hud.png)） |
+| 尸将“已镇”英文行用毛笔字体，拉丁字母无法辨认 | 英文行改用正文衬线体（[before](before/seal_caption.png) / [after](after/seal_caption.png)） |
+
+## 最终包（提交 `72714c7`）
+```
+e9add65052618a2954d769beb1aa9e8eb5328a617f80eaff4bdc3afd68ff9bbd  TaoistWanderer-v0.3.1-linux-x86_64.zip
+e8d9d905e545bfdbda6a9fd44480556ad4b4bbf3bc8cc782a82bdb7266d07998  TaoistWanderer-v0.3.1-windows-x86_64.zip
+1b4a3121bb87f0267597a1d7e324703b536a3dcbff05d1f635c9276869855a10  TaoistWanderer-v0.3.1-macos-universal.zip
+```
+Linux 包解压后运行：`--test=all` 54/54，通关机器人通关（1 死亡）。最终完整渲染通关录像（2:59 游戏时间，0 死亡）复查五区与尸将，llvmpipe 下平均 CPU 9.9 ms/帧、GPU 10.6 ms/帧（movie writer 统计，非实机 GPU）。Windows / macOS 包未在对应系统运行。包未发布（`build/` 不入库）。
