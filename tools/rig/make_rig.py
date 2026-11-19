@@ -94,7 +94,7 @@ def seg_dist(P, a, b):
     return np.linalg.norm(P - (a + k[:, None] * ab), axis=1)
 
 
-rig = {"source": D.SOURCE, "scale": meta["scale"], "bones": [], "parts": []}
+rig = {"source": D.SOURCE, "scale": meta["scale"] * getattr(D, "SCALE_MUL", 1.0), "bones": [], "parts": []}
 for n, (p, h, t) in D.BONES.items():
     rig["bones"].append({"name": n, "parent": p, "head": [float(h[0] - FX), float(h[1] - FY)], "tail": [float(t[0] - FX), float(t[1] - FY)]})
 

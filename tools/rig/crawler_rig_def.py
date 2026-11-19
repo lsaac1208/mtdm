@@ -27,3 +27,4 @@ SPLIT_X = 60.0
 SKIRT_Y = 999
 SKIRT_FOLLOW = 0.0
 WEIGHT_SHARPNESS = {"fore_f": (1.0, 6), "hind_b": (1.0, 6), "fore_b": (1.0, 6), "body": (2.0, 5)}
+SCALE_MUL = 0.9
