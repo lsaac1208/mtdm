@@ -8,6 +8,8 @@ var cd := 0.0
 
 
 func _init() -> void:
+	rig_type = "grunt"
+	walk_speed = 95.0
 	enemy_name = "普通尸祟"
 	max_hp = 34.0
 	max_poise = 6.0

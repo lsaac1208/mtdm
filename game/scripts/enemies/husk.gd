@@ -13,6 +13,8 @@ var awake := false
 
 
 func _init() -> void:
+	rig_type = "husk"
+	walk_speed = 65.0
 	enemy_name = "封印残尸"
 	max_hp = 90.0
 	max_poise = 60.0

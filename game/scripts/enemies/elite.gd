@@ -19,6 +19,8 @@ var summoned := false
 
 
 func _init() -> void:
+	rig_type = "elite"
+	walk_speed = 85.0
 	enemy_name = "尸将"
 	max_hp = 460.0
 	max_poise = 110.0
@@ -67,7 +69,7 @@ func on_parried() -> void:
 	else:
 		set_state("recoil")
 		telegraph.stop()
-		vis.set_pose("elite_main", 0.05)
+		anim("recoil", 0.05, true)
 		vis.lean = -10.0
 		knock_v = -facing * 120.0
 
@@ -84,7 +86,7 @@ func _break(reset_state := true) -> void:
 	if reset_state:
 		stagger(stagger_time, -facing, 60.0)
 	stagger_time_left = stagger_time
-	vis.set_pose("elite_idle", 0.06)
+	anim("kneel", 0.06, true)
 	vis.lean = 18.0
 	vis.squash = Vector2(1.04, 0.86)
 	Sfx.play("armor_break", 0.0)
@@ -169,6 +171,7 @@ func _ai(delta: float) -> void:
 				melee(Rect2(18, -196, 156, 196), 30.0, 380.0, {"heavy": true})
 			if state_t >= 0.12:
 				set_state("recover_chop")
+				anim("recover_chop", 0.1, true)
 		"recover_chop":
 			velocity.x = 0.0
 			vis.arm_rot = [0.35, 0.0]
@@ -196,6 +199,7 @@ func _ai(delta: float) -> void:
 				melee(Rect2(-30, -128, 222, 88), 26.0, 420.0)
 			if state_t >= 0.18:
 				set_state("recover_sweep")
+				anim("recover_sweep", 0.08, true)
 		"recover_sweep":
 			velocity.x = 0.0
 			vis.arm_rot = [lerpf(-0.9, 0.0, clampf(state_t / 0.6, 0.0, 1.0)), 0.0]
@@ -226,14 +230,14 @@ func _start(s: String) -> void:
 	attack_hits = {}
 	match s:
 		"windup_chop":
-			vis.set_pose("elite_main", 0.08)
+			anim("windup_chop", 0.08, true)
 			telegraph.flare(Vector2(30, -215), 0.8 * (1.0 if phase == 1 else 0.85), Color(1, 0.3, 0.15))
 			telegraph.danger(Rect2(10, -28, 190, 28), 0.8 * (1.0 if phase == 1 else 0.85))
 			Sfx.play("elite_windup", -2.0)
 			if phase == 2 and randf() < 0.6:
 				chain = "sweep"
 		"windup_sweep":
-			vis.set_pose("elite_main", 0.08)
+			anim("windup_sweep", 0.08, true)
 			telegraph.flare(Vector2(-40, -96), 0.65 * (1.0 if phase == 1 else 0.85), Color(1, 0.55, 0.2))
 			telegraph.danger(Rect2(-30, -128, 222, 88), 0.65 * (1.0 if phase == 1 else 0.85), Color(0.8, 0.3, 0.05, 0.16))
 			Sfx.play("elite_windup", -2.0, 0.05, 1.2)
@@ -266,7 +270,7 @@ func _chop() -> void:
 
 func _sweep() -> void:
 	set_state("sweep")
-	vis.set_pose("elite_main", 0.02)
+	anim("sweep", 0.02, true)
 	vis.lean = 10.0
 	velocity.x = facing * 140.0
 	Sfx.play("elite_sweep", 1.0)
@@ -279,7 +283,7 @@ func _roar() -> void:
 	phase = 2
 	set_state("roar")
 	telegraph.stop()
-	vis.set_pose("elite_main", 0.06)
+	anim("roar", 0.06, true)
 	vis.rig.skew = 0.0
 	Sfx.play("elite_roar", 2.0)
 	Fx.ring(global_position + Vector2(0, -120), 20.0, 260.0, Color(0.5, 0.08, 0.05, 0.8), 0.8, 14.0, 0.6)
@@ -296,6 +300,7 @@ func _die(dir := 0) -> void:
 	vis.squash = Vector2(1.05, 0.84)
 	vis.rig.skew = 0.0
 	Sfx.play("elite_die", 2.0)
+	anim("dead", 0.1, true)
 	Fx.shake(10.0, 0.6)
 	Fx.punch(0.08, 0.9)
 	Game.hitstop(0.3, 0.08)

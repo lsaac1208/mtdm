@@ -43,11 +43,13 @@ body[int(FY) - 2:] = False   # painted ground shadow under the feet
 # --- rebuild the torso hidden under the arms/sword: per-row span fill + inpaint
 fill = np.zeros_like(body)
 under = np.zeros_like(body)
-for n in ("arm_f", "arm_b", "sword"):
+for n in getattr(D, "FILL_UNDER", ("arm_f", "arm_b", "sword")):
     if n in own:
         under |= own[n]
 rows_y = np.nonzero(body.any(axis=1))[0]
 for y in rows_y:
+    if y < getattr(D, "FILL_MIN_Y", 0):
+        continue
     xs = np.nonzero(body[y])[0]
     span = np.zeros(W, bool); span[xs.min():xs.max() + 1] = True
     fill[y] = under[y] & span
@@ -135,8 +137,8 @@ for name, (m, src, z, bnames) in layers.items():
         # skirt follows the thighs only below the waist, ramping in with height
         for k, b in enumerate(bnames):
             if b.startswith("thigh"):
-                ramp = np.clip((V[:, 1] - 190) / 80.0, 0, 1) * 0.45
-                s = 1.0 / (1.0 + np.exp(-(V[:, 0] - 121.0) / 14.0))
+                ramp = np.clip((V[:, 1] - getattr(D, 'SKIRT_Y', 190)) / 80.0, 0, 1) * getattr(D, 'SKIRT_FOLLOW', 0.45)
+                s = 1.0 / (1.0 + np.exp(-(V[:, 0] - getattr(D, 'SPLIT_X', 121.0)) / 14.0))
                 side = (1.0 - s) if b.endswith("_b") else s
                 w[:, k] *= ramp * side + 1e-6
     w /= w.sum(axis=1, keepdims=True)

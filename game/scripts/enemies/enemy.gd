@@ -16,6 +16,26 @@ var interrupt_poise := 1.0       # single-hit poise needed to cancel a wind-up
 var armored_states: Array = []   # states that ignore stagger unless poise breaks
 var uninterruptible_states: Array = []  # states that never stagger
 var topple_on_death := true
+var rig_type := ""            # "grunt" / "elite" / ... -> skinned cut-out rig
+var walk_speed := 100.0
+
+
+func _make_visual() -> PoseSprite:
+	var clips := EnemyClips.for_type(rig_type)
+	if clips.is_empty():
+		return PoseSprite.new()
+	var rv := RigVisual.new()
+	rv.rig_dir = "res://assets/rig/" + rig_type
+	rv.clip_set = clips
+	rv.pose_map = EnemyClips.pose_map(rig_type)
+	rv.walk_speed = walk_speed
+	return rv
+
+
+## Play a rig clip when this enemy has a rig (no-op for painted-only enemies).
+func anim(clip: String, blend := 0.1, restart := false) -> void:
+	if vis is RigVisual:
+		vis.play_clip(clip, blend, restart)
 var attack_hits := {}
 var burn := 0.0
 var spawn_rise := 0.0
@@ -93,6 +113,8 @@ func _physics_process(delta: float) -> void:
 			aggro = true
 			_on_spawned()
 		return
+	if vis is RigVisual:
+		vis.locomotion_speed = absf(velocity.x)
 	_ai(delta)
 	_separate(delta)
 	apply_gravity(delta)

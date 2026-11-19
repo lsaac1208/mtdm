@@ -80,7 +80,7 @@ func _init() -> void:
 
 
 func _make_visual() -> PoseSprite:
-	return HeroVisual.new()
+	return RigVisual.new()
 
 
 const WINDUP_CLIP := {"slash1": "windup_slash", "slash2": "windup_over", "down": "windup_over", "slash3": "windup_thrust"}
