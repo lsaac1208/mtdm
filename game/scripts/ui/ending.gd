@@ -30,7 +30,7 @@ func _ready() -> void:
 	var lines := [
 		["第一章 · 序　完", BRUSH_FONT, 72, Color(0.12, 0.09, 0.08), Vector2(0, 90)],
 		["尸将已镇，乱葬岗归于沉寂。前路秽气未散 —— 道行者仍要前行。", null, 22, Color(0.25, 0.18, 0.14), Vector2(0, 200)],
-		["用时 %s　·　战死 %d 次　·　斩祟 %d　·　弹反 %d" % [Game.format_time(Game.run_time), Game.deaths, Game.kills, Game.parries], null, 22, Color(0.45, 0.12, 0.09), Vector2(0, 260)],
+		["%s　·　用时 %s　·　战死 %d 次　·　斩祟 %d　·　弹反 %d" % [["故事", "常规", "修行"][Game.difficulty], Game.format_time(Game.run_time), Game.deaths, Game.kills, Game.parries], null, 22, Color(0.45, 0.12, 0.09), Vector2(0, 260)],
 		["感谢试玩　Thank you for playing the Taoist Wanderer vertical slice", null, 18, Color(0.3, 0.25, 0.2), Vector2(0, 320)],
 		["按 Enter / A 返回标题", null, 18, Color(0.3, 0.25, 0.2), Vector2(0, 660)],
 	]

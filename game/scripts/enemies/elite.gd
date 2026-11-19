@@ -37,6 +37,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	max_poise *= Game.DIFF_POISE[Game.difficulty]
 	super._ready()
 	facing = -1
 	vis.extra_scale = 1.0

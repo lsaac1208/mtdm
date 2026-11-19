@@ -614,6 +614,7 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 
 
 func _take(dmg: float, flash_: bool) -> void:
+	dmg *= Game.DIFF_DAMAGE[Game.difficulty]
 	Game.tel_damage(last_hit_source, minf(dmg, hp))
 	if Game.level and Game.level.has_method("active_encounter_id"):
 		var eid: String = Game.level.active_encounter_id()

@@ -92,3 +92,6 @@ runs: 10
   e1_village         time    4.3s  damage    8.0  deaths 0.00
 
 ```
+
+## Difficulty modes (post-v0.2.0)
+Options → 难度: Story ×0.55 damage taken and elite armour ×0.7; Normal ×1.0; Hard ×1.3 damage taken and elite armour ×1.2 (`difficulty_scales` test). Human-like bot, 6 runs each: Story 0 deaths in all runs; Hard 0/1/2/2/2/4 deaths (mean 1.8). Normal reference: mean 0.6 over 10 runs.

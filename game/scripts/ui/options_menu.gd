@@ -43,6 +43,14 @@ func _ready() -> void:
 	title.add_theme_color_override("font_color", Color(0.92, 0.84, 0.66))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
+	_section(box, "难度 Difficulty")
+	var diff := OptionButton.new()
+	for item in ["故事 Story — 受伤 −45%，尸将破甲更快", "常规 Normal", "修行 Hard — 受伤 +30%，尸将更坚"]:
+		diff.add_item(item)
+	diff.selected = Game.difficulty
+	diff.custom_minimum_size = Vector2(520, 36)
+	diff.item_selected.connect(func(i): Game.difficulty = i; Game.save_settings())
+	box.add_child(diff)
 	_section(box, "声音 Audio")
 	_first = _slider(box, "总音量 Master", Game.bus_volume("Master"), func(v): Game.set_bus_volume("Master", v))
 	_slider(box, "音乐 Music", Game.bus_volume("Music"), func(v): Game.set_bus_volume("Music", v))

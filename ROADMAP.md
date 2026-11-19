@@ -27,6 +27,7 @@ Priorities follow the project directive: launchable → core combat → distinct
 - [x] M10 Linux/Windows/macOS packages, v0.2.0 acceptance
 
 ## After v0.2.0
+- [x] Difficulty modes (Story / Normal / Hard) — hedge until a human playtest exists.
 - Human playtest + listening test (cannot be done here).
 - Windows/macOS runtime checks on real machines; Developer ID signing + notarization (needs Apple account).
 - Second source pose per character (back/turn) and hand poses — needs new art.

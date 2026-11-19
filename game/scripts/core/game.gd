@@ -65,6 +65,8 @@ func _ready() -> void:
 			args[kv[0]] = kv[1] if kv.size() > 1 else "1"
 	_setup_input()
 	load_settings.call_deferred()
+	if args.has("difficulty"):
+		(func(): difficulty = clampi(int(args.difficulty), 0, 2)).call_deferred()
 	if args.has("shots"):
 		_shots.call_deferred()
 	if args.has("test") and ResourceLoader.exists("res://tests/test_runner.gd"):
@@ -122,6 +124,10 @@ const SETTINGS_PATH := "user://settings.cfg"
 
 
 var shake_scale := 1.0
+## 0 = Story (故事), 1 = Normal (常规), 2 = Hard (修行)
+var difficulty := 1
+const DIFF_DAMAGE := [0.55, 1.0, 1.3]     # damage taken by the player
+const DIFF_POISE := [0.7, 1.0, 1.2]       # elite armour (poise) multiplier
 var hitstop_on := true
 const REBINDABLE := ["move_left", "move_right", "move_down", "jump", "attack", "dash", "block", "talisman", "gourd", "beads"]
 const BUS_NAMES := ["Master", "Music", "SFX"]
@@ -190,6 +196,7 @@ func load_settings() -> void:
 	set_bus_volume("Music", cf.get_value("audio", "music", 1.0))
 	set_bus_volume("SFX", cf.get_value("audio", "sfx", 1.0))
 	shake_scale = cf.get_value("video", "shake", 1.0)
+	difficulty = clampi(cf.get_value("game", "difficulty", 1), 0, 2)
 	hitstop_on = cf.get_value("video", "hitstop", true)
 	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
 		get_window().mode = Window.MODE_FULLSCREEN
@@ -212,6 +219,7 @@ func save_settings() -> void:
 	cf.set_value("audio", "music", bus_volume("Music"))
 	cf.set_value("audio", "sfx", bus_volume("SFX"))
 	cf.set_value("video", "shake", shake_scale)
+	cf.set_value("game", "difficulty", difficulty)
 	cf.set_value("video", "hitstop", hitstop_on)
 	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
 	for action in REBINDABLE:

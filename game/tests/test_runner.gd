@@ -357,7 +357,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1296,6 +1296,25 @@ func t_boss_music() -> void:
 	await _wait(3.6)
 	var back := Sfx.music_name == "music_temple"
 	_log("boss_music_flow", started and p2 and back, "start=%s phase2=%s resume=%s (now %s)" % [started, p2, back, Sfx.music_name])
+
+
+func t_difficulty() -> void:
+	var dealt := []
+	for d in 3:
+		Game.difficulty = d
+		var p := await _fresh_level(700.0)
+		var hp0 := p.hp
+		var hs := {}
+		Combat.strike({"owner": null, "team": Combat.TEAM_ENEMY, "rect": p.get_hurtbox(), "damage": 20.0, "poise": 0.0,
+			"knock": 0.0, "dir": 1, "kind": "melee", "unblockable": true, "tag": "test"}, hs)
+		await _frames(2)
+		dealt.append(hp0 - p.hp)
+		var e := await spawn("elite", 1400.0, true)
+		dealt.append(e.max_poise)
+		e.queue_free()
+	Game.difficulty = 1
+	_log("difficulty_scales", is_equal_approx(dealt[0], 11.0) and is_equal_approx(dealt[2], 20.0) and is_equal_approx(dealt[4], 26.0)
+		and dealt[1] < dealt[3] and dealt[3] < dealt[5], "dmg %s / %s / %s, elite poise %s / %s / %s" % [dealt[0], dealt[2], dealt[4], dealt[1], dealt[3], dealt[5]])
 
 
 func t_spawn_surface() -> void:
