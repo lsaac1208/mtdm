@@ -326,22 +326,34 @@ func _build_platforms() -> void:
 		cs.shape = s
 		cs.position = Vector2(p[0] + w / 2.0, p[2] + h / 2.0)
 		body.add_child(cs)
-		var sprite := Sprite2D.new()
-		sprite.texture = route_art.texture(p[3])
-		sprite.centered = false
-		sprite.scale = Vector2(w, h) / sprite.texture.get_size()
-		sprite.position = Vector2(p[0], p[2])
-		sprite.z_index = 2
-		# Sit the painted block in its zone's light: the raw paintings are
-		# fully saturated and read as pasted-on next to the hazy backdrop.
+		# Keep the painting's own proportions: scale to the block height and
+		# build the block from the painting's left and right ends, meeting
+		# in the middle, instead of squashing the whole image to fit.
+		var tex: Texture2D = route_art.texture(p[3])
+		var sc := h / float(tex.get_height())
+		var half_src := minf(w * 0.5 / sc, tex.get_width() * 0.5)
 		var zi := 0
 		for k in LevelData.ZONES.size():
 			if p[0] >= LevelData.ZONES[k].x:
 				zi = k
 		var lt: Dictionary = LevelData.ZONES[zi].light
 		var shade: Color = (lt.shadow as Color).lerp(Color.WHITE, 0.42)
-		sprite.modulate = Color(shade.r, shade.g, shade.b, 1.0)
-		add_child(sprite)
+		for side in 2:
+			var sprite := Sprite2D.new()
+			sprite.texture = tex
+			sprite.centered = false
+			sprite.region_enabled = true
+			# each half is 2 px wider than w/2 so the two overlap at the seam
+			var src_w := half_src + 2.0 / sc
+			var src_x := 0.0 if side == 0 else tex.get_width() - src_w
+			sprite.region_rect = Rect2(src_x, 0, src_w, tex.get_height())
+			sprite.scale = Vector2.ONE * sc
+			sprite.position = Vector2(p[0] + (0.0 if side == 0 else w * 0.5 - 2.0), p[2])
+			sprite.z_index = 2
+			# Sit the painted block in its zone's light: the raw paintings are
+			# fully saturated and read as pasted-on next to the hazy backdrop.
+			sprite.modulate = Color(shade.r, shade.g, shade.b, 1.0)
+			add_child(sprite)
 		var contact := Sprite2D.new()
 		contact.texture = Fx.dot_texture()
 		contact.scale = Vector2(w * 1.18, 22.0) / 24.0 * 1.5

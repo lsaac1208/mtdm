@@ -91,6 +91,19 @@ func _run() -> void:
 			await _shot("title_%d" % k)
 		Game.quit()
 		return
+	if only == "platcap":
+		# every painted platform, one shot each, hero standing beside it
+		shot_dir = Game.args.get("shots", "user://shots")
+		var p := await _fresh_level(600.0)
+		p.max_hp = 99999.0
+		p.hp = 99999.0
+		for pl in LevelData.PLATFORMS:
+			p.global_position = Vector2(pl[0] - 90.0, Game.GROUND_Y - 2.0)
+			p.velocity = Vector2.ZERO
+			await _wait(0.5)
+			await _shot("plat_%s_%d" % [pl[3], int(pl[0])])
+		Game.quit()
+		return
 	if only == "gatecap":
 		# the sealed and the opened end gate, plus an encounter ward, in place
 		shot_dir = Game.args.get("shots", "user://shots")
