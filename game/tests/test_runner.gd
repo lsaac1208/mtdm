@@ -304,7 +304,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -730,6 +730,7 @@ func t_bot() -> void:
 			print("BOT t=%.0fs x=%.0f hp=%.0f deaths=%d kills=%d cleared=%s" % [t, p.global_position.x, p.hp, Game.deaths, Game.kills, Game.cleared.keys()])
 	var scene2 := get_tree().current_scene
 	var done := scene2 != null and scene2.scene_file_path == Game.END_SCENE
+	print("TELEMETRY " + JSON.stringify(Game.telemetry))
 	_log("bot_completes_demo", done, "sim_time=%.0fs deaths=%d kills=%d parries=%d run_time=%s" % [t, Game.deaths, Game.kills, Game.parries, Game.format_time(Game.run_time)])
 
 
@@ -1171,6 +1172,54 @@ func t_options() -> void:
 	o.close()
 	await _frames(2)
 	_log("options_menu_opens", ok, "")
+
+
+## Boss fairness: every heavy must be avoidable by the documented answer with a
+## human-sized timing window. Sweeps the input time across the wind-up.
+func t_elite_fairness() -> void:
+	var results := {}
+	for case in ["sweep_jump", "chop_dash", "sweep_dash"]:
+		var ok_times := []
+		for k in range(0, 9):
+			var press_at := 0.2 + k * 0.06
+			var p := await _fresh_level(1500.0)
+			p.max_hp = 1000.0
+			p.hp = 1000.0
+			p.facing = 1
+			var e := await spawn("elite", p.global_position.x + 120.0)
+			e.cd = 99.0
+			e.facing = -1
+			await _frames(2)
+			e._start("windup_sweep" if case.begins_with("sweep") else "windup_chop")
+			var pressed := false
+			var t := 0.0
+			var hp0 := p.hp
+			while t < 1.6:
+				await _frames(1)
+				t += 1.0 / 60.0
+				if not pressed and t >= press_at:
+					pressed = true
+					if case == "sweep_jump":
+						p.input_override = {"jump": true, "jump_just": true}
+					else:
+						p.input_override = {"dash": true, "dash_just": true, ("move_left" if case == "chop_dash" else "move_right"): true}
+				elif pressed and case == "sweep_jump":
+					p.input_override = {"jump": true}
+				elif pressed:
+					p.input_override = {}
+				if e.state.begins_with("recover"):
+					break
+			if p.hp >= hp0:
+				ok_times.append(press_at)
+			e.queue_free()
+		results[case] = ok_times
+		print("FAIR %s ok_press_times=%s" % [case, ok_times])
+	var w_jump: float = (results.sweep_jump.size() * 0.06)
+	var w_chop: float = (results.chop_dash.size() * 0.06)
+	var w_sdash: float = (results.sweep_dash.size() * 0.06)
+	_log("elite_sweep_jumpable", w_jump >= 0.3, "window ~%.2fs" % w_jump)
+	_log("elite_chop_escapable", w_chop >= 0.15, "window ~%.2fs" % w_chop)
+	_log("elite_sweep_dash_through", w_sdash >= 0.15, "window ~%.2fs" % w_sdash)
 
 
 func t_spawn_surface() -> void:

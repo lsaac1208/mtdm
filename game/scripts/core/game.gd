@@ -21,7 +21,10 @@ var run_time := 0.0
 var running := false
 var level: Node = null     # current level node
 var player: Node = null
-var args := {}             # parsed user args after "--"
+var args := {}
+## Run telemetry for balance analysis: damage taken per attack source, death
+## causes, per-encounter time / damage / deaths.
+var telemetry := {"damage": {}, "deaths": [], "encounters": {}}             # parsed user args after "--"
 var _hitstop_until := 0.0
 
 const BINDINGS := {
@@ -240,6 +243,7 @@ func new_run() -> void:
 	kills = 0
 	parries = 0
 	run_time = 0.0
+	telemetry = {"damage": {}, "deaths": [], "encounters": {}}
 	running = true
 	Engine.time_scale = 1.0
 	get_tree().paused = false
@@ -291,3 +295,13 @@ func _shots() -> void:
 		img.save_png("%s/shot_%02d.png" % [dir, i])
 		print("SHOT %s/shot_%02d.png" % [dir, i])
 		i += 1
+
+
+func tel_damage(source: String, amount: float) -> void:
+	telemetry.damage[source] = telemetry.damage.get(source, 0.0) + amount
+
+
+func tel_enc(id: String, key: String, v: float) -> void:
+	if not telemetry.encounters.has(id):
+		telemetry.encounters[id] = {"time": 0.0, "damage": 0.0, "deaths": 0, "start": 0.0}
+	telemetry.encounters[id][key] = telemetry.encounters[id].get(key, 0.0) + v

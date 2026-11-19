@@ -45,7 +45,7 @@ func _ready() -> void:
 		var pd := Puddle.new()
 		pd.permanent = true
 		pd.radius = pl[1]
-		pd.dps = 10.0
+		pd.dps = 7.0
 		pd.position = Vector2(pl[0], Game.GROUND_Y)
 		$Props.add_child(pd)
 	for c in LevelData.CHECKPOINTS:
@@ -434,7 +434,17 @@ func _update_signs() -> void:
 			_sign_shown[s.x] = false
 
 
+func active_encounter_id() -> String:
+	for enc in encounters:
+		if enc.state == "active":
+			return enc.data.id
+	return ""
+
+
 func _on_player_died() -> void:
+	var eid := active_encounter_id()
+	if eid != "":
+		Game.tel_enc(eid, "deaths", 1.0)
 	if _respawning:
 		return
 	_respawning = true

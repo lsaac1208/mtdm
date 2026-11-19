@@ -107,8 +107,12 @@ func _physics_process(delta: float) -> void:
 			_clear()
 
 
+var _t_start := 0.0
+
+
 func _start() -> void:
 	state = "active"
+	_t_start = Game.run_time
 	for e in data.enemies:
 		if e[2] >= 0.0:
 			pending.append([e[0], e[1], e[2], e[3]])
@@ -139,6 +143,8 @@ func _on_summon(count: int) -> void:
 
 
 func _clear() -> void:
+	if state == "active":
+		Game.tel_enc(data.id, "time", Game.run_time - _t_start)
 	state = "cleared"
 	Game.cleared[data.id] = true
 	for b in barriers:

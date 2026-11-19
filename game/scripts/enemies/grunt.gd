@@ -86,14 +86,14 @@ func _ai(delta: float) -> void:
 				attack_hits = {}
 				vis.set_pose("grunt_attack", 0.03)
 				vis.lean = 6.0
-				velocity.x = facing * 300.0
+				velocity.x = facing * 230.0
 				Sfx.play("claw", -4.0)
 				Fx.slash(global_position + Vector2(48 * facing, -84), facing, -80.0, 50.0, 46.0, 14.0, 0.18,
 					Color(0.45, 0.42, 0.36), Color(0.9, 0.88, 0.8), 1.0)
 		"attack":
 			velocity.x = move_toward(velocity.x, 0.0, 900.0 * delta)
 			if state_t < 0.2:
-				melee(Rect2(8, -122, 82, 104), 12.0, 220.0)
+				melee(Rect2(8, -122, 82, 104), 10.0, 220.0)
 			if state_t >= 0.3:
 				set_state("recover")
 				vis.set_pose("grunt_idle", 0.12)

@@ -176,7 +176,7 @@ func _ai(delta: float) -> void:
 			velocity.x = 0.0
 			vis.arm_rot = [0.35, 0.0]
 			vis.lean = lerpf(vis.lean, 16.0, delta * 3.0)
-			if state_t >= (1.15 if chain == "" else 0.35):
+			if state_t >= (1.15 if chain == "" else 0.5):
 				if chain == "sweep":
 					chain = ""
 					_start("windup_sweep")
@@ -189,14 +189,14 @@ func _ai(delta: float) -> void:
 			vis.arm_rot = [lerpf(0.0, 0.7, clampf(state_t / 0.5, 0.0, 1.0)), 0.0]
 			vis.lean = lerpf(vis.lean, -10.0, delta * 5.0)
 			vis.rig.skew = lerpf(vis.rig.skew, -0.18, delta * 5.0)
-			if state_t >= 0.65 * spd:
+			if state_t >= 0.65:   # spec floor: sweep wind-up never below 0.65 s
 				_sweep()
 		"sweep":
 			swing_arm(0.7, -0.9, 0.14)
 			velocity.x = move_toward(velocity.x, 0.0, 1400.0 * delta)
 			vis.rig.skew = lerpf(vis.rig.skew, 0.12, delta * 20.0)
-			if state_t < 0.16:
-				melee(Rect2(-30, -128, 222, 88), 26.0, 420.0)
+			if state_t < 0.12:
+				melee(Rect2(-30, -92, 222, 62), 22.0, 420.0)
 			if state_t >= 0.18:
 				set_state("recover_sweep")
 				anim("recover_sweep", 0.08, true)
@@ -232,14 +232,14 @@ func _start(s: String) -> void:
 		"windup_chop":
 			anim("windup_chop", 0.08, true)
 			telegraph.flare(Vector2(30, -215), 0.8 * (1.0 if phase == 1 else 0.85), Color(1, 0.3, 0.15))
-			telegraph.danger(Rect2(10, -28, 190, 28), 0.8 * (1.0 if phase == 1 else 0.85))
+			telegraph.danger(Rect2(-30, -28, 300, 28), 0.8 * (1.0 if phase == 1 else 0.85))
 			Sfx.play("elite_windup", -2.0)
 			if phase == 2 and randf() < 0.6:
 				chain = "sweep"
 		"windup_sweep":
 			anim("windup_sweep", 0.08, true)
-			telegraph.flare(Vector2(-40, -96), 0.65 * (1.0 if phase == 1 else 0.85), Color(1, 0.55, 0.2))
-			telegraph.danger(Rect2(-30, -128, 222, 88), 0.65 * (1.0 if phase == 1 else 0.85), Color(0.8, 0.3, 0.05, 0.16))
+			telegraph.flare(Vector2(-40, -96), 0.65, Color(1, 0.55, 0.2))
+			telegraph.danger(Rect2(-30, -92, 222, 62), 0.65, Color(0.8, 0.3, 0.05, 0.16))
 			Sfx.play("elite_windup", -2.0, 0.05, 1.2)
 		"lunge":
 			vis.set_pose("elite_main", 0.06)
@@ -257,14 +257,14 @@ func _chop() -> void:
 		Color(0.42, 0.12, 0.08), Color(0.95, 0.85, 0.7), 1.0)
 	# ground shock (震地): low band around the impact point; jump over it
 	var impact := global_position + Vector2(120 * facing, 0)
-	Fx.ring(impact + Vector2(0, -4), 10.0, 190.0, Color(0.55, 0.45, 0.32, 0.9), 0.5, 14.0, 0.18)
+	Fx.ring(impact + Vector2(0, -4), 10.0, 150.0, Color(0.55, 0.45, 0.32, 0.9), 0.5, 14.0, 0.18)
 	Fx.dust(impact, 18)
 	Fx.particles(impact, 16, Color(0.25, 0.2, 0.15), 380.0, 60.0, Vector2.UP, 1200.0, 0.6, 6.0)
 	Fx.shake(9.0, 0.35)
 	Fx.punch(0.035, 0.3)
 	var hs := {}
-	Combat.strike({"owner": self, "team": team, "rect": Rect2(impact.x - 190, impact.y - 34, 380, 36),
-		"damage": 10.0, "poise": 0.0, "knock": 260.0, "dir": facing, "kind": "aoe", "centre": impact,
+	Combat.strike({"owner": self, "team": team, "rect": Rect2(impact.x - 150, impact.y - 34, 300, 36),
+		"damage": 8.0, "poise": 0.0, "knock": 260.0, "dir": facing, "kind": "aoe", "centre": impact,
 		"unblockable": true, "tag": "ground_shock"}, hs)
 
 

@@ -183,7 +183,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _speed_mul() -> float:
-	return 0.55 if in_taint > 0.0 else 1.0
+	return 0.7 if in_taint > 0.0 else 1.0
 
 
 # Shared: what a free (actionable) character can start from the ground.
@@ -547,7 +547,20 @@ func is_hittable() -> bool:
 	return not dead and invuln <= 0.0
 
 
+var last_hit_source := ""
+
+
+func _source(atk: Dictionary) -> String:
+	var o = atk.get("owner")
+	var who: String = o.enemy_name if is_instance_valid(o) and "enemy_name" in o else "hazard"
+	var tag: String = atk.get("tag", "")
+	if tag == "" and is_instance_valid(o) and "state" in o:
+		tag = o.state
+	return "%s:%s" % [who, tag]
+
+
 func receive_hit(atk: Dictionary) -> Dictionary:
+	last_hit_source = _source(atk)
 	if atk.kind == "hazard":
 		_take(atk.damage, true)
 		return {}
@@ -601,6 +614,11 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 
 
 func _take(dmg: float, flash_: bool) -> void:
+	Game.tel_damage(last_hit_source, minf(dmg, hp))
+	if Game.level and Game.level.has_method("active_encounter_id"):
+		var eid: String = Game.level.active_encounter_id()
+		if eid != "":
+			Game.tel_enc(eid, "damage", minf(dmg, hp))
 	hp = maxf(0.0, hp - dmg)
 	hp_changed.emit(hp, max_hp)
 	if flash_:
@@ -633,6 +651,7 @@ func _st_hit(delta: float) -> void:
 
 
 func _die() -> void:
+	Game.telemetry.deaths.append(last_hit_source)
 	dead = true
 	set_state("dead")
 	vis.play_clip("dead", 0.08, true)

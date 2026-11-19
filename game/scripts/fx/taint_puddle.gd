@@ -9,7 +9,7 @@ var life := 4.5
 var permanent := false
 var t := 0.0
 var tick := 0.0
-var dps := 8.0
+var dps := 6.0
 var _bubbles := []
 
 
