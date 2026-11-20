@@ -2,13 +2,25 @@
 
 ## 下载试玩与开发工程
 
-目前可玩的版本是 **0.3.0 RC1**。从荒村入口向东，到第一场战斗体验道剑、符箓与弹反；完整试玩共五个区域，终点为尸将和光门。
+目前最新可玩与交接基线为 **`v0.4.0` 序章商业试玩版（Pre-Commercial Prologue Demo）**（分支 `codex/demo-v0.4.0` · Godot 4.7.2）。包含三幕可跳过水墨开场序章、五区九场遭遇、全角色逐帧手绘动画 + 2.5D 法线光照、10 处可斩碎道力道具、二阶段狂煞尸将、石坊光门、六情非阻塞默语、44.1 kHz 立体声音景与「行旅录」甲/乙/丙印章评级。
 
-- [下载 macOS、Windows、Linux 试玩包，查看校验值和平台测试](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1)
-- [观看 21 秒荒村实机前后对照](https://github.com/lsaac1208/mtdm/releases/download/v0.3.0-rc.1/01-village-before-after.mp4)
-- [当前游戏工程](https://github.com/lsaac1208/mtdm/tree/codex/visual-polish-v03) · [用 Godot 运行与导出](https://github.com/lsaac1208/mtdm/blob/codex/visual-polish-v03/BUILD_AND_RUN.md) · [玩法、截图与验收报告](https://github.com/lsaac1208/mtdm/tree/codex/visual-polish-v03/evidence/v0.3)
+| 入口 | 说明 |
+| --- | --- |
+| **[下载 v0.4.0 预发布包（macOS / Windows / Linux + 源码归档）](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0)** | 含 SHA-256 校验值与 `MANIFEST.json`；macOS 通用包已在 Apple Silicon 真机验证 |
+| **[当前开发分支 `codex/demo-v0.4.0`](https://github.com/lsaac1208/mtdm/tree/codex/demo-v0.4.0)** | 完整 Godot 4.7.2 工程、美术/音频生成脚本与自动化测试（`63/63 PASS`） |
+| **[英文交接总览 `HANDOFF.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/HANDOFF.md)** · **[中文状态 `DEVELOPMENT_STATUS.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/DEVELOPMENT_STATUS.md)** | 架构说明、渲染层级、已验证/待办清单与后续接手步骤 |
+| **[运行构建 `BUILD_AND_RUN.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/BUILD_AND_RUN.md)** · **[变更日志 `CHANGELOG.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/CHANGELOG.md)** · **[路线图 `ROADMAP.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/ROADMAP.md)** · **[架构决策 `DECISIONS.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/DECISIONS.md)** | 本地跑测、导出打包与 D1–D31 设计取舍记录 |
+| **[v0.4.0 实机截图、可读性与性能验收报告](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/evidence/v0.4.0/README.md)** | Metal 真机截图总览、15/15 五区可读性、帧时与原生 `.app` 验收日志 |
+| 历史里程碑回溯 | [v0.3.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1)（`claude/post-codex-continuation`）· [v0.3.0-rc.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1)（`codex/visual-polish-v03`）· [v0.2.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0)（`dev/vertical-slice-20261118`） |
 
-下文保留原始设定与第一批交付物，供开发人员查阅角色、敌人和世界观的设计依据。
+```bash
+# 开发人员快速拉取最新工程（main 分支保持轻量设计总库，游戏工程在 codex/demo-v0.4.0）
+git clone https://github.com/lsaac1208/mtdm.git && cd mtdm
+git switch codex/demo-v0.4.0
+godot --headless --path game --import && godot --path game
+```
+
+下文保留 `main` 分支的原始核心设定与第一批设计交付物，供开发人员查阅角色、敌人与世界观的设计依据。
 
 
 > **「末日废土之上，道法不灭，万物异变。」**  
