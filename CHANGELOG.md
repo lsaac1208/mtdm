@@ -1,6 +1,58 @@
 # Changelog
 
-All versions are pre-release vertical slices. Automated results were produced with software rendering. They are not human acceptance.
+All versions are pre-release vertical slices. Automated tests and GPU captures are not a substitute for human playtest approval.
+
+## 0.4.0 — 2026-11-20 (Pre-Commercial Prologue Demo)
+
+Branch `codex/demo-v0.4.0`, built on `v0.3.2` (branched from `origin/claude/post-codex-continuation` @ `8eb690d`).
+
+### Added & Upgraded
+- **World depth, painted stone Pailou gate & destructible wasteland props:**
+  - Replaced the procedural end gate with a hand-painted weathered Taoist stone Pailou archway (`end_gate_pailou.webp`) featuring behind-archway golden god-rays and rising spirit motes once `e8_elite` is sealed.
+  - Added 10 painted destructible props across all 5 zones (`urn`, `crate`, `brazier` — intact + shattered `.webp` states) in `game/scripts/level/destructible.gd` and `spirit_wisp.gd`, dropping homing spirit wisps that restore Qi (and live flickering warm point-lights on intact temple/burial braziers).
+  - Added 4 zone-matched ink-wash foreground parallax clusters (`fg_village`, `fg_lowland`, `fg_temple`, `fg_burial` on layer 2 at 1.22x parallax, strictly anchored below the ground feet line) and upgraded campfire checkpoints with dramatic first-rest golden hearth ignition pillars.
+- **Multi-frame hand-painted enemy combat animations & combat game-feel:**
+  - Generated, sliced, and baked 2.5D normal/thickness/AO maps for all 5 enemy archetypes' combat states (`grunt` 6 clips, `crawler` 7 clips, `husk` 8 clips, `spitter` 8 clips, `elite` 12 clips), wired via `Enemy.play_pose_or_clip` without altering any hitboxes, hurtboxes, damage/poise values, or wind-up windows.
+  - Added diegetic world-space enemy mini HP/poise/burn bars (`MiniBar`, hidden at full HP and hidden on Elite Boss) and Husk's escalating chest talisman crack warning (`SealCrackIndicator`).
+  - Upgraded Elite Boss Phase 2 (`二相 · 狂煞`) with persistent crimson-gold aura rings, dark-crimson smoke/ember emitters, trailing blade sparks, and heavy stomp dust; upgraded player Parry (`Fx.parry_burst`), painterly `FrameAnim` afterimages, grounded skid/launch/landing dust, hurt crimson edge pulse, and gourd heal spiral.
+- **Narrative framing, 6-mood whispers & commercial UI flow:**
+  - Extracted all 6 expression portraits (`calm`, `alert`, `fierce`, `combat`, `hurt`, `wistful`) and 3 full-bleed ink-scroll story plates (`prologue_01..03.webp`).
+  - Added a skippable 3-plate **Ink-Scroll Prologue** (`game/scenes/prologue.tscn`, auto-bypassed in automated `--test=` runs) and non-blocking top-right **Zone Whisper** cards across all 5 zones plus boss seal.
+  - Unified Title (with boxed Controls overlay and persisted best rank/time badge), Pause, Options, and Ending (**Journey Ledger · 行旅录** with animated vermilion **甲 / 乙 / 丙** Seal Stamp, persisted best rank in `settings.cfg`, and interactive Play Again / Title buttons).
+- **44.1 kHz stereo audio overhaul:**
+  - Upgraded `tools/audio/make_audio.py`, `tools/audio/audio_review.py`, and `game/scripts/core/sfx.gd` to 75 broadcast-clean 44.1 kHz WAV assets (30 stereo music/ambience/stinger/climax + 45 mono SFX, max peak `-1.00 dBFS`, max loop seam `0.0115`, `0 flagged`), including 10 new v0.4.0 SFX (`pot_break`, `wood_break`, `brazier_clang`, `wisp_pickup`, `hearth_ignite`, `ui_hover`, `ui_click`, `ui_back`, `seal_stamp`, `whisper_chime`).
+
+### Verification
+- **Engine checks:** **63/63 PASS** (`--test=all --nohitstop --mute`) with **zero** script errors, warnings, or leaks, including `spec_conformance` (21/21), `hero_anim_no_pops` (`12.4 px`), `destructibles_*`, `diegetic_mini_bar`, `diegetic_husk_seal_fx`, `enemy_frame_anims_loaded`, `prologue_advance_and_skip`, `whisper_non_blocking`, and `rank_and_persist`.
+- **Playthrough bot & soak:** 0-death Normal playthrough (`rank=甲`) and 2-run soak (`soak_no_leak PASS`, `nodes 86->86`, `orphans 0->0`), plus `hero_footwork.gd` (`floor_gap_px=0.0` left & right).
+- **Five-zone Metal readability (`1280×720`):** **15/15 PASS** (`evidence/v0.4.0/readability/READABILITY.md`).
+- **Real-GPU performance (`Apple M6` Metal `1280×720`):** `village` melee `p50=2.38 ms / p99=4.56 ms`; `lowland` `p50=1.91 ms / p99=3.90 ms`; `elite` boss `p50=2.10 ms / p99=3.80 ms`.
+- **Packaging & native macOS verification:** Exported `v0.4.0` macOS / Windows / Linux desktop ZIPs and verified unpacked macOS `.app` via `tools/qa/native_release.py` (`evidence/v0.4.0/native/macos/native.json`).
+
+### Pending
+- Windows and Linux `v0.4.0` packages have not been executed on their target OSes.
+- Human playtest, physical controller feel, and speaker audio audition remain to do.
+
+## 0.3.2 — 2026-11-19 (pre-release)
+
+Intermediate milestone integrated into branch `codex/demo-v0.4.0`, based on `origin/claude/post-codex-continuation` @ `8eb690d` (`v0.3.1`).
+
+### Added & Improved (presentation, animation & feel; combat hitboxes & timing unchanged)
+- **Full frame-by-frame hero combat & skill animations (`FrameAnim`):** painted transparent RGBA sheets (`hero_guard_idle_sheet.png`, `hero_slash12_sheet.png`, `hero_slash3_dash_sheet.png`, `hero_skills_sheet.png`) with baked 2.5D normal/thickness/AO maps covering `guard_idle`, `guard_to_idle`, `slash1` (4f), `slash2` (4f), `slash3` (4f), `dash`, `dash_attack` (3f), `jump_attack`, `talisman` (2f), `gourd` (2f), `beads_a`, and `beads_b`. Reduced `hero_anim_no_pops` worst-case body-centre jump from `32.9 px` to `16.7 px`.
+- **Smooth combat-to-idle sheathing transition:** `Player` holds the animated `guard_idle` profile loop during combat and plays the 3-frame `guard_to_idle` transition (`0.34 s`) before returning to the three-quarter relaxed `idle`, removing the single-frame turn snap.
+- **Upgraded ink-and-brass HUD & 3-state portraits:** added `tools/art/extract_portraits.py` to cut three centered circular expression busts (`portrait.png`, `portrait_combat.png`, `portrait_hurt.png`) from `concept_art/03_protagonist_expressions_mood.png`. Upgraded `hud.gd` with antialiased `StyleBoxFlat` brass-bracket plaques, HP damage-lag trail & low-HP heartbeat, Qi cost notches (`20`/`50`), warm-parchment skill medallions (`葫芦`/`符箓`/`念珠`), and a matching Boss Bar with 50% phase notch and recessed poise gauge.
+- **Wall-pinned personal-space separation:** `Enemy._safe_nudge_x` checks geometry/leash collisions when yielding; if an enemy is pinned against a wall, platform, barrier, or leash, the grounded hero cleanly absorbs the remaining separation while keeping dash-through, jump-over, and enemy attack windows intact.
+- **Sprite-sheet bleed cleanup:** `tools/art/build_anim_sheets.py` now filters detached gutter-bleed fragments touching cell edges and supports `--actors` / `--skip-legacy` flags.
+
+### Verified (real Apple Silicon Metal GPU & native macOS package)
+- Clean import + `54/54` engine checks (`hero_anim_no_pops=16.7 px`, extended `guard_stance` and wall-pinned `personal_space` `open=33 pinned=34 dash_past=true`) + 0-death Normal bot clear (`02:17`, 24 kills, 3 parries) + `hero_footwork.gd` (`floor_gap_px=0.0`).
+- Five-zone Metal `1280×720` figure readability: **15/15 PASS** (`evidence/v0.3.2/readability/READABILITY.md`).
+- Real-GPU frame time on Apple M6 Metal (`1280×720`): multi-enemy `wave` `p50=2.45 ms / p99=4.48 ms`; `elite` boss fight `p50=2.14 ms / p99=3.42 ms`.
+- Exported three platform ZIPs (`v0.3.2`) and verified the unpacked **native macOS `.app`** with `tools/qa/native_release.py` (`ditto`, `codesign --verify --deep --strict`, `engine`, `normal-route`, rendered `title` & `village` — all PASS; `evidence/v0.3.2/native/macos/native.json`).
+
+### Pending
+- Windows and Linux v0.3.2 packages have not been executed on their target OSes.
+- Human playtest, physical controller feel, and speaker audio audition remain to do.
 
 ## 0.3.1 — 2026-11-19 (pre-release)
 

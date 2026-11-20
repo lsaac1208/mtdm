@@ -1,0 +1,347 @@
+[
+  {
+    "zone": "village",
+    "plate": "with",
+    "measurements": {
+      "100": {
+        "pixels": 16457,
+        "contrast": 62.4
+      },
+      "67": {
+        "pixels": 7466,
+        "contrast": 60.5
+      },
+      "50": {
+        "pixels": 4157,
+        "contrast": 59.7
+      },
+      "33": {
+        "pixels": 1853,
+        "contrast": 57.3
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "village",
+    "plate": "hero",
+    "measurements": {
+      "100": {
+        "pixels": 8316,
+        "contrast": 55.7
+      },
+      "67": {
+        "pixels": 3779,
+        "contrast": 53.7
+      },
+      "50": {
+        "pixels": 2106,
+        "contrast": 52.8
+      },
+      "33": {
+        "pixels": 930,
+        "contrast": 50.8
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "village",
+    "plate": "enemy",
+    "measurements": {
+      "100": {
+        "pixels": 8141,
+        "contrast": 69.3
+      },
+      "67": {
+        "pixels": 3687,
+        "contrast": 67.6
+      },
+      "50": {
+        "pixels": 2051,
+        "contrast": 66.8
+      },
+      "33": {
+        "pixels": 923,
+        "contrast": 63.8
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "road",
+    "plate": "with",
+    "measurements": {
+      "100": {
+        "pixels": 13260,
+        "contrast": 62.2
+      },
+      "67": {
+        "pixels": 6037,
+        "contrast": 60.6
+      },
+      "50": {
+        "pixels": 3378,
+        "contrast": 59.9
+      },
+      "33": {
+        "pixels": 1493,
+        "contrast": 58.2
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "road",
+    "plate": "hero",
+    "measurements": {
+      "100": {
+        "pixels": 8183,
+        "contrast": 59.4
+      },
+      "67": {
+        "pixels": 3724,
+        "contrast": 57.5
+      },
+      "50": {
+        "pixels": 2074,
+        "contrast": 56.9
+      },
+      "33": {
+        "pixels": 919,
+        "contrast": 55.0
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "road",
+    "plate": "enemy",
+    "measurements": {
+      "100": {
+        "pixels": 5077,
+        "contrast": 66.8
+      },
+      "67": {
+        "pixels": 2313,
+        "contrast": 65.5
+      },
+      "50": {
+        "pixels": 1304,
+        "contrast": 64.7
+      },
+      "33": {
+        "pixels": 574,
+        "contrast": 63.5
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "lowland",
+    "plate": "with",
+    "measurements": {
+      "100": {
+        "pixels": 19479,
+        "contrast": 54.6
+      },
+      "67": {
+        "pixels": 8867,
+        "contrast": 52.9
+      },
+      "50": {
+        "pixels": 4989,
+        "contrast": 51.9
+      },
+      "33": {
+        "pixels": 2198,
+        "contrast": 50.5
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "lowland",
+    "plate": "hero",
+    "measurements": {
+      "100": {
+        "pixels": 8568,
+        "contrast": 51.5
+      },
+      "67": {
+        "pixels": 3891,
+        "contrast": 49.7
+      },
+      "50": {
+        "pixels": 2182,
+        "contrast": 48.7
+      },
+      "33": {
+        "pixels": 956,
+        "contrast": 47.1
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "lowland",
+    "plate": "enemy",
+    "measurements": {
+      "100": {
+        "pixels": 10911,
+        "contrast": 57.0
+      },
+      "67": {
+        "pixels": 4976,
+        "contrast": 55.3
+      },
+      "50": {
+        "pixels": 2807,
+        "contrast": 54.3
+      },
+      "33": {
+        "pixels": 1242,
+        "contrast": 53.0
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "temple",
+    "plate": "with",
+    "measurements": {
+      "100": {
+        "pixels": 14695,
+        "contrast": 62.6
+      },
+      "67": {
+        "pixels": 6687,
+        "contrast": 61.0
+      },
+      "50": {
+        "pixels": 3753,
+        "contrast": 60.0
+      },
+      "33": {
+        "pixels": 1655,
+        "contrast": 58.6
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "temple",
+    "plate": "hero",
+    "measurements": {
+      "100": {
+        "pixels": 8313,
+        "contrast": 59.1
+      },
+      "67": {
+        "pixels": 3768,
+        "contrast": 57.4
+      },
+      "50": {
+        "pixels": 2116,
+        "contrast": 56.3
+      },
+      "33": {
+        "pixels": 927,
+        "contrast": 54.9
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "temple",
+    "plate": "enemy",
+    "measurements": {
+      "100": {
+        "pixels": 6382,
+        "contrast": 67.1
+      },
+      "67": {
+        "pixels": 2919,
+        "contrast": 65.6
+      },
+      "50": {
+        "pixels": 1637,
+        "contrast": 64.9
+      },
+      "33": {
+        "pixels": 728,
+        "contrast": 63.3
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "burial",
+    "plate": "with",
+    "measurements": {
+      "100": {
+        "pixels": 24883,
+        "contrast": 69.2
+      },
+      "67": {
+        "pixels": 11302,
+        "contrast": 68.0
+      },
+      "50": {
+        "pixels": 6338,
+        "contrast": 67.4
+      },
+      "33": {
+        "pixels": 2804,
+        "contrast": 66.1
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "burial",
+    "plate": "hero",
+    "measurements": {
+      "100": {
+        "pixels": 8301,
+        "contrast": 53.8
+      },
+      "67": {
+        "pixels": 3780,
+        "contrast": 52.3
+      },
+      "50": {
+        "pixels": 2120,
+        "contrast": 51.4
+      },
+      "33": {
+        "pixels": 939,
+        "contrast": 49.8
+      }
+    },
+    "pass": true
+  },
+  {
+    "zone": "burial",
+    "plate": "enemy",
+    "measurements": {
+      "100": {
+        "pixels": 16582,
+        "contrast": 76.9
+      },
+      "67": {
+        "pixels": 7522,
+        "contrast": 75.9
+      },
+      "50": {
+        "pixels": 4218,
+        "contrast": 75.4
+      },
+      "33": {
+        "pixels": 1865,
+        "contrast": 74.2
+      }
+    },
+    "pass": true
+  }
+]

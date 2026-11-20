@@ -1,0 +1,27 @@
+sandbox_extension_issue_file_to_process failed for /var/folders/r8/qxy32s0j1w35_z9lrg37cpz80000gn/T/wanderer-package-tyy36xas/道行者 Taoist Wanderer.app: 1 (Operation not permitted)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6
+
+REPLAY_START frame=8
+REPLAY tick=0 x=600 hero=idle enemies=[]
+REPLAY tick=30 x=600 hero=idle enemies=[]
+REPLAY tick=60 x=671 hero=run enemies=[]
+REPLAY tick=90 x=801 hero=run enemies=[]
+REPLAY tick=120 x=908 hero=air enemies=[]
+REPLAY tick=150 x=1038 hero=run enemies=[]
+REPLAY tick=180 x=1168 hero=run enemies=[]
+REPLAY tick=210 x=1298 hero=run enemies=["grunt/wander"]
+REPLAY tick=240 x=1428 hero=run enemies=["grunt/alert"]
+REPLAY tick=270 x=1558 hero=run enemies=["grunt/chase"]
+REPLAY tick=300 x=1688 hero=run enemies=["grunt/attack"]
+REPLAY tick=330 x=1673 hero=attack enemies=["grunt/recover", "grunt/chase"]
+REPLAY tick=360 x=1696 hero=attack enemies=["grunt/stagger", "grunt/chase"]
+REPLAY tick=390 x=1732 hero=attack enemies=["grunt/chase"]
+REPLAY tick=420 x=1737 hero=attack enemies=["grunt/chase"]
+REPLAY tick=450 x=1756 hero=attack enemies=["grunt/chase"]
+REPLAY tick=480 x=1791 hero=attack enemies=["grunt/stagger"]
+REPLAY tick=510 x=1799 hero=attack enemies=["grunt/chase"]
+REPLAY tick=540 x=1815 hero=attack enemies=["grunt/stagger"]
+REPLAY tick=570 x=1850 hero=attack enemies=[]
+REPLAY tick=600 x=1861 hero=attack enemies=[]
+REPLAY_END frame=638

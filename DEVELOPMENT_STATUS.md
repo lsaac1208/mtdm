@@ -1,6 +1,17 @@
 # DEVELOPMENT_STATUS — 道行者 / Taoist Wanderer
 
-## 0.3.1 接手版（当前）
+## 0.4.0 序章商业试玩版（当前）
+
+_2026-11-20 · 分支 `codex/demo-v0.4.0`（基于 `claude/post-codex-continuation` @ `8eb690d`）· Godot 4.7.2 · 版本 0.4.0_
+
+当前画面与叙事系统：全角色（主角 21 片段 + 五类敌人共 41 片段）统一采用 `FrameAnim` 逐帧手绘图集 + 烘焙 2.5D 法线/厚度/AO 贴图（`PoseSprite` 与 `CutoutRig` 仅作回退）；五区配备手绘风化道家石牌坊通关门、10 处可斩碎道力道具（陶罐/木箱/暖光香炉）、四套底景水墨视差与篝火点燃演出；新增三幕可跳过水墨开场序章、六表情头像五区非阻塞默语、统一墨金全链路菜单与「行旅录」甲/乙/丙印章评级存档；全套 75 个音乐/环境/音效升格为 44.1 kHz（30 立体声 + 45 单声道）。
+
+- 已验证：源码 63/63 引擎检查零报错、双轮常规通关 soak 零泄漏（`nodes 86->86` / `orphans 0->0`）、步态贴地 `floor_gap_px=0.0`、75/75 音频复检 `0 flagged`、Apple M6 Metal `1280×720` 五区可读性 15/15 PASS、真机帧时 `p50=1.91–2.38 ms`、以及解压后原生 macOS `.app` 四项全绿（`engine` / `normal-route` / `title` / `village`）。
+- 本版验收与实机总览：[evidence/v0.4.0/README.md](evidence/v0.4.0/README.md) · 英文交接文档：[HANDOFF.md](HANDOFF.md) · 变更日志：[CHANGELOG.md](CHANGELOG.md)。
+- 未验证：Windows 与 Linux `v0.4.0` 包待目标系统实机桌面验证；真人盲测、实体手柄手感与扬声器听感终审待执行。
+- 下一步见 [ROADMAP.md](ROADMAP.md) 的 `0.4.0` 商业化与第二章规划。
+
+## 0.3.1 接手版（历史）
 
 _2026-11-19 · 分支 `claude/post-codex-continuation`（基于 `codex/visual-polish-v03` @ `451d4d3`）· Godot 4.7.2 · 版本 0.3.1_
 

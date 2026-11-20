@@ -99,3 +99,33 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D24 · Enemy personal space (0.3.1)
 - Upright enemies (hurtbox height ≥ 100) yield to the hero in neutral states only (chase/alert/idle/wander/detect/recover/stagger/retreat), to (hurt widths)·0.42 apart; never during the hero's dash/dash-attack or when heights differ (airborne), and never during enemy wind-ups/attacks. Attack timing windows are unchanged (`elite_fairness` passes). Crawlers are exempt (designed to be jumped over).
+
+## D25 · Full frame-by-frame hero combat & sheathing transition (0.3.2)
+- Replaced legacy static key-pose combat swaps (`PoseSprite`) with hand-painted transparent RGBA `FrameAnim` sheets (`hero_guard_idle_sheet.png`, `hero_slash12_sheet.png`, `hero_slash3_dash_sheet.png`, `hero_skills_sheet.png`) and paired baked 2.5D normal/thickness/AO maps (`*_n.png`).
+- `FrameAnim.set_frame(clip, index)` lets the combat FSM drive exact frame indices in sync with existing hit windows and slash VFX without altering any attack duration or hitbox.
+- `guard_idle` loops continuously during combat; when `guard_t` expires in `idle`, `guard_to_idle` (3 frames, `0.34 s`) bridges cleanly into the three-quarter relaxed `idle`.
+- `tools/art/build_anim_sheets.py` strips detached small connected components touching cell borders so adjacent-cell weapon tips cannot bleed across sprite-sheet gutters.
+
+## D26 · Wall-aware mutual personal space (0.3.2)
+- Extended D24 with `Enemy._safe_nudge_x`: enemies test horizontal geometry and leash limits before stepping back. When pinned against a solid wall, platform, arena barrier, or leash, the grounded hero absorbs the un-yielded remainder (never during `hit`, `dash`, `dash_attack`, or while airborne). Tested against the solid `x=880` stone wall in `personal_space`.
+
+## D27 · Ink-and-brass HUD & 3-state expression portraits (0.3.2)
+- `tools/art/extract_portraits.py` crops three eye-aligned `256×256` RGBA bust portraits (`portrait`, `portrait_combat`, `portrait_hurt`) from `concept_art/03_protagonist_expressions_mood.png` with soft ink-over-parchment unmixing.
+- `hud.gd` swaps portraits by live combat/health state inside a double-ring aged-brass medallion, uses cached antialiased `StyleBoxFlat` ink plaques, adds HP damage-lag and Qi threshold pins (`20` / `50`), sets skill icons on warm parchment medallions so dark ink symbols (`icon_beads`) stay legible, and matches the Boss Bar to the same plaque language with a 50% phase marker and recessed poise bar.
+
+## D28 · Painted stone Pailou gate, destructible props & bottom-anchored foreground parallax (0.4.0)
+- Replaced the procedural end-gate geometry with a hand-painted weathered Taoist stone Pailou archway (`end_gate_pailou.webp`) backed by volumetric gold god-rays and rising spirit motes once `e8_elite` is cleared.
+- Placed 10 painted breakable props (`urn`, `crate`, `brazier` intact/shattered states) in `game/scripts/level/destructible.gd` off all `readcap` camera coordinates; sword swings shatter them and spawn homing `SpiritWisp` pickups that restore Qi, while intact temple/burial braziers emit flickering warm point lights.
+- Added 4 dark ink-wash foreground parallax clusters on layer 2 (`1.22x` scroll) strictly anchored in the bottom soil band below screen `y = 550` so combat readability and `readcap` contrast are never occluded.
+
+## D29 · Full 5-enemy multi-frame `FrameAnim` & diegetic combat feedback (0.4.0)
+- Extended `tools/art/build_anim_sheets.py` and `game/assets/anims/{grunt,crawler,husk,spitter,elite}/` to cover all 41 enemy combat/reaction states with transparent RGBA frame sequences and baked 2.5D normal/thickness/AO maps (`*_n.png`), routed safely via `Enemy.play_pose_or_clip` with zero changes to hitboxes, hurtboxes, poise, damage, or telegraph windows.
+- Added world-space `MiniBar` (HP/poise/burn, hidden at full HP and suppressed for Elite Boss), Husk's 3-hit chest `SealCrackIndicator`, Elite Phase-2 crimson-gold aura & embers, and player parry Bagua burst, `FrameAnim` afterimages, footstep dust, hurt vignette, and gourd heal spiral.
+
+## D30 · Skippable ink-scroll prologue, 6-mood non-blocking whispers & Journey Ledger rank (0.4.0)
+- Expanded `tools/art/extract_portraits.py` to all 6 mood busts (`calm`, `alert`, `fierce`, `combat`, `hurt`, `wistful`) and 3 full-bleed ink-scroll prologue plates (`prologue_01..03.webp`).
+- Added `game/scenes/prologue.tscn` (`prologue.gd`) on New Game (anytime skippable, auto-bypassed whenever `--test=` is active) and one-shot non-blocking top-right zone/boss whispers in `hud.gd` that never pause or capture input.
+- Upgraded Title (Controls overlay + persisted best rank/time badge), Pause, Options, and Ending (`行旅录` Journey Ledger with animated vermilion `甲 / 乙 / 丙` Seal Stamp and persisted best rank in `settings.cfg`).
+
+## D31 · 44.1 kHz stereo audio mastering & automated review gate (0.4.0)
+- Upgraded `tools/audio/make_audio.py` and `tools/audio/audio_review.py` to 44.1 kHz across all 75 WAV assets (30 stereo music/ambience/stinger/climax + 45 mono SFX, including 10 new v0.4.0 UI/destructible/ignition/whisper/stamp cues), enforcing `-1.00 dBFS` ceiling, seam continuity (`<= 0.0115`), and stereo correlation checks (`0 flagged`).

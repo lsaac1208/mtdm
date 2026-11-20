@@ -1,0 +1,27 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BOT t=20s x=2184 hp=97 deaths=0 kills=2 cleared=["e1_village"]
+BOT t=40s x=3802 hp=88 deaths=0 kills=4 cleared=["e1_village", "e2_crawler"]
+BOT t=60s x=4723 hp=93 deaths=0 kills=7 cleared=["e1_village", "e2_crawler", "e3_group_a"]
+BOT t=80s x=5946 hp=90 deaths=0 kills=8 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
+BOT t=100s x=5941 hp=50 deaths=0 kills=10 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter"]
+BOT t=120s x=7230 hp=82 deaths=0 kills=11 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c"]
+BOT t=140s x=7155 hp=24 deaths=0 kills=11 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c"]
+BOT t=160s x=7960 hp=49 deaths=0 kills=12 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk"]
+BOT t=180s x=8022 hp=46 deaths=0 kills=13 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk"]
+BOT t=200s x=9357 hp=90 deaths=0 kills=16 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
+BOT t=220s x=9399 hp=65 deaths=0 kills=18 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
+BOT t=240s x=9459 hp=35 deaths=0 kills=18 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b"]
+BOT t=260s x=10066 hp=100 deaths=0 kills=20 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=280s x=10344 hp=100 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=300s x=10209 hp=92 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=320s x=10274 hp=62 deaths=0 kills=21 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=340s x=10178 hp=60 deaths=0 kills=23 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave"]
+BOT t=360s x=10151 hp=60 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
+BOT t=380s x=10382 hp=60 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
+BOT t=400s x=10642 hp=60 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
+BOT t=420s x=11074 hp=60 deaths=0 kills=24 cleared=["e1_village", "e2_crawler", "e3_group_a", "e4_spitter", "e5_group_c", "e6_husk", "e7_group_b", "e7c_burial_wave", "e8_elite"]
+DEMO_COMPLETE time=02:11 deaths=0 kills=24 parries=2
+TELEMETRY {"damage":{"hazard:puddle":22.5,"伏爬者:pounce":66.5,"封印残尸:attack":90.0,"封印残尸:seal_burst":22.0,"尸将:chop":30.0,"尸将:ground_shock":8.0,"尸将:sweep":22.0,"普通尸祟:attack":74.0,"瘴吐者:taint":14.0},"deaths":[],"encounters":{"e1_village":{"damage":3.0,"deaths":0,"start":0.0,"time":4.34416666666662},"e3_group_a":{"damage":6.0,"deaths":0,"start":0.0,"time":6.204166666666},"e5_group_c":{"damage":43.0,"deaths":0,"start":0.0,"time":7.21349999999801},"e7_group_b":{"damage":47.5,"deaths":0,"start":0.0,"time":8.03499999999852},"e7c_burial_wave":{"damage":75.0,"deaths":0,"start":0.0,"time":22.422499999997},"e8_elite":{"damage":75.0,"deaths":0,"start":0.0,"time":25.5993333333279}}}
+TEST bot_completes_demo           PASS  sim_time=420s deaths=0 kills=24 parries=2 run_time=02:11
+TESTS DONE pass=1 fail=0

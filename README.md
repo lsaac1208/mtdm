@@ -2,17 +2,18 @@
 
 ## 试玩与开发入口
 
-> **English developer handoff:** [HANDOFF.md](HANDOFF.md) · [CHANGELOG.md](CHANGELOG.md) · latest pre-release [v0.3.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1) (branch `claude/post-codex-continuation`; not a stable release — Windows/macOS on-device, human playtest, controller and audio acceptance pending).
+> **English developer handoff:** [HANDOFF.md](HANDOFF.md) · [CHANGELOG.md](CHANGELOG.md) · latest pre-release **[v0.4.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0)** (branch `codex/demo-v0.4.0`; Apple Silicon macOS native `.app` & Metal GPU verified; Windows/Linux target-OS desktop tests, human playtest, physical controller and speaker audio audition pending).
 
-**当前可玩工程为 Godot 4.7.2 的 0.3.0 视觉打磨版。** 从荒村向右走，第一次遭遇能体验跑跳、三段斩与弹反；完整路线穿过五个区域，终点为尸将与光门。
+**当前可玩工程为 Godot 4.7.2 的 `v0.4.0` 序章商业试玩版（Pre-Commercial Prologue Demo）。** 开局包含三幕可跳过水墨序章，全路线覆盖五区、九场遭遇、十处可破坏道具、六处篝火、全敌人逐帧手绘动画、二阶段狂煞尸将、石坊光门与「行旅录」印章评级。
 
 | 想做什么 | 入口 |
 | --- | --- |
-| 下载 Mac、Windows 或 Linux 试玩包，看改版前后实机录像 | [GitHub Release](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1) |
-| 用引擎运行、调试或重新导出 | [构建说明](BUILD_AND_RUN.md) · [项目配置](game/project.godot) |
-| 核对五区画面、战斗与平台验收 | [0.3 验收记录](evidence/v0.3/README.md) |
+| 下载 macOS / Windows / Linux 试玩包与源码归档 | [GitHub Release v0.4.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0) |
+| 接手开发（英文 / 中文交接与架构决策） | [HANDOFF.md](HANDOFF.md) · [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) · [DECISIONS.md](DECISIONS.md) · [ROADMAP.md](ROADMAP.md) |
+| 用 Godot 4.7.2 运行、跑测或重新导出 | [BUILD_AND_RUN.md](BUILD_AND_RUN.md) · [game/project.godot](game/project.godot) · [tools/qa/smoke.sh](tools/qa/smoke.sh) |
+| 核对 `v0.4.0` 实机截图、五区可读性、性能与原生 `.app` 验收 | [evidence/v0.4.0/README.md](evidence/v0.4.0/README.md) · [CHANGELOG.md](CHANGELOG.md) |
 | 理解主角、道术、尸祟与原设 | [美术与世界观](docs/01_WORLD_AND_ART_BIBLE.md) · [主角设计](docs/02_PROTAGONIST_SPEC.md) · [首批尸祟](docs/03_FIRST_WAVE_ENEMIES_SPEC.md) |
-| 对照上一可下载版本 | [v0.2.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0) |
+| 回溯历史里程碑 | [v0.3.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1) · [v0.3.0-rc.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1) · [v0.2.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0) |
 
 
 > **「末日废土之上，道法不灭，万物异变。」**  
@@ -20,10 +21,6 @@
 >
 > **「一人、一剑、一道，行于废土。以道御剑，以符镇邪，以心守世。」**  
 > *One Man, One Sword, One Tao, Through the Wasteland.*
-
-> ### ▶ 可玩 Demo（垂直切片 v0.1）/ Playable vertical slice
-> Godot 4.7.2 工程位于 [`game/`](./game/)（分支 `dev/vertical-slice-20261118`）。运行：`godot --path game`。
-> 文档：[`BUILD_AND_RUN.md`](./BUILD_AND_RUN.md) · [`DEVELOPMENT_STATUS.md`](./DEVELOPMENT_STATUS.md) · [`ROADMAP.md`](./ROADMAP.md) · [`DECISIONS.md`](./DECISIONS.md)
 
 本仓库是 **2D 横版动作游戏《道行者 / Taoist Wanderer》** 的**第一批核心研发交付物料库（First-Batch Developer Handoff Repository）**。  
 开发人员（策划、程序、2D 原画、骨骼/逐帧动画、关卡设计）可通过本仓库全面了解项目的**核心立意、世界观生态、视觉美术铁律、主角战斗体系、第一批可实装敌人（尸祟·亡秽系 01–05）完整规格**，以及下一阶段的资产量产标准。
