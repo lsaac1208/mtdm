@@ -25,6 +25,8 @@ var _motes: Array = []
 var t := 0.0
 var menu: VBoxContainer
 var help: Label
+var help_panel: PanelContainer
+var _status_lbl: Label
 var _started := false
 
 
@@ -111,17 +113,43 @@ func _ready() -> void:
 		btn.add_theme_color_override("font_color", Color(0.17, 0.12, 0.09))
 		btn.add_theme_color_override("font_outline_color", Color(0.95, 0.88, 0.74, 0.5))
 		btn.pressed.connect(Callable(self, b[1]))
+		InkTheme.wire_hover(btn)
 		menu.add_child(btn)
+	# Framed ink-and-brass controls card (toggled via Controls button)
+	help_panel = PanelContainer.new()
+	help_panel.add_theme_stylebox_override("panel", InkTheme.scroll_panel(22, 16, 0.88))
+	help_panel.position = Vector2(458, 392)
+	help_panel.custom_minimum_size = Vector2(560, 0)
+	help_panel.visible = false
+	add_child(help_panel)
+	var help_box := VBoxContainer.new()
+	help_box.add_theme_constant_override("separation", 8)
+	help_panel.add_child(help_box)
+	var help_head := Label.new()
+	help_head.text = "操作指引  ·  CONTROLS"
+	help_head.add_theme_font_size_override("font_size", 16)
+	help_head.add_theme_color_override("font_color", Color(0.95, 0.80, 0.48))
+	help_box.add_child(help_head)
 	help = Label.new()
 	Game.prompts_changed.connect(_refresh_help)
 	_refresh_help()
-	help.add_theme_font_size_override("font_size", 17)
-	help.add_theme_color_override("font_color", Color(0.12, 0.1, 0.08))
-	help.position = Vector2(470, 410)
-	help.visible = false
-	add_child(help)
+	help.add_theme_font_size_override("font_size", 15)
+	help.add_theme_color_override("font_color", Color(0.94, 0.89, 0.78))
+	help_box.add_child(help)
+	# Top-right difficulty & best-clear seal plaque
+	var badge := PanelContainer.new()
+	badge.add_theme_stylebox_override("panel", InkTheme.scroll_panel(16, 10, 0.78))
+	badge.position = Vector2(936, 26)
+	badge.custom_minimum_size = Vector2(316, 0)
+	add_child(badge)
+	_status_lbl = Label.new()
+	_status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_status_lbl.add_theme_font_size_override("font_size", 14)
+	_status_lbl.add_theme_color_override("font_color", Color(0.94, 0.87, 0.74))
+	badge.add_child(_status_lbl)
+	_refresh_status()
 	var foot := Label.new()
-	foot.text = "第一章 · 序　垂直切片试玩版 v%s　|　Vertical-slice demo" % ProjectSettings.get_setting("application/config/version")
+	foot.text = "第一章 · 序章试玩版 v%s　|　Prologue Demo" % ProjectSettings.get_setting("application/config/version")
 	foot.add_theme_font_size_override("font_size", 14)
 	foot.add_theme_color_override("font_color", Color(0.25, 0.2, 0.16))
 	foot.position = Vector2(130, 680)
@@ -195,7 +223,18 @@ func _start() -> void:
 		return
 	_started = true
 	Sfx.play("ui_confirm", -2.0)
-	Game.new_run()
+	Game.start_story_run()
+
+
+func _refresh_status() -> void:
+	if _status_lbl == null:
+		return
+	var diffs := ["故事 Story", "常规 Normal", "修行 Hard"]
+	var dtxt: String = diffs[clampi(Game.difficulty, 0, 2)]
+	if Game.cleared_once and not Game.best_rank.is_empty():
+		_status_lbl.text = "当前难度：%s\n最佳评价：%s · %s" % [dtxt, Game.best_rank, Game.format_time(Game.best_time)]
+	else:
+		_status_lbl.text = "当前难度：%s\n序章五区 · 尸将待镇" % dtxt
 
 
 func _refresh_help() -> void:
@@ -203,14 +242,15 @@ func _refresh_help() -> void:
 
 
 func _help() -> void:
-	help.visible = not help.visible
-	Sfx.play("ui_move", -6.0)
+	help_panel.visible = not help_panel.visible
+	InkTheme.play_ui("ui_click", "ui_move", -6.0)
 
 
 func _options() -> void:
+	InkTheme.play_ui("ui_click", "ui_move", -6.0)
 	var o := OptionsMenu.new()
 	add_child(o)
-	o.closed.connect(func(): (menu.get_child(2) as Button).grab_focus())
+	o.closed.connect(func(): _refresh_status(); (menu.get_child(2) as Button).grab_focus())
 
 
 func _quit() -> void:

@@ -65,6 +65,9 @@ var controls_locked := false
 var _ghost_t := 0.0
 var _step_t := 0.0
 var _fall_peak := 0.0
+var _prev_ax := 0.0
+var _skid_cd := 0.0
+var _talisman_projs: Array = []
 var _hit_stun := 0.35
 var _jump_arm := 0.0
 var _block_recoil := 0.0   # sword-arm rot, back-arm rot, sword-arm offset along x (uv)
@@ -90,8 +93,10 @@ var _last_clip_pos := 0.0
 ## three-quarter idle. The relaxed idle sheet is drawn facing the viewer, so
 ## dropping into it between strikes made the body swing round for one beat.
 var guard_t := 0.0
+var _guard_relax_t := 0.0
 var _taint_fx_t := 0.0
 const GUARD_HOLD := 2.6
+const GUARD_RELAX_DUR := 0.34
 const GUARD_RANGE := 430.0
 
 
@@ -138,6 +143,9 @@ func _physics_process(delta: float) -> void:
 	jump_buf = maxf(0.0, jump_buf - delta)
 	atk_buf = maxf(0.0, atk_buf - delta)
 	in_taint = maxf(0.0, in_taint - delta)
+	_skid_cd = maxf(0.0, _skid_cd - delta)
+	if not _talisman_projs.is_empty():
+		_update_talisman_destructibles()
 	if combo_timer > 0.0:
 		combo_timer = maxf(0.0, combo_timer - delta)
 		if combo_timer <= 0.0 and combo_hits > 0:
@@ -236,6 +244,15 @@ func _try_actions() -> bool:
 
 func _st_ground(delta: float) -> void:
 	var ax := _axis()
+	if ax != 0.0 and _prev_ax == 0.0 and absf(velocity.x) < 40.0:
+		Fx.dust(global_position + Vector2(-signf(ax) * 12.0, -2.0), 4, Vector2(-signf(ax) * 1.1, -0.45))
+	elif ax != 0.0 and absf(velocity.x) > 150.0 and signf(ax) != signf(velocity.x) and _skid_cd <= 0.0:
+		_skid_cd = 0.18
+		var old_dir: float = signf(velocity.x)
+		Fx.dust(global_position + Vector2(old_dir * 10.0, -2.0), 5, Vector2(old_dir * 1.2, -0.35))
+		Sfx.play("step", -14.0, 0.12, 0.85)
+		vis.squash = Vector2(1.06, 0.95)
+	_prev_ax = ax
 	velocity.x = move_toward(velocity.x, ax * RUN_SPEED * _speed_mul(), 2600.0 * delta)
 	if ax != 0.0:
 		facing = int(signf(ax))
@@ -263,6 +280,7 @@ func _jump() -> void:
 
 
 func _st_air(delta: float) -> void:
+	_prev_ax = 0.0
 	var ax := _axis()
 	velocity.x = move_toward(velocity.x, ax * RUN_SPEED * _speed_mul(), 1800.0 * delta)
 	if ax != 0.0:
@@ -278,12 +296,18 @@ func _st_air(delta: float) -> void:
 
 
 func _on_landed(vy: float) -> void:
-	Fx.dust(global_position, 5 if vy < 700 else 10)
+	var impact_k: float = clampf((vy - 220.0) / 700.0, 0.0, 1.0)
+	var side_n: int = int(roundf(lerpf(2.0, 7.0, impact_k)))
+	Fx.dust(global_position + Vector2(-10.0, -2.0), side_n, Vector2(-0.9, -0.35))
+	Fx.dust(global_position + Vector2(10.0, -2.0), side_n, Vector2(0.9, -0.35))
+	if vy > 820.0:
+		Fx.ring(global_position + Vector2(0.0, -2.0), 10.0, 56.0, Color(0.55, 0.48, 0.38, 0.48), 0.24, 5.0, 0.20)
 	Sfx.play("land", -10.0 if vy < 700 else -4.0)
 	if state == "air":
 		if vy > 820.0:
 			set_state("land")
 			vis.squash = Vector2(1.12, 0.86)
+			Fx.shake(2.0, 0.08)
 		else:
 			set_state("idle")
 			vis.squash = Vector2(1.06, 0.94)
@@ -303,6 +327,12 @@ func _st_land(delta: float) -> void:
 		_try_actions()
 
 
+func _set_combat_frame(clip: String, idx: int, fallback_pose: String) -> void:
+	vis.facing = facing
+	if not vis.play_frame(clip, idx):
+		vis.set_pose(fallback_pose, 0.0)
+
+
 # ---------------------------------------------------------------- melee
 func _start_attack(name_: String) -> void:
 	cur_atk_name = name_
@@ -310,11 +340,14 @@ func _start_attack(name_: String) -> void:
 	cur_atk = ATK[name_]
 	hit_set = {}
 	combo_queued = ""
+	if name_ == "slash3":
+		_ghost_t = 0.0
 	set_state("attack")
 	var ax := _axis()
 	if ax != 0.0:
 		facing = int(signf(ax))
-	vis.set_pose(cur_atk.pre, 0.0)
+	var clip := "slash2" if name_ == "down" else name_
+	_set_combat_frame(clip, 0, cur_atk.pre)
 	Sfx.play("swing_pre", -12.0)
 	match name_:
 		"slash1":
@@ -331,16 +364,26 @@ func _st_attack(delta: float) -> void:
 	var st: float = a.startup
 	var ac: float = a.active
 	var total: float = st + ac + a.recover
+	var clip := "slash2" if cur_atk_name == "down" else cur_atk_name
+	var pass_t := st * (0.65 if clip == "slash2" else 0.50)
+	var hold_after := 0.06 if clip == "slash1" else (0.08 if clip == "slash2" else 0.11)
 	if t < st + ac:
 		var k := t / (st + ac)
 		velocity.x = facing * a.lunge * (1.0 - k) * _speed_mul()
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, 2000.0 * delta)
-	if cur_atk_name == "slash1" and t >= st * 0.45 and t < st:
-		vis.set_pose("hero_slash_pass", 0.0)
+	if cur_atk_name == "slash3" and t >= st * 0.5 and t < st + ac + 0.04:
+		_ghost_t -= delta
+		if _ghost_t <= 0.0:
+			_ghost_t = 0.042
+			_spawn_ghost(Color(0.98, 0.52, 0.24, 0.44), 0.20)
+	if t < pass_t:
+		_set_combat_frame(clip, 0, a.pre)
+	elif t < st:
+		_set_combat_frame(clip, 1, "hero_slash_pass" if clip == "slash1" else a.pre)
 	if t >= st and not _swing_started:
 		_swing_started = true
-		vis.set_pose(a.pose, 0.03)
+		_set_combat_frame(clip, 2, a.pose)
 		var f: Array = a.fx
 		var fx_pos := global_position + Vector2(a.fx_off.x * facing, a.fx_off.y)
 		match cur_atk_name:
@@ -371,6 +414,7 @@ func _st_attack(delta: float) -> void:
 				Sfx.play("swing", -4.0)
 				vis.squash = Vector2(1.06, 0.95)
 	if t >= st and t < st + ac:
+		_hit_destructibles(local_rect(a.rect), facing)
 		var hits := strike(a.rect, a.dmg, a.poise, a.knock, hit_set, {"tag": cur_atk_name, "low": a.get("low", false)})
 		if hits.size() > 0:
 			_on_melee_connect(hits)
@@ -402,8 +446,11 @@ func _st_attack(delta: float) -> void:
 		set_state("block")
 		block_t = 0.0
 		return
-	if t >= st + ac + a.recover * 0.42:
-		vis.set_pose("hero_strike_settle", 0.0)
+	if t >= st:
+		if t < st + ac + hold_after:
+			_set_combat_frame(clip, 2, a.pose)
+		else:
+			_set_combat_frame(clip, 3, "hero_strike_settle")
 	if t >= total:
 		set_state("idle")
 
@@ -431,7 +478,9 @@ func _start_dash() -> void:
 	if not is_on_floor():
 		air_dash = false
 	velocity.y = minf(velocity.y, 0.0) if not is_on_floor() else velocity.y
-	vis.set_pose("hero_06_dash", 0.03)
+	_set_combat_frame("dash", 0, "hero_06_dash")
+	_ghost_t = 0.035
+	_spawn_ghost(Color(0.95, 0.75, 0.36, 0.46), 0.22)
 	Sfx.play("dash", -6.0)
 	Fx.dust(global_position + Vector2(-facing * 20, 0), 8, Vector2(-facing, -0.4))
 
@@ -444,7 +493,7 @@ func _st_dash(delta: float) -> void:
 	_ghost_t -= delta
 	if _ghost_t <= 0.0:
 		_ghost_t = 0.035
-		_spawn_ghost()
+		_spawn_ghost(Color(0.95, 0.75, 0.36, 0.46), 0.22)
 	if atk_buf > 0.0 and is_on_floor():
 		atk_buf = 0.0
 		_start_dash_attack()
@@ -461,7 +510,9 @@ func _start_dash_attack() -> void:
 	set_state("dash_attack")
 	hit_set = {}
 	invuln = maxf(invuln, 0.16)
-	vis.set_pose("hero_06_dash", 0.02)
+	_set_combat_frame("dash_attack", 0, "hero_06_dash")
+	_ghost_t = 0.04
+	_spawn_ghost(Color(1.0, 0.64, 0.28, 0.48), 0.22)
 	Fx.blade_glint(global_position + Vector2(8 * facing, -64), facing, Fx.C_GOLD, 22.0)
 	Sfx.play("swing_thrust", -2.5, 0.05, 1.08)
 	Fx.slash(global_position + Vector2(24 * facing, -54), facing, -72.0, 72.0, 114.0, 30.0, 0.28,
@@ -471,11 +522,18 @@ func _start_dash_attack() -> void:
 
 func _st_dash_attack(delta: float) -> void:
 	velocity.x = facing * lerpf(620.0, 0.0, clampf(state_t / 0.34, 0, 1)) * _speed_mul()
+	if state_t < 0.03:
+		_set_combat_frame("dash_attack", 0, "hero_06_dash")
+	elif state_t < 0.24:
+		_set_combat_frame("dash_attack", 1, "hero_06_dash")
+	else:
+		_set_combat_frame("dash_attack", 2, "hero_strike_settle")
 	_ghost_t -= delta
 	if _ghost_t <= 0.0 and state_t < 0.2:
 		_ghost_t = 0.04
-		_spawn_ghost()
+		_spawn_ghost(Color(1.0, 0.64, 0.28, 0.48), 0.22)
 	if state_t >= 0.03 and state_t < 0.22:
+		_hit_destructibles(local_rect(Rect2(-20, -95, 140, 95)), facing)
 		var hits := strike(Rect2(-20, -95, 140, 95), 14.0, 16.0, 220.0, hit_set, {"tag": "dash_attack", "low": true})
 		if hits.size() > 0:
 			_gain_qi(5.0 * hits.size())
@@ -497,7 +555,7 @@ func _start_jump_attack() -> void:
 	set_state("jump_attack")
 	air_attack = false
 	hit_set = {}
-	vis.set_pose("hero_07_jump", 0.03)
+	_set_combat_frame("jump_attack", 0, "hero_07_jump")
 	_smear(1, 0.3)
 	Sfx.play("swing", -4.0, 0.06, 1.08)
 	Fx.slash(global_position + Vector2(26 * facing, -70), facing, -85.0, 98.0, 92.0, 36.0, 0.26,
@@ -510,6 +568,7 @@ func _st_jump_attack(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, ax * RUN_SPEED * 0.8, 1200.0 * delta)
 	_jump_arm = lerpf(-0.6, 0.75, 1.0 - pow(1.0 - clampf(state_t / 0.2, 0.0, 1.0), 3.0))
 	if state_t >= 0.04 and state_t < 0.24:
+		_hit_destructibles(local_rect(Rect2(-10, -125, 128, 165)), facing)
 		var hits := strike(Rect2(-10, -125, 128, 165), 13.0, 12.0, 160.0, hit_set, {"tag": "jump_attack", "low": true})
 		if hits.size() > 0:
 			_gain_qi(5.0 * hits.size())
@@ -548,18 +607,18 @@ func _start_skill(s: String) -> void:
 		"talisman":
 			qi -= TALISMAN_COST
 			skill_cd = 0.3
-			vis.set_pose("hero_08_talisman", 0.04)
+			_set_combat_frame("talisman", 0, "hero_08_talisman")
 			Sfx.play("talisman_draw", -6.0)
 		"gourd":
 			gourd -= 1
 			gourd_changed.emit(gourd)
 			skill_cd = 0.5
-			vis.set_pose("hero_09_gourd", 0.05)
+			_set_combat_frame("gourd", 0, "hero_09_gourd")
 			Sfx.play("gourd_uncork", -4.0)
 		"beads_a":
 			qi -= BEADS_COST
 			skill_cd = 0.8
-			vis.set_pose("hero_10a_beads", 0.05)
+			_set_combat_frame("beads_a", 0, "hero_10a_beads")
 			Sfx.play("beads_charge", -3.0)
 			var r := Fx.ring(global_position + Vector2(0, -70), 90.0, 40.0, Fx.C_GOLD, 0.45, 6.0, 0.5)
 			r.glyphs = 9
@@ -572,11 +631,13 @@ func _st_skill(delta: float) -> void:
 		"talisman":
 			if state_t >= 0.1 and hit_set.is_empty():
 				hit_set["fired"] = true
+				_set_combat_frame("talisman", 1, "hero_08_talisman")
 				var p := preload("res://scripts/fx/talisman_projectile.gd").new()
 				p.global_position = global_position + Vector2(46 * facing, -96)
 				p.dir = facing
 				p.owner_actor = self
 				Fx.layer().add_child(p)
+				_talisman_projs.append(p)
 				Fx.blade_glint(p.global_position, facing, Fx.C_GOLD, 20.0)
 				Sfx.play("talisman_fire", -3.0)
 			if state_t >= 0.32:
@@ -584,14 +645,19 @@ func _st_skill(delta: float) -> void:
 		"gourd":
 			if state_t >= 0.22 and hit_set.is_empty():
 				hit_set["done"] = true
+				_set_combat_frame("gourd", 1, "hero_09_gourd")
 				hp = minf(max_hp, hp + 35.0)
 				hp_changed.emit(hp, max_hp)
 				Fx.float_text(global_position + Vector2(0, -170), "+35", Color(0.95, 0.85, 0.5))
 				Fx.ring(global_position + Vector2(30 * facing, -80), 20.0, 170.0, Color(0.95, 0.75, 0.35, 0.9), 0.5, 14.0, 0.6)
 				Fx.particles(global_position + Vector2(40 * facing, -90), 26, Color(0.9, 0.7, 0.3, 0.8), 380.0, 50.0, Vector2(facing, 0), 0.0, 0.5, 6.0)
+				Fx.heal_spiral(self, 0.72)
+				Fx.screen_pulse(Color(0.98, 0.80, 0.34, 0.26), 0.48)
 				Sfx.play("gourd_gust", -2.0)
+				var gust_rect := Rect2(global_position.x - 170, global_position.y - 170, 340, 175)
+				_hit_destructibles(gust_rect, 0)
 				var gust := {}
-				var hits := Combat.strike({"owner": self, "team": team, "rect": Rect2(global_position.x - 170, global_position.y - 170, 340, 175),
+				var hits := Combat.strike({"owner": self, "team": team, "rect": gust_rect,
 					"damage": 4.0, "poise": 30.0, "knock": 520.0, "dir": facing, "kind": "aoe", "centre": global_position,
 					"unblockable": false, "tag": "gourd"}, gust)
 				if hits.size() > 0:
@@ -602,7 +668,7 @@ func _st_skill(delta: float) -> void:
 		"beads_a":
 			if state_t >= 0.42:
 				set_state("beads_b")
-				vis.set_pose("hero_10b_beads", 0.03)
+				_set_combat_frame("beads_b", 0, "hero_10b_beads")
 				Sfx.play("beads_burst", 0.0)
 				var r := Fx.ring(global_position + Vector2(0, -40), 30.0, 230.0, Fx.C_GOLD, 0.6, 16.0, 0.45)
 				r.glyphs = 18
@@ -612,8 +678,10 @@ func _st_skill(delta: float) -> void:
 				Fx.kick(Vector2(0.0, 6.0), 0.14)
 				Fx.punch(0.04, 0.3)
 				Game.hitstop(0.08)
+				var beads_rect := Rect2(global_position.x - 210, global_position.y - 210, 420, 230)
+				_hit_destructibles(beads_rect, 0)
 				var hs := {}
-				var b_hits := Combat.strike({"owner": self, "team": team, "rect": Rect2(global_position.x - 210, global_position.y - 210, 420, 230),
+				var b_hits := Combat.strike({"owner": self, "team": team, "rect": beads_rect,
 					"damage": 28.0, "poise": 60.0, "knock": 420.0, "dir": facing, "kind": "aoe", "centre": global_position,
 					"unblockable": false, "tag": "beads"}, hs)
 				if b_hits.size() > 0:
@@ -709,6 +777,9 @@ func _take(dmg: float, flash_: bool) -> void:
 	hp_changed.emit(hp, max_hp)
 	if flash_:
 		vis.flash = 0.45
+		if dmg > 0.0:
+			var sev: float = clampf(dmg / 26.0, 0.35, 1.0)
+			Fx.screen_pulse(Color(0.68, 0.09, 0.06, 0.26 + 0.22 * sev), 0.26 + 0.16 * sev)
 	if hp <= 0.0 and not dead:
 		_die()
 
@@ -718,14 +789,15 @@ func _parry(atk: Dictionary) -> void:
 	_gain_qi(15.0)
 	Sfx.play("parry", 0.0, 0.03)
 	var ppos := global_position + Vector2(36 * facing, -96)
-	Fx.spark(ppos, Color(1, 0.95, 0.7), 22)
-	Fx.ring(ppos, 6.0, 76.0, Color(1, 0.9, 0.6), 0.25, 5.0, 1.0)
-	Fx.hit_impact(ppos, facing, "slash3", true, Fx.C_GOLD, Color(1.0, 0.98, 0.86))
+	Fx.parry_burst(ppos, facing)
 	Fx.float_text(global_position + Vector2(0, -175), "弹反", Color(1, 0.88, 0.5), 30)
 	Game.hitstop(0.16, 0.02)
-	Fx.shake(4.0, 0.15)
-	Fx.kick(Vector2(-facing * 6.0, 0.0), 0.11)
-	Fx.punch(0.05, 0.25)
+	Fx.shake(5.0, 0.16)
+	Fx.kick(Vector2(-facing * 6.5, -1.5), 0.11)
+	Fx.punch(0.045, 0.22)
+	Fx.screen_flash(Color(1.0, 0.90, 0.62, 0.22), 0.14)
+	_block_recoil = -0.32
+	vis.squash = Vector2(0.92, 1.07)
 	var o = atk.get("owner")
 	if is_instance_valid(o) and o.has_method("on_parried"):
 		o.on_parried()
@@ -763,6 +835,7 @@ func respawn_at(pos: Vector2) -> void:
 	combo_hits = 0
 	combo_timer = 0.0
 	combo_changed.emit(0)
+	_talisman_projs.clear()
 	invuln = 1.0
 	vis.alpha = 1.0
 	vis.dissolve = 0.0
@@ -797,6 +870,39 @@ func on_kill(_enemy) -> void:
 	_gain_qi(8.0)
 
 
+func _hit_destructibles(rect: Rect2, dir: int, seen = null) -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+	var tracked: Dictionary = seen if seen is Dictionary else hit_set
+	for node in tree.get_nodes_in_group("destructible"):
+		if not is_instance_valid(node) or tracked.has(node):
+			continue
+		if node.has_method("get_hit_rect") and node.has_method("take_sword_hit"):
+			var r: Rect2 = node.get_hit_rect()
+			if r.intersects(rect):
+				tracked[node] = true
+				var hit_dir: int = (1 if r.get_center().x >= global_position.x else -1) if dir == 0 else dir
+				node.take_sword_hit(hit_dir)
+
+
+func _update_talisman_destructibles() -> void:
+	var alive: Array = []
+	for proj in _talisman_projs:
+		if not is_instance_valid(proj):
+			continue
+		var n := proj as Node2D
+		if n == null or not n.is_physics_processing():
+			continue
+		var vel_v: Vector2 = n.get("vel") if n.get("vel") is Vector2 else Vector2.ZERO
+		var d_val: int = int(n.get("dir"))
+		var tdir: int = int(signf(vel_v.x)) if vel_v.x != 0.0 else d_val
+		var p_seen = n.get("hit_set")
+		_hit_destructibles(Rect2(n.global_position - Vector2(20.0, 14.0), Vector2(40.0, 28.0)), tdir, p_seen)
+		alive.append(proj)
+	_talisman_projs = alive
+
+
 # ---------------------------------------------------------------- visuals
 ## Motion smear: fading copies of the previous and current pose trailing the swing.
 func _smear(n: int, alpha: float) -> void:
@@ -818,21 +924,8 @@ func _smear(n: int, alpha: float) -> void:
 		tw.tween_callback(g.queue_free)
 
 
-func _spawn_ghost() -> void:
-	var src: Sprite2D = vis.active_sprite()
-	if src == null or src.texture == null:
-		return
-	var g := Sprite2D.new()
-	g.texture = src.texture
-	g.centered = false
-	g.global_transform = src.global_transform
-	g.modulate = Color(0.95, 0.75, 0.35, 0.45)
-	g.z_index = 4
-	Fx.layer().add_child(g)
-	var tw := g.create_tween()
-	tw.set_ignore_time_scale(true)
-	tw.tween_property(g, "modulate:a", 0.0, 0.22)
-	tw.tween_callback(g.queue_free)
+func _spawn_ghost(tint := Color(0.95, 0.75, 0.36, 0.46), life := 0.22) -> void:
+	Fx.afterimage(vis, global_position, tint, life)
 
 
 func _enemy_near() -> bool:
@@ -879,15 +972,28 @@ func _animate(delta: float) -> void:
 				Color(0.55, 0.78, 0.22, 0.55), 70.0, 25.0, Vector2.UP, -40.0, 0.8, 9.0, 9)
 	vis.alpha = 0.7 if (invuln > 0.0 and state != "dash" and state != "dash_attack" and int(invuln * 20) % 2 == 0) else 1.0
 	vis.clip_speed_scale = 1.0
+	var was_guard := guard_t > 0.0
 	if state in ["attack", "dash_attack", "jump_attack", "block", "hit", "talisman", "gourd", "beads_a", "beads_b"] or _enemy_near():
 		guard_t = GUARD_HOLD
+		_guard_relax_t = 0.0
 	else:
 		guard_t = maxf(0.0, guard_t - delta)
+		if was_guard and guard_t <= 0.0 and state == "idle":
+			_guard_relax_t = GUARD_RELAX_DUR
+		elif _guard_relax_t > 0.0:
+			_guard_relax_t = maxf(0.0, _guard_relax_t - delta)
+	if state != "idle":
+		_guard_relax_t = 0.0
 	match state:
 		"idle":
 			if guard_t > 0.0:
-				vis.set_pose("hero_strike_settle", 0.0)
-				vis.breathe = 0.010
+				if vis.has_frame_clip("guard_idle"):
+					vis.play_clip("guard_idle", 0.08)
+				else:
+					vis.set_pose("hero_strike_settle", 0.0)
+					vis.breathe = 0.010
+			elif _guard_relax_t > 0.0 and vis.has_frame_clip("guard_to_idle"):
+				vis.play_clip("guard_to_idle", 0.04)
 			else:
 				vis.play_clip("idle", 0.18)
 		"run":
@@ -913,7 +1019,7 @@ func _animate(delta: float) -> void:
 		"dead":
 			vis.play_clip("dead", 0.08)
 		"dash":
-			vis.set_pose("hero_06_dash", 0.03)
+			_set_combat_frame("dash", 0, "hero_06_dash")
 		"attack":
 			target_lean = 0.0 # The painted strikes already include their forward weight shift.
 		"hit":

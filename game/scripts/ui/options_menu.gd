@@ -23,18 +23,23 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	theme = InkTheme.shared()
 	var bg := ColorRect.new()
-	bg.color = Color(0.04, 0.035, 0.03, 0.92)
+	bg.color = Color(0.03, 0.025, 0.02, 0.84)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
+	var frame := PanelContainer.new()
+	frame.add_theme_stylebox_override("panel", InkTheme.scroll_panel(26, 20, 0.95))
+	frame.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	frame.offset_left = -454
+	frame.offset_right = 454
+	frame.offset_top = -342
+	frame.offset_bottom = 342
+	add_child(frame)
 	var scroll := ScrollContainer.new()
-	scroll.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	scroll.offset_left = -420
-	scroll.offset_right = 420
-	scroll.offset_top = -330
-	scroll.offset_bottom = 330
-	add_child(scroll)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	frame.add_child(scroll)
 	var box := VBoxContainer.new()
-	box.custom_minimum_size = Vector2(820, 0)
+	box.custom_minimum_size = Vector2(830, 0)
 	box.add_theme_constant_override("separation", 8)
 	scroll.add_child(box)
 	var title := Label.new()
@@ -50,7 +55,8 @@ func _ready() -> void:
 		diff.add_item(item)
 	diff.selected = Game.difficulty
 	diff.custom_minimum_size = Vector2(520, 36)
-	diff.item_selected.connect(func(i): Game.difficulty = i; Game.save_settings())
+	diff.item_selected.connect(func(i): Game.difficulty = i; Game.save_settings(); InkTheme.play_ui("ui_click", "ui_move", -7.0))
+	InkTheme.wire_hover(diff)
 	box.add_child(diff)
 	_section(box, "声音 Audio")
 	_first = _slider(box, "总音量 Master", Game.bus_volume("Master"), func(v): Game.set_bus_volume("Master", v))
@@ -84,12 +90,14 @@ func _ready() -> void:
 	box.add_child(row)
 	var reset := Button.new()
 	reset.text = "恢复默认按键 Reset keys"
-	reset.pressed.connect(func(): Game.reset_bindings(); _refresh_keys(); Game.save_settings())
+	reset.pressed.connect(func(): Game.reset_bindings(); _refresh_keys(); Game.save_settings(); InkTheme.play_ui("ui_click", "ui_move", -6.0))
+	InkTheme.wire_hover(reset)
 	row.add_child(reset)
 	var back := Button.new()
 	back.text = "返回 Back"
 	back.custom_minimum_size = Vector2(180, 40)
 	back.pressed.connect(close)
+	InkTheme.wire_hover(back)
 	row.add_child(back)
 	_first.grab_focus.call_deferred()
 
@@ -139,6 +147,7 @@ func _refresh_keys() -> void:
 
 
 func _begin_capture(action: String) -> void:
+	InkTheme.play_ui("ui_click", "ui_move", -7.0)
 	_capture = action
 	_refresh_keys()
 
@@ -158,6 +167,7 @@ func _input(e: InputEvent) -> void:
 
 
 func close() -> void:
+	InkTheme.play_ui("ui_back", "ui_move", -7.0)
 	Game.save_settings()
 	closed.emit()
 	queue_free()

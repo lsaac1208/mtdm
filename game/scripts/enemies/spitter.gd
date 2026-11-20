@@ -40,7 +40,7 @@ func _ready() -> void:
 
 func _on_spawned() -> void:
 	set_state("detect")
-	vis.set_pose("spitter_detect", 0.08)
+	play_pose_or_clip("alert", "spitter_detect", 0.08, true)
 
 
 func _ai(delta: float) -> void:
@@ -60,7 +60,7 @@ func _ai(delta: float) -> void:
 			if p and (ad < 650.0 or aggro):
 				set_state("detect")
 				face_toward(p.global_position.x)
-				vis.set_pose("spitter_detect", 0.06)
+				play_pose_or_clip("alert", "spitter_detect", 0.06, true)
 				Sfx.play("gurgle", -6.0)
 		"detect":
 			velocity.x = 0.0
@@ -77,7 +77,7 @@ func _ai(delta: float) -> void:
 			if ad < 140.0:
 				if cd <= 0.0:
 					set_state("swipe_wind")
-					vis.set_pose("spitter_detect", 0.05)
+					play_pose_or_clip("alert", "spitter_detect", 0.05, true)
 					telegraph.flare(Vector2(40, -80), 0.45, Color(0.9, 0.8, 0.3))
 				else:
 					# shuffle away from the player
@@ -94,7 +94,7 @@ func _ai(delta: float) -> void:
 				still_anim()
 				if cd <= 0.0:
 					set_state("windup")
-					vis.set_pose("spitter_windup", 0.08)
+					play_pose_or_clip("windup", "spitter_windup", 0.08, true)
 					telegraph.flare(Vector2(20, -112), 0.9, Color(0.7, 1.0, 0.3))
 					Sfx.play("sac_swell", -2.0)
 		"windup":
@@ -110,7 +110,7 @@ func _ai(delta: float) -> void:
 			glow_amt = move_toward(glow_amt, 0.0, delta * 5.0)
 			if state_t >= 0.3:
 				set_state("recover")
-				vis.set_pose("spitter_recover", 0.1)
+				play_pose_or_clip("recover", "spitter_recover", 0.1, true)
 		"recover":
 			velocity.x = 0.0
 			glow_amt = 0.05
@@ -124,7 +124,7 @@ func _ai(delta: float) -> void:
 			if state_t >= 0.45:
 				set_state("swipe")
 				attack_hits = {}
-				vis.set_pose("spitter_swipe", 0.03)
+				play_pose_or_clip("swipe", "spitter_swipe", 0.03, true)
 				Sfx.play("claw", -8.0, 0.1, 0.8)
 		"swipe":
 			if state_t < 0.15:
@@ -136,7 +136,7 @@ func _ai(delta: float) -> void:
 
 func _spit() -> void:
 	set_state("spit")
-	vis.set_pose("spitter_spit", 0.03)
+	play_pose_or_clip("spit", "spitter_spit", 0.03, true)
 	vis.lean = 10.0
 	vis.squash = Vector2(0.95, 1.0)
 	Sfx.play("spit", 0.0)

@@ -140,6 +140,117 @@ func _run() -> void:
 		await _shot("ending")
 		Game.quit()
 		return
+	if only == "v04cap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		# 1. Title with Controls card & rank badge
+		Game.cleared_once = true
+		Game.best_rank = "甲"
+		Game.best_time = 139.0
+		get_tree().change_scene_to_file(Game.TITLE_SCENE)
+		await _wait(1.0)
+		await _shot("title_clean")
+		var title_sc := get_tree().current_scene
+		if title_sc and title_sc.has_method("_help"):
+			title_sc._help()
+			await _frames(3)
+			await _shot("title_controls")
+		# 2. Prologue slides
+		get_tree().change_scene_to_file(Game.PROLOGUE_SCENE)
+		await _wait(1.0)
+		await _shot("prologue_0")
+		var pro := get_tree().current_scene
+		if pro and pro.has_method("advance"):
+			pro.advance()
+			await _wait(0.85)
+			await _shot("prologue_1")
+			pro.advance()
+			await _wait(0.85)
+			await _shot("prologue_2")
+		# 3. Village destructible + whisper card + foreground parallax
+		var p := await _fresh_level(640.0)
+		p.max_hp = 99999.0
+		p.hp = 99999.0
+		p.qi = 30.0
+		await _wait(0.4)
+		Game.show_whisper("qa_village", "wistful", "道行者 · 默语", "荒村灶冷，连镇宅符都化了灰……先探探前路。", 6.0)
+		await _wait(0.45)
+		await _shot("village_whisper")
+		# Move beside first urn (~820) and smash it
+		var first_prop: Node = null
+		for node in get_tree().get_nodes_in_group("destructible"):
+			if not node.broken:
+				first_prop = node
+				break
+		if first_prop:
+			p.global_position = Vector2(first_prop.global_position.x - 70.0, Game.GROUND_Y - 2.0)
+			p.facing = 1
+			await _wait(0.25)
+			await press(p, "attack")
+			await _wait(0.24)
+			await _shot("destructible_break")
+		# 4. Diegetic enemy mini-bar + Husk seal crack indicator
+		var g := await spawn("grunt", p.global_position.x + 120.0, true)
+		var h := await spawn("husk", p.global_position.x + 245.0, true)
+		g.receive_hit({"damage": 18.0, "poise": 8.0, "dir": 1, "knock": 40.0, "kind": "sword", "source": p})
+		g.burn = 3.0
+		h.receive_hit({"damage": 22.0, "poise": 10.0, "dir": 1, "knock": 20.0, "kind": "sword", "source": p})
+		h.seal = 2
+		await _wait(0.35)
+		await _shot("diegetic_enemies")
+		# 4b. Parry spectacle shot
+		Fx.parry_burst(p.global_position + Vector2(32.0, -76.0), 1)
+		await _frames(3)
+		await _shot("parry_spectacle")
+		# 5. Pause overlay with Ink-and-Brass Scroll Plaque
+		var pm := Game.level.get_node_or_null("Pause")
+		if pm and pm.has_method("_open"):
+			pm._open()
+			await _frames(4)
+			await _shot("pause_scroll")
+			if pm.has_method("_options"):
+				pm._options()
+				await _frames(4)
+				await _shot("options_scroll")
+			pm._resume()
+			await _frames(3)
+		# 6. Boss Phase 2 aura + fierce portrait
+		p = await _fresh_level(10250.0)
+		p.max_hp = 99999.0
+		p.hp = 99999.0
+		var el := await spawn("elite", 10460.0, true)
+		Game.boss_changed.emit(el)
+		el.hp = el.max_hp * 0.45
+		el._roar()
+		await _wait(0.75)
+		await _shot("boss_phase2")
+		# 7. Painted stone pailou gate (open)
+		p = await _fresh_level(LevelData.END_X - 240.0)
+		p.max_hp = 99999.0
+		p.hp = 99999.0
+		for enc in Game.level.encounters:
+			enc.pending.clear()
+			for en in enc.alive.duplicate():
+				if is_instance_valid(en):
+					en.queue_free()
+			enc.alive.clear()
+			enc._clear()
+		Game.cleared["e8_elite"] = true
+		p.global_position = Vector2(LevelData.END_X - 240.0, Game.GROUND_Y - 2.0)
+		p.facing = 1
+		await _wait(1.1)
+		await _shot("gate_pailou_open")
+		# 8. Ending Journey Ledger + 甲 Seal Stamp
+		Game.difficulty = 1
+		Game.run_time = 148.0
+		Game.kills = 24
+		Game.deaths = 0
+		Game.parries = 5
+		Game.props_broken = 7
+		Game.finish_demo()
+		await _wait(2.4)
+		await _shot("ending_rank_a")
+		Game.quit()
+		return
 	if only == "runcap":
 		shot_dir = Game.args.get("shots", "user://shots")
 		var p := await _fresh_level(500.0)
@@ -321,7 +432,8 @@ func _run() -> void:
 			f += 2
 			if seq.begins_with("jumpatk") and f == 14:
 				p.input_override = {"attack": true, "attack_just": true}
-			await _shot("f%03d_%s" % [f, p.vis.pose])
+			var tag: String = p.vis.current_clip() if p.vis.frame_on else p.vis.pose
+			await _shot("f%03d_%s" % [f, tag])
 		Game.quit()
 		return
 	if only == "crawlcap":
@@ -387,7 +499,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1105,14 +1217,16 @@ func t_anim_continuity() -> void:
 			var d := rel.distance_to(last)
 			if d > worst:
 				worst = d
-				worst_at = "%s f%d" % [p.vis.pose, f]
+				var tag: String = p.vis.current_clip() if p.vis.frame_on else p.vis.pose
+				worst_at = "%s f%d" % [tag, f]
 		last = rel
 	_log("hero_anim_no_pops", worst < 40.0, "max body-centre jump %.1f px at %s" % [worst, worst_at])
 
 
-## Between strikes the hero must stay in the profile sword guard; the relaxed
-## three-quarter idle sheet only returns once the fight is over. Also checks
-## that damage numbers on one target stack instead of overprinting.
+## Between strikes the hero must stay in the profile sword guard (`guard_idle`),
+## play the `guard_to_idle` sheathing transition once the fight is over, and only
+## then return to the relaxed three-quarter idle sheet. Also checks that combat
+## strikes play on FrameAnim and damage numbers on one target stack cleanly.
 func t_guard_stance() -> void:
 	var p := await _fresh_level(700.0)
 	p.max_hp = 9999.0
@@ -1121,30 +1235,41 @@ func t_guard_stance() -> void:
 	var g := await spawn("grunt", 900.0, true)
 	p.facing = 1
 	await press(p, "attack")
+	var slash_frame_ok := false
 	var t := 0.0
 	while p.state != "idle" and t < 2.0:
 		await _frames(1)
 		t += 1.0 / 60.0
+		if p.state == "attack" and p.vis.frame_on and p.vis.current_clip() == "slash1":
+			slash_frame_ok = true
 	await _frames(3)
-	var guard_ok: bool = p.vis.pose == "hero_strike_settle" and not p.vis.frame_on
+	var guard_ok: bool = (p.vis.frame_on and p.vis.current_clip() == "guard_idle") or (p.vis.pose == "hero_strike_settle" and not p.vis.frame_on)
 	if is_instance_valid(g):
 		g.queue_free()
-	await _wait(p.GUARD_HOLD + 0.4)
+	var saw_relax := false
+	var wait_total := p.GUARD_HOLD + p.GUARD_RELAX_DUR + 0.25
+	var wt := 0.0
+	while wt < wait_total:
+		await _frames(2)
+		wt += 2.0 / 60.0
+		if p.vis.frame_on and p.vis.current_clip() == "guard_to_idle":
+			saw_relax = true
 	var relaxed_ok: bool = p.vis.current_clip() == "idle"
 	var y0 := Fx._number_slot(Vector2(5000, 300)).y
 	var y1 := Fx._number_slot(Vector2(5004, 302)).y
-	_log("guard_stance", guard_ok and relaxed_ok and y1 < y0 - 20.0,
-		"guard=%s relaxed=%s stack_dy=%.0f" % [guard_ok, relaxed_ok, y0 - y1])
+	_log("guard_stance", slash_frame_ok and guard_ok and saw_relax and relaxed_ok and y1 < y0 - 20.0,
+		"slash=%s guard=%s relax=%s idle=%s stack_dy=%.0f" % [slash_frame_ok, guard_ok, saw_relax, relaxed_ok, y0 - y1])
 
 
-## Walking into an upright enemy must not stack the two figures; a dash still
-## passes through.
+## Walking into an upright enemy must not stack the two figures — both in open
+## ground (enemy yields) and when pinned against a leash/wall (hero stops cleanly);
+## a dash still passes through.
 func t_personal_space() -> void:
-	var p := await _fresh_level(1250.0)
+	var p := await _fresh_level(500.0)
 	p.max_hp = 9999.0
 	p.hp = 9999.0
 	await _wait(0.3)
-	var g := await spawn("grunt", 1370.0)
+	var g := await spawn("grunt", 610.0)
 	g.state = "stagger"
 	g.state_t = -99.0
 	hold(p, {"move_right": true})
@@ -1154,7 +1279,29 @@ func t_personal_space() -> void:
 		g.state = "stagger"
 		closest = minf(closest, absf(g.global_position.x - p.global_position.x))
 	hold(p, {})
-	_log("personal_space", closest > 30.0, "closest=%.0f px" % closest)
+	# Pin enemy against the real solid wall at x=880 and verify hero cannot walk onto it.
+	p.global_position.x = 760.0
+	p.velocity = Vector2.ZERO
+	g.global_position.x = 846.0
+	g.velocity = Vector2.ZERO
+	hold(p, {"move_right": true})
+	var pinned_closest := 999.0
+	for i in 60:
+		await _frames(1)
+		g.state = "stagger"
+		pinned_closest = minf(pinned_closest, absf(g.global_position.x - p.global_position.x))
+	hold(p, {})
+	# Move to open ground and confirm dash still passes cleanly through the enemy.
+	p.global_position.x = 500.0
+	p.velocity = Vector2.ZERO
+	g.global_position.x = 560.0
+	g.velocity = Vector2.ZERO
+	p.facing = 1
+	await press(p, "dash")
+	await _wait(0.32)
+	var dashed_past := p.global_position.x > g.global_position.x + 20.0
+	_log("personal_space", closest > 30.0 and closest < 70.0 and pinned_closest > 30.0 and pinned_closest < 70.0 and dashed_past,
+		"open=%.0f pinned=%.0f dash_past=%s" % [closest, pinned_closest, dashed_past])
 	g.queue_free()
 	await _frames(1)
 
@@ -1482,3 +1629,125 @@ func t_flow() -> void:
 	# no leaked actors from previous scenes
 	var stale := Combat.actors.filter(func(a): return not is_instance_valid(a) or not a.is_inside_tree())
 	_log("no_stale_actors", stale.is_empty(), "stale=%d" % stale.size())
+
+
+func t_destructibles() -> void:
+	var p := await _fresh_level(600.0)
+	p.qi = 20.0
+	var props := get_tree().get_nodes_in_group("destructible")
+	var target: Node = null
+	for pr in props:
+		if not pr.broken:
+			target = pr
+			break
+	if target == null:
+		_log("destructibles_spawned", false, "no destructibles found")
+		return
+	_log("destructibles_spawned", props.size() >= 8, "count=%d" % props.size())
+	p.global_position = Vector2(target.global_position.x - 62.0, Game.GROUND_Y - 2.0)
+	p.facing = 1
+	await _frames(3)
+	var broken_before := Game.props_broken
+	await press(p, "attack")
+	await _wait(0.28)
+	var is_broken := bool(target.broken) and Game.props_broken == broken_before + 1
+	_log("destructible_breaks_on_slash", is_broken, "broken=%s props_broken=%d" % [str(target.broken), Game.props_broken])
+	await _wait(1.3)
+	_log("destructible_wisp_restores_qi", p.qi > 20.5, "qi=%.1f" % p.qi)
+
+
+func t_diegetic_ui() -> void:
+	var p := await _fresh_level(600.0)
+	var g := await spawn("grunt", p.global_position.x + 160.0, true)
+	var h := await spawn("husk", p.global_position.x + 280.0, true)
+	var el := await spawn("elite", p.global_position.x + 420.0, true)
+	await _frames(3)
+	var g_bar: Node = g.get("_mini_bar")
+	var el_bar: Node = el.get("_mini_bar")
+	var h_seal: Node = h.get("_seal_fx")
+	var hidden_full: bool = g_bar != null and float(g_bar.get("_alpha")) < 0.05 and not g_bar.visible
+	g.receive_hit({"damage": 12.0, "poise": 5.0, "dir": 1, "knock": 0.0, "kind": "sword", "source": p})
+	await _wait(0.25)
+	var shown_damaged: bool = g_bar != null and float(g_bar.get("_alpha")) > 0.3 and g_bar.visible
+	_log("diegetic_mini_bar", hidden_full and shown_damaged and el_bar == null,
+		"hidden=%s shown=%s elite_bar=%s" % [str(hidden_full), str(shown_damaged), str(el_bar != null)])
+	_log("diegetic_husk_seal_fx", h_seal != null, "husk_seal_fx=%s" % str(h_seal != null))
+
+
+func t_enemy_frame_anims() -> void:
+	var p := await _fresh_level(600.0)
+	var specs := {
+		"grunt": ["walk", "idle", "windup", "attack", "hit"],
+		"crawler": ["walk", "idle", "prep", "pounce", "retreat", "hit"],
+		"husk": ["walk", "idle", "awaken", "windup", "attack", "burst", "collapse"],
+		"spitter": ["walk", "idle", "windup", "spit", "swipe", "recover"],
+		"elite": ["walk", "idle", "windup_chop", "chop", "windup_sweep", "sweep", "roar", "kneel", "recoil", "dead"],
+	}
+	var missing: Array = []
+	var idx := 0
+	for kind in specs.keys():
+		idx += 1
+		var e := await spawn(String(kind), p.global_position.x + 140.0 * idx, true)
+		if e.vis == null or not e.vis.has_method("has_frame_clip"):
+			missing.append("%s:no_frame_anim" % kind)
+			continue
+		for cname in specs[kind]:
+			if not e.vis.has_frame_clip(String(cname)):
+				missing.append("%s:%s" % [kind, cname])
+	_log("enemy_frame_anims_loaded", missing.is_empty(), "missing=%s" % str(missing))
+
+
+func t_narrative_flow() -> void:
+	# Prologue slides advance and skip into Level cleanly
+	get_tree().change_scene_to_file(Game.PROLOGUE_SCENE)
+	await _frames(6)
+	var pro := get_tree().current_scene
+	var ok_load := pro != null and pro.scene_file_path == Game.PROLOGUE_SCENE and int(pro.get("slide_idx")) == 0
+	if ok_load:
+		pro.advance()
+		await _frames(2)
+	var ok_adv := ok_load and int(pro.get("slide_idx")) == 1
+	if ok_load:
+		pro.skip()
+		await _wait(0.55)
+	var ok_skip := get_tree().current_scene != null and get_tree().current_scene.scene_file_path == Game.LEVEL_SCENE
+	_log("prologue_advance_and_skip", ok_load and ok_adv and ok_skip,
+		"load=%s adv=%s skip=%s" % [str(ok_load), str(ok_adv), str(ok_skip)])
+	# Non-blocking zone whisper displays once per id and never pauses/locks controls
+	var p := await _fresh_level(600.0)
+	await _frames(4)
+	Game.show_whisper("test_w1", "alert", "道行者", "测试默语不阻塞操作。", 3.0)
+	await _frames(3)
+	var hud: Node = Game.level.hud
+	var w_shown := hud != null and float(hud.get("_whisper_t")) > 2.0 and not get_tree().paused and not p.controls_locked
+	Game.show_whisper("test_w1", "calm", "道行者", "重复触发应忽略", 5.0)
+	var w_dedup := hud != null and String(hud.get("_whisper_text")) == "测试默语不阻塞操作。"
+	_log("whisper_non_blocking", w_shown and w_dedup, "shown=%s dedup=%s" % [str(w_shown), str(w_dedup)])
+	# Rank grading and persistence
+	var r_a: Dictionary = Game.compute_rank(0, 4, 150.0, 1)
+	var r_b: Dictionary = Game.compute_rank(2, 1, 400.0, 1)
+	var r_c: Dictionary = Game.compute_rank(6, 0, 700.0, 0)
+	var prev_rank := Game.best_rank
+	var prev_time := Game.best_time
+	var prev_cleared := Game.cleared_once
+	var tmp_cfg := "user://qa_rank_test.cfg"
+	Game.args["qa-settings"] = tmp_cfg
+	Game.best_rank = ""
+	Game.best_time = 0.0
+	Game.cleared_once = false
+	Game.deaths = 0
+	Game.parries = 4
+	Game.run_time = 155.0
+	Game.difficulty = 1
+	Game.record_clear(true)
+	Game.best_rank = ""
+	Game.cleared_once = false
+	Game.load_settings()
+	var persist_ok := Game.cleared_once and Game.best_rank == "甲" and absf(Game.best_time - 155.0) < 0.1
+	Game.args.erase("qa-settings")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(tmp_cfg))
+	Game.best_rank = prev_rank
+	Game.best_time = prev_time
+	Game.cleared_once = prev_cleared
+	_log("rank_and_persist", String(r_a.grade) == "甲" and String(r_b.grade) == "乙" and String(r_c.grade) == "丙" and persist_ok,
+		"grades=%s/%s/%s persist=%s" % [String(r_a.grade), String(r_b.grade), String(r_c.grade), str(persist_ok)])

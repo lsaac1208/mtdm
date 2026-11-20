@@ -13,6 +13,55 @@ const PAPER := Color(0.95, 0.90, 0.80)
 const PAPER_DIM := Color(0.62, 0.58, 0.52)
 
 
+static func scroll_panel(pad_x := 26, pad_y := 20, alpha := 0.90) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color(0.068, 0.056, 0.046, alpha)
+	s.border_color = Color(0.76, 0.59, 0.34, 0.84)
+	s.set_border_width_all(1)
+	s.border_width_top = 2
+	s.set_corner_radius_all(5)
+	s.content_margin_left = pad_x
+	s.content_margin_right = pad_x
+	s.content_margin_top = pad_y
+	s.content_margin_bottom = pad_y
+	s.shadow_color = Color(0.0, 0.0, 0.0, 0.52)
+	s.shadow_size = 16
+	s.shadow_offset = Vector2(0, 6)
+	s.anti_aliasing = true
+	return s
+
+
+static func inset_card(pad_x := 18, pad_y := 12) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color(0.045, 0.038, 0.032, 0.82)
+	s.border_color = Color(0.56, 0.44, 0.27, 0.58)
+	s.set_border_width_all(1)
+	s.border_width_left = 3
+	s.set_corner_radius_all(3)
+	s.content_margin_left = pad_x
+	s.content_margin_right = pad_x
+	s.content_margin_top = pad_y
+	s.content_margin_bottom = pad_y
+	s.anti_aliasing = true
+	return s
+
+
+static func play_ui(name_: String, fallback := "ui_move", vol_db := -7.0) -> void:
+	if Sfx._stream(name_) != null:
+		Sfx.play(name_, vol_db, 0.03)
+	elif fallback != "":
+		Sfx.play(fallback, vol_db, 0.03)
+
+
+static func wire_hover(btn: Control) -> void:
+	var armed_ms := Time.get_ticks_msec() + 140
+	var cb := func():
+		if Time.get_ticks_msec() >= armed_ms and btn.is_visible_in_tree():
+			play_ui("ui_hover", "ui_move", -9.0)
+	btn.focus_entered.connect(cb)
+	btn.mouse_entered.connect(cb)
+
+
 static func _plate(bg: Color, edge: Color, edge_w: int, shadow := 0) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = bg

@@ -6,6 +6,7 @@ extends Node2D
 const PlayerScript := preload("res://scripts/actors/player.gd")
 const Checkpoint := preload("res://scripts/level/checkpoint.gd")
 const Puddle := preload("res://scripts/fx/taint_puddle.gd")
+const Destructible := preload("res://scripts/level/destructible.gd")
 const Hud := preload("res://scripts/ui/hud.gd")
 const PauseMenu := preload("res://scripts/ui/pause_menu.gd")
 const RouteArt := preload("res://scripts/level/painted_route.gd")
@@ -99,7 +100,8 @@ func zone_light(world_pos: Vector2) -> Dictionary:
 		var dist := d.length()
 		if dist < 340.0:
 			var flick := 0.88 + 0.12 * sin(cp.t * 11.5) * sin(cp.t * 6.7)
-			var f := pow(1.0 - dist / 340.0, 1.65) * 0.92 * flick
+			var lit_scale := 0.96 if cp.lit else 0.46
+			var f := pow(1.0 - dist / 340.0, 1.65) * lit_scale * flick
 			if f > pt_str:
 				pt_str = f
 				pt_col = Color(1.0, 0.58, 0.22)
@@ -120,6 +122,19 @@ func zone_light(world_pos: Vector2) -> Dictionary:
 					pt_str = f
 					pt_col = Color(1.0, 0.80, 0.36)
 					pt_dir = Vector3(d.x, d.y, 120.0).normalized()
+	for pr in destructibles:
+		if not is_instance_valid(pr) or not pr.is_lit_brazier():
+			continue
+		var bpos: Vector2 = pr.global_position + Vector2(0.0, -68.0)
+		var d: Vector2 = bpos - chest
+		var dist := d.length()
+		if dist < 260.0:
+			var flick := 0.86 + 0.14 * sin(pr.t * 12.2) * sin(pr.t * 6.9)
+			var f := pow(1.0 - dist / 260.0, 1.7) * 0.68 * flick
+			if f > pt_str:
+				pt_str = f
+				pt_col = Color(1.0, 0.56, 0.20)
+				pt_dir = Vector3(d.x, d.y, 115.0).normalized()
 	for pd in get_tree().get_nodes_in_group("taint_puddle"):
 		if not is_instance_valid(pd):
 			continue
@@ -153,6 +168,7 @@ var player: Player
 var cam: Camera2D
 var encounters: Array = []
 var checkpoints: Array = []
+var destructibles: Array = []
 var hud: CanvasLayer
 var route_art := RouteArt.new()
 var fog_rect: ColorRect
@@ -197,6 +213,7 @@ func _ready() -> void:
 		checkpoints.append(cp)
 	for s in LevelData.SIGNS:
 		_add_sign(s)
+	_build_destructibles()
 	_build_gate()
 	player = PlayerScript.new()
 	var start_x: float = LevelData.CHECKPOINTS[Game.checkpoint_id].x + 60.0
@@ -373,6 +390,22 @@ func _add_sign(s: Dictionary) -> void:
 	$Props.add_child(marker)
 
 
+func _build_destructibles() -> void:
+	for d in LevelData.DESTRUCTIBLES:
+		var pr := Destructible.new()
+		pr.prop_type = String(d.type)
+		pr.position = Vector2(float(d.x), Game.GROUND_Y)
+		var zi := 0
+		for k in LevelData.ZONES.size():
+			if float(d.x) >= float(LevelData.ZONES[k].x):
+				zi = k
+		var lt: Dictionary = LevelData.ZONES[zi].light
+		var shade: Color = (lt.shadow as Color).lerp(Color.WHITE, 0.56)
+		pr.zone_tint = Color(shade.r, shade.g, shade.b, 1.0)
+		$Props.add_child(pr)
+		destructibles.append(pr)
+
+
 func _build_gate() -> void:
 	var g := preload("res://scripts/level/end_gate.gd").new()
 	g.position = Vector2(LevelData.END_X, Game.GROUND_Y)
@@ -492,6 +525,7 @@ func _update_zone(force: bool) -> void:
 		Sfx.play_music(z.music)
 		Sfx.play_ambience(z.get("amb", "amb_wind"))
 		_set_motes(z)
+		_trigger_zone_whisper(String(z.id), first)
 	# smooth atmosphere blend toward the current zone
 	var z2: Dictionary = LevelData.ZONES[zone_idx]
 	if fog_rect:
@@ -509,6 +543,18 @@ func _update_signs() -> void:
 			Game.show_hint(s.text, 6.0)
 		elif not near and absf(player.global_position.x - s.x) > 400.0:
 			_sign_shown[s.x] = false
+
+
+func _trigger_zone_whisper(zid: String, first: bool) -> void:
+	if not LevelData.WHISPERS.has(zid):
+		return
+	var w: Dictionary = LevelData.WHISPERS[zid]
+	if first and not Game.args.has("test") and not Game.args.has("startx"):
+		get_tree().create_timer(4.8).timeout.connect(func():
+			if is_instance_valid(self) and Game.running:
+				Game.show_whisper("zone_" + zid, String(w.mood), String(w.speaker), String(w.text), float(w.dur)))
+	elif not first:
+		Game.show_whisper("zone_" + zid, String(w.mood), String(w.speaker), String(w.text), float(w.dur))
 
 
 func resume_zone_music() -> void:

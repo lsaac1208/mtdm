@@ -5,6 +5,8 @@ character animation frame and legacy pose sprite.
 Usage:
     python3 tools/art/build_anim_sheets.py
 """
+import argparse
+from collections import deque
 import json
 from pathlib import Path
 
@@ -149,9 +151,55 @@ def find_grid_cuts(alpha: np.ndarray, count: int, axis: int) -> list:
 
 
 def clean_cell_rgba(cell: np.ndarray) -> np.ndarray:
-    """Strip near-invisible alpha dust and trim tightly to figure bounds."""
+    """Strip near-invisible alpha dust, remove edge-bleed islands from
+    neighbouring sprite-sheet cells, and trim tightly to figure bounds."""
     out = cell.copy()
     out[out[..., 3] <= 14] = 0
+    h, w = out.shape[:2]
+    occ = out[..., 3] > 14
+    if np.any(occ):
+        visited = np.zeros((h, w), dtype=bool)
+        comps = []
+        ys_all, xs_all = np.nonzero(occ)
+        for sy, sx in zip(ys_all.tolist(), xs_all.tolist()):
+            if visited[sy, sx]:
+                continue
+            q = deque([(sy, sx)])
+            visited[sy, sx] = True
+            pts = []
+            min_x = max_x = sx
+            min_y = max_y = sy
+            while q:
+                cy, cx = q.popleft()
+                pts.append((cy, cx))
+                if cx < min_x:
+                    min_x = cx
+                if cx > max_x:
+                    max_x = cx
+                if cy < min_y:
+                    min_y = cy
+                if cy > max_y:
+                    max_y = cy
+                for dy in (-1, 0, 1):
+                    ny = cy + dy
+                    if ny < 0 or ny >= h:
+                        continue
+                    for dx in (-1, 0, 1):
+                        if dy == 0 and dx == 0:
+                            continue
+                        nx = cx + dx
+                        if 0 <= nx < w and occ[ny, nx] and not visited[ny, nx]:
+                            visited[ny, nx] = True
+                            q.append((ny, nx))
+            comps.append((len(pts), min_x, min_y, max_x, max_y, pts))
+        if len(comps) > 1:
+            comps.sort(key=lambda item: item[0], reverse=True)
+            main_area = comps[0][0]
+            for area, min_x, min_y, max_x, max_y, pts in comps[1:]:
+                touches_gutter = min_x <= 2 or max_x >= w - 3 or min_y <= 2
+                if area < main_area * 0.12 and (touches_gutter or area < 16):
+                    for py, px in pts:
+                        out[py, px] = 0
     mask = out[..., 3] > 28
     if not np.any(mask):
         return out
@@ -301,6 +349,49 @@ MANIFEST = {
                     "dead": {"indices": [5], "fps": 8.0, "loop": False},
                 },
             },
+            {
+                "file": "hero_guard_idle_sheet.png",
+                "rows": 2, "cols": 3,
+                "ref_indices": [4, 5],
+                "clips": {
+                    "guard_idle": {"indices": [0, 1, 2, 1], "fps": 4.2, "loop": True},
+                    "guard_to_idle": {"indices": [3, 4, 5], "fps": 9.0, "loop": False},
+                },
+            },
+            {
+                "file": "hero_slash12_sheet.png",
+                "rows": 2, "cols": 4,
+                "ref_indices": [0, 1, 3, 7],
+                "ref_scale_ratio": 0.96,
+                "clips": {
+                    "slash1": {"indices": [0, 1, 2, 3], "fps": 12.0, "loop": False},
+                    "slash2": {"indices": [4, 5, 6, 7], "fps": 11.0, "loop": False},
+                },
+            },
+            {
+                "file": "hero_slash3_dash_sheet.png",
+                "rows": 2, "cols": 4,
+                "ref_indices": [0, 1, 3],
+                "ref_scale_ratio": 0.95,
+                "clips": {
+                    "slash3": {"indices": [0, 1, 2, 3], "fps": 11.0, "loop": False},
+                    "dash": {"indices": [4], "fps": 10.0, "loop": False},
+                    "dash_attack": {"indices": [4, 5, 6], "fps": 12.0, "loop": False},
+                    "jump_attack": {"indices": [7], "fps": 10.0, "loop": False, "airborne": True},
+                },
+            },
+            {
+                "file": "hero_skills_sheet.png",
+                "rows": 2, "cols": 3,
+                "ref_indices": [0, 1, 2, 3, 5],
+                "ref_scale_ratio": 0.95,
+                "clips": {
+                    "talisman": {"indices": [0, 1], "fps": 8.0, "loop": False},
+                    "gourd": {"indices": [2, 3], "fps": 6.0, "loop": False},
+                    "beads_a": {"indices": [4], "fps": 6.0, "loop": False},
+                    "beads_b": {"indices": [5], "fps": 6.0, "loop": False},
+                },
+            },
         ],
     },
     "grunt": {
@@ -311,18 +402,18 @@ MANIFEST = {
                 "ref_indices": [0, 1, 2, 3, 4, 5],
                 "clips": {
                     "walk": {"indices": [0, 1, 2, 3, 4, 5], "fps": 7.5, "loop": True},
+                    "idle": {"indices": [1], "fps": 4.0, "loop": True},
                 },
             },
             {
-                "file": "grunt_combat_sheet.png",
-                "rows": 2, "cols": 2,
-                "ref_indices": [0, 1, 2, 3],
+                "file": "grunt_combat_v2_sheet.png",
+                "rows": 2, "cols": 3,
+                "ref_indices": [0, 5],
                 "clips": {
-                    "idle": {"indices": [0], "fps": 4.0, "loop": True},
-                    "alert": {"indices": [1], "fps": 6.0, "loop": False},
-                    "windup": {"indices": [2], "fps": 6.0, "loop": False},
-                    "attack": {"indices": [3], "fps": 8.0, "loop": False},
-                    "hit": {"indices": [1], "fps": 6.0, "loop": False},
+                    "alert": {"indices": [0], "fps": 6.0, "loop": False},
+                    "windup": {"indices": [1, 2], "fps": 5.0, "loop": False},
+                    "attack": {"indices": [3, 4], "fps": 7.5, "loop": False},
+                    "hit": {"indices": [5], "fps": 6.0, "loop": False},
                 },
             },
         ],
@@ -336,8 +427,18 @@ MANIFEST = {
                 "clips": {
                     "walk": {"indices": [0, 1, 2, 3, 4, 5], "fps": 12.0, "loop": True},
                     "idle": {"indices": [1], "fps": 4.0, "loop": True},
-                    "prep": {"indices": [2], "fps": 8.0, "loop": False},
-                    "alert": {"indices": [1], "fps": 8.0, "loop": False},
+                },
+            },
+            {
+                "file": "crawler_combat_v2_sheet.png",
+                "rows": 2, "cols": 3,
+                "ref_indices": [3, 4],
+                "clips": {
+                    "alert": {"indices": [0], "fps": 8.0, "loop": False},
+                    "prep": {"indices": [1], "fps": 8.0, "loop": False},
+                    "pounce": {"indices": [2, 3], "fps": 4.0, "loop": False},
+                    "retreat": {"indices": [4], "fps": 8.0, "loop": False},
+                    "hit": {"indices": [5], "fps": 6.0, "loop": False},
                 },
             },
         ],
@@ -354,14 +455,16 @@ MANIFEST = {
                 },
             },
             {
-                "file": "husk_combat_sheet.png",
-                "rows": 2, "cols": 2,
-                "ref_indices": [0, 1],
+                "file": "husk_combat_v2_sheet.png",
+                "rows": 2, "cols": 3,
+                "ref_indices": [0, 2, 3],
                 "clips": {
-                    "idle": {"indices": [0], "fps": 3.0, "loop": True},
-                    "awaken": {"indices": [1], "fps": 5.0, "loop": False},
-                    "windup": {"indices": [2], "fps": 5.0, "loop": False},
-                    "hit": {"indices": [3], "fps": 6.0, "loop": False},
+                    "awaken": {"indices": [0], "fps": 5.0, "loop": False},
+                    "windup": {"indices": [1, 2], "fps": 4.0, "loop": False},
+                    "attack": {"indices": [3], "fps": 7.0, "loop": False},
+                    "burst": {"indices": [3], "fps": 6.0, "loop": False},
+                    "hit": {"indices": [4], "fps": 6.0, "loop": False},
+                    "collapse": {"indices": [5], "fps": 4.0, "loop": False},
                 },
             },
         ],
@@ -378,14 +481,16 @@ MANIFEST = {
                 },
             },
             {
-                "file": "spitter_combat_sheet.png",
-                "rows": 2, "cols": 2,
-                "ref_indices": [0, 1],
+                "file": "spitter_combat_v2_sheet.png",
+                "rows": 2, "cols": 3,
+                "ref_indices": [0, 3, 4, 5],
                 "clips": {
                     "alert": {"indices": [0], "fps": 5.0, "loop": False},
-                    "windup": {"indices": [1], "fps": 4.0, "loop": False},
-                    "recover": {"indices": [2], "fps": 4.0, "loop": False},
-                    "hit": {"indices": [3], "fps": 6.0, "loop": False},
+                    "windup": {"indices": [1, 2], "fps": 2.5, "loop": False},
+                    "spit": {"indices": [3], "fps": 6.0, "loop": False},
+                    "swipe": {"indices": [4], "fps": 7.0, "loop": False},
+                    "recover": {"indices": [5], "fps": 4.0, "loop": False},
+                    "hit": {"indices": [0], "fps": 6.0, "loop": False},
                 },
             },
         ],
@@ -402,20 +507,28 @@ MANIFEST = {
                 },
             },
             {
-                "file": "elite_combat_sheet.png",
-                "rows": 2, "cols": 3,
-                "ref_indices": [3, 4],
+                "file": "elite_heavy_v2_sheet.png",
+                "rows": 2, "cols": 4,
+                "ref_indices": [4, 5, 6, 7],
+                "ref_scale_ratio": 0.95,
                 "clips": {
                     "windup_chop": {"indices": [0, 1], "fps": 2.8, "loop": False},
-                    "chop": {"indices": [2], "fps": 6.0, "loop": False},
-                    "recover_chop": {"indices": [2], "fps": 4.0, "loop": False},
-                    "windup_sweep": {"indices": [3], "fps": 4.0, "loop": False},
-                    "sweep": {"indices": [4], "fps": 6.0, "loop": False},
-                    "recover_sweep": {"indices": [4], "fps": 4.0, "loop": False},
-                    "kneel": {"indices": [5], "fps": 4.0, "loop": False},
+                    "chop": {"indices": [2, 3], "fps": 14.0, "loop": False},
+                    "recover_chop": {"indices": [3], "fps": 4.0, "loop": False},
+                    "windup_sweep": {"indices": [4], "fps": 4.0, "loop": False},
+                    "sweep": {"indices": [5, 6], "fps": 10.0, "loop": False},
+                    "recover_sweep": {"indices": [7], "fps": 4.0, "loop": False},
+                },
+            },
+            {
+                "file": "elite_phase_v2_sheet.png",
+                "rows": 2, "cols": 2,
+                "ref_indices": [0],
+                "clips": {
+                    "roar": {"indices": [0, 1], "fps": 3.0, "loop": False},
+                    "kneel": {"indices": [2], "fps": 4.0, "loop": False},
                     "recoil": {"indices": [3], "fps": 5.0, "loop": False},
-                    "roar": {"indices": [1], "fps": 4.0, "loop": False},
-                    "dead": {"indices": [5], "fps": 4.0, "loop": False},
+                    "dead": {"indices": [2], "fps": 4.0, "loop": False},
                 },
             },
         ],
@@ -423,8 +536,10 @@ MANIFEST = {
 }
 
 
-def build_actor_anims():
+def build_actor_anims(only_actors=None):
     for actor, cfg in MANIFEST.items():
+        if only_actors and actor not in only_actors:
+            continue
         out_dir = ANIMS_OUT / actor
         out_dir.mkdir(parents=True, exist_ok=True)
         clips_meta = {}
@@ -439,7 +554,8 @@ def build_actor_anims():
             measures = [measure_figure(c) for c in cells]
             ref_hs = [measures[i]["body_h"] for i in sheet_cfg["ref_indices"] if i < len(measures)]
             ref_h = float(np.median(ref_hs)) if ref_hs else float(np.median([m["body_h"] for m in measures]))
-            game_scale = TARGET_H[actor] / max(ref_h, 1.0)
+            scale_ratio = float(sheet_cfg.get("ref_scale_ratio", 1.0))
+            game_scale = (TARGET_H[actor] * scale_ratio) / max(ref_h, 1.0)
             print(f"[SLICE] {actor:8s} {sheet_path.name:28s} cells={len(cells)} ref_h={ref_h:.1f} -> scale={game_scale:.4f}")
 
             for clip_name, cdef in sheet_cfg["clips"].items():
@@ -484,5 +600,10 @@ def bake_legacy_sprite_normals():
 
 
 if __name__ == "__main__":
-    build_actor_anims()
-    bake_legacy_sprite_normals()
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--actors", nargs="*", default=None, help="Limit animation slicing to these actors")
+    ap.add_argument("--skip-legacy", action="store_true", help="Skip re-baking legacy pose sprite normal maps")
+    args = ap.parse_args()
+    build_actor_anims(set(args.actors) if args.actors else None)
+    if not args.skip_legacy:
+        bake_legacy_sprite_normals()

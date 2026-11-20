@@ -152,39 +152,39 @@
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c00.png",
-     "w": 359,
-     "h": 456,
-     "body_h": 438.4,
-     "foot_x": 166.43,
-     "foot_y": 447.33,
+     "file": "elite_heavy_v2_sheet_c00.png",
+     "w": 352,
+     "h": 418,
+     "body_h": 401.0,
+     "foot_x": 202.11,
+     "foot_y": 408.96,
      "scale": 0.5,
      "boots": [
       [
-       -68.0,
+       -71.1,
        0.0
       ],
       [
-       65.6,
-       -0.5
+       53.5,
+       -1.1
       ]
      ]
     },
     {
-     "file": "elite_combat_sheet_c01.png",
-     "w": 372,
-     "h": 497,
-     "body_h": 479.2,
-     "foot_x": 187.81,
-     "foot_y": 488.15,
+     "file": "elite_heavy_v2_sheet_c01.png",
+     "w": 359,
+     "h": 455,
+     "body_h": 437.0,
+     "foot_x": 204.24,
+     "foot_y": 446.08,
      "scale": 0.5,
      "boots": [
       [
-       -53.0,
+       -69.5,
        0.0
       ],
       [
-       70.0,
+       55.7,
        -0.5
       ]
      ]
@@ -192,24 +192,43 @@
    ]
   },
   "chop": {
-   "fps": 6.0,
+   "fps": 14.0,
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c02.png",
-     "w": 516,
-     "h": 329,
-     "body_h": 311.0,
-     "foot_x": 232.52,
-     "foot_y": 320.0,
+     "file": "elite_heavy_v2_sheet_c02.png",
+     "w": 467,
+     "h": 411,
+     "body_h": 391.4,
+     "foot_x": 213.78,
+     "foot_y": 400.47,
      "scale": 0.5,
      "boots": [
       [
-       -92.8,
+       -90.7,
        0.0
       ],
       [
-       115.2,
+       45.6,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "elite_heavy_v2_sheet_c03.png",
+     "w": 534,
+     "h": 310,
+     "body_h": 291.7,
+     "foot_x": 237.12,
+     "foot_y": 299.7,
+     "scale": 0.5,
+     "boots": [
+      [
+       -93.9,
+       0.0
+      ],
+      [
+       123.6,
        0.0
       ]
      ]
@@ -221,20 +240,20 @@
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c02.png",
-     "w": 516,
-     "h": 329,
-     "body_h": 311.0,
-     "foot_x": 232.52,
-     "foot_y": 320.0,
+     "file": "elite_heavy_v2_sheet_c03.png",
+     "w": 534,
+     "h": 310,
+     "body_h": 291.7,
+     "foot_x": 237.12,
+     "foot_y": 299.7,
      "scale": 0.5,
      "boots": [
       [
-       -92.8,
+       -93.9,
        0.0
       ],
       [
-       115.2,
+       123.6,
        0.0
       ]
      ]
@@ -246,45 +265,64 @@
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c03.png",
-     "w": 421,
-     "h": 381,
-     "body_h": 364.5,
-     "foot_x": 244.19,
-     "foot_y": 372.49,
+     "file": "elite_heavy_v2_sheet_c04.png",
+     "w": 406,
+     "h": 369,
+     "body_h": 351.1,
+     "foot_x": 229.69,
+     "foot_y": 359.1,
      "scale": 0.5,
      "boots": [
       [
-       -78.2,
+       -71.1,
        0.0
       ],
       [
-       68.0,
-       -0.5
+       67.9,
+       0.0
       ]
      ]
     }
    ]
   },
   "sweep": {
-   "fps": 6.0,
+   "fps": 10.0,
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c04.png",
-     "w": 555,
-     "h": 381,
-     "body_h": 363.5,
-     "foot_x": 239.33,
-     "foot_y": 372.49,
+     "file": "elite_heavy_v2_sheet_c05.png",
+     "w": 438,
+     "h": 359,
+     "body_h": 340.5,
+     "foot_x": 208.48,
+     "foot_y": 349.56,
      "scale": 0.5,
      "boots": [
       [
-       -105.0,
+       -90.7,
        0.0
       ],
       [
-       38.9,
+       64.7,
+       0.0
+      ]
+     ]
+    },
+    {
+     "file": "elite_heavy_v2_sheet_c06.png",
+     "w": 580,
+     "h": 361,
+     "body_h": 343.7,
+     "foot_x": 242.42,
+     "foot_y": 351.68,
+     "scale": 0.5,
+     "boots": [
+      [
+       -106.6,
+       0.0
+      ],
+      [
+       50.4,
        -0.5
       ]
      ]
@@ -296,21 +334,65 @@
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c04.png",
-     "w": 555,
-     "h": 381,
-     "body_h": 363.5,
-     "foot_x": 239.33,
-     "foot_y": 372.49,
+     "file": "elite_heavy_v2_sheet_c07.png",
+     "w": 418,
+     "h": 366,
+     "body_h": 347.9,
+     "foot_x": 199.99,
+     "foot_y": 355.92,
      "scale": 0.5,
      "boots": [
       [
-       -105.0,
+       -80.6,
        0.0
       ],
       [
-       38.9,
-       -0.5
+       88.0,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "roar": {
+   "fps": 3.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "elite_phase_v2_sheet_c00.png",
+     "w": 363,
+     "h": 381,
+     "body_h": 364.0,
+     "foot_x": 211.37,
+     "foot_y": 372.69,
+     "scale": 0.5,
+     "boots": [
+      [
+       -84.5,
+       0.0
+      ],
+      [
+       52.4,
+       -0.7
+      ]
+     ]
+    },
+    {
+     "file": "elite_phase_v2_sheet_c01.png",
+     "w": 463,
+     "h": 409,
+     "body_h": 390.9,
+     "foot_x": 269.97,
+     "foot_y": 399.58,
+     "scale": 0.5,
+     "boots": [
+      [
+       -46.5,
+       0.0
+      ],
+      [
+       76.2,
+       0.0
       ]
      ]
     }
@@ -321,21 +403,21 @@
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c05.png",
-     "w": 380,
-     "h": 349,
-     "body_h": 330.5,
-     "foot_x": 203.36,
-     "foot_y": 339.44,
+     "file": "elite_phase_v2_sheet_c02.png",
+     "w": 344,
+     "h": 343,
+     "body_h": 326.1,
+     "foot_x": 213.44,
+     "foot_y": 334.77,
      "scale": 0.5,
      "boots": [
       [
-       -68.0,
+       -76.5,
        0.0
       ],
       [
-       53.9,
-       -1.9
+       36.2,
+       -1.0
       ]
      ]
     }
@@ -346,46 +428,21 @@
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c03.png",
-     "w": 421,
-     "h": 381,
-     "body_h": 364.5,
-     "foot_x": 244.19,
-     "foot_y": 372.49,
+     "file": "elite_phase_v2_sheet_c03.png",
+     "w": 474,
+     "h": 423,
+     "body_h": 405.4,
+     "foot_x": 267.21,
+     "foot_y": 413.36,
      "scale": 0.5,
      "boots": [
       [
-       -78.2,
+       -43.4,
        0.0
       ],
       [
-       68.0,
-       -0.5
-      ]
-     ]
-    }
-   ]
-  },
-  "roar": {
-   "fps": 4.0,
-   "loop": false,
-   "frames": [
-    {
-     "file": "elite_combat_sheet_c01.png",
-     "w": 372,
-     "h": 497,
-     "body_h": 479.2,
-     "foot_x": 187.81,
-     "foot_y": 488.15,
-     "scale": 0.5,
-     "boots": [
-      [
-       -53.0,
-       0.0
-      ],
-      [
-       70.0,
-       -0.5
+       73.4,
+       -10.3
       ]
      ]
     }
@@ -396,21 +453,21 @@
    "loop": false,
    "frames": [
     {
-     "file": "elite_combat_sheet_c05.png",
-     "w": 380,
-     "h": 349,
-     "body_h": 330.5,
-     "foot_x": 203.36,
-     "foot_y": 339.44,
+     "file": "elite_phase_v2_sheet_c02.png",
+     "w": 344,
+     "h": 343,
+     "body_h": 326.1,
+     "foot_x": 213.44,
+     "foot_y": 334.77,
      "scale": 0.5,
      "boots": [
       [
-       -68.0,
+       -76.5,
        0.0
       ],
       [
-       53.9,
-       -1.9
+       36.2,
+       -1.0
       ]
      ]
     }

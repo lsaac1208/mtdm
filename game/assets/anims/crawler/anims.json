@@ -147,51 +147,145 @@
     }
    ]
   },
-  "prep": {
+  "alert": {
    "fps": 8.0,
    "loop": false,
    "frames": [
     {
-     "file": "crawler_crawl_sheet_c02.png",
-     "w": 209,
-     "h": 127,
-     "body_h": 109.8,
-     "foot_x": 104.54,
-     "foot_y": 118.21,
+     "file": "crawler_combat_v2_sheet_c00.png",
+     "w": 205,
+     "h": 148,
+     "body_h": 131.3,
+     "foot_x": 104.57,
+     "foot_y": 139.65,
      "scale": 0.5,
      "boots": [
       [
-       -37.8,
-       -3.8
+       -37.3,
+       -2.4
       ],
       [
-       22.5,
+       27.7,
        0.0
       ]
      ]
     }
    ]
   },
-  "alert": {
+  "prep": {
    "fps": 8.0,
    "loop": false,
    "frames": [
     {
-     "file": "crawler_crawl_sheet_c01.png",
-     "w": 193,
-     "h": 131,
-     "body_h": 115.0,
-     "foot_x": 104.13,
-     "foot_y": 123.04,
+     "file": "crawler_combat_v2_sheet_c01.png",
+     "w": 213,
+     "h": 115,
+     "body_h": 98.5,
+     "foot_x": 99.05,
+     "foot_y": 106.54,
      "scale": 0.5,
      "boots": [
       [
-       -21.3,
-       -4.0
+       -15.2,
+       -2.6
       ],
       [
-       25.1,
+       35.8,
        0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "pounce": {
+   "fps": 4.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "crawler_combat_v2_sheet_c02.png",
+     "w": 269,
+     "h": 109,
+     "body_h": 91.8,
+     "foot_x": 141.23,
+     "foot_y": 99.84,
+     "scale": 0.5,
+     "boots": [
+      [
+       -58.7,
+       0.0
+      ],
+      [
+       -51.0,
+       -0.8
+      ]
+     ]
+    },
+    {
+     "file": "crawler_combat_v2_sheet_c03.png",
+     "w": 221,
+     "h": 124,
+     "body_h": 106.8,
+     "foot_x": 107.72,
+     "foot_y": 115.21,
+     "scale": 0.5,
+     "boots": [
+      [
+       -41.2,
+       -2.2
+      ],
+      [
+       32.3,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "retreat": {
+   "fps": 8.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "crawler_combat_v2_sheet_c04.png",
+     "w": 238,
+     "h": 126,
+     "body_h": 109.2,
+     "foot_x": 118.76,
+     "foot_y": 117.18,
+     "scale": 0.5,
+     "boots": [
+      [
+       -9.9,
+       -1.8
+      ],
+      [
+       50.5,
+       0.0
+      ]
+     ]
+    }
+   ]
+  },
+  "hit": {
+   "fps": 6.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "crawler_combat_v2_sheet_c05.png",
+     "w": 201,
+     "h": 165,
+     "body_h": 148.2,
+     "foot_x": 101.81,
+     "foot_y": 156.6,
+     "scale": 0.5,
+     "boots": [
+      [
+       -5.3,
+       0.0
+      ],
+      [
+       25.0,
+       -1.2
       ]
      ]
     }

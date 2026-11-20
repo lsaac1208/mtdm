@@ -48,6 +48,7 @@ func play_clip(clip: String, blend := 0.1, restart := false) -> void:
 		pose = ""   # next set_pose re-applies the painted pose
 	if has_frame_clip(clip):
 		frame_on = true
+		frames.sync_facing(facing)
 		frames.play(clip, restart)
 		cut.current = ""
 		return
@@ -55,6 +56,19 @@ func play_clip(clip: String, blend := 0.1, restart := false) -> void:
 	if frames != null:
 		frames.current = ""
 	cut.play(clip, blend, restart)
+
+
+## Display a phase-locked frame of a FrameAnim clip (sword combos, dash, skills).
+func play_frame(clip: String, idx: int) -> bool:
+	if not has_frame_clip(clip):
+		return false
+	if not rig_on:
+		rig_on = true
+		pose = ""
+	frame_on = true
+	cut.current = ""
+	frames.sync_facing(facing)
+	return frames.set_frame(clip, idx)
 
 
 func set_pose(name_: String, fade := 0.06) -> void:
@@ -143,7 +157,7 @@ func _process(delta: float) -> void:
 		frames.bob = bob
 		frames.nudge = Vector2(nudge.x + _jit_off.x * facing, nudge.y + _jit_off.y)
 		frames.extra_scale = extra_scale
-		frames.breathe = 0.006 if cname == "idle" else 0.0
+		frames.breathe = 0.006 if cname in ["idle", "guard_idle"] else 0.0
 		frames.flash = flash
 		frames.tint = tint
 		frames.dissolve = dissolve

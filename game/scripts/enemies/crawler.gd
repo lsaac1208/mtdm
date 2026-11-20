@@ -32,7 +32,7 @@ func _ready() -> void:
 
 func _on_spawned() -> void:
 	set_state("alert")
-	vis.set_pose("crawler_alert", 0.06)
+	play_pose_or_clip("alert", "crawler_alert", 0.06, true)
 
 
 func _ai(delta: float) -> void:
@@ -51,7 +51,7 @@ func _ai(delta: float) -> void:
 				vis.tint = Color.WHITE
 				set_state("alert")
 				face_toward(p.global_position.x)
-				vis.set_pose("crawler_alert", 0.05)
+				play_pose_or_clip("alert", "crawler_alert", 0.05, true)
 				vis.squash = Vector2(0.9, 1.15)
 				Sfx.play("hiss", -4.0)
 		"alert":
@@ -72,8 +72,7 @@ func _ai(delta: float) -> void:
 			else:
 				velocity.x = 0.0
 				set_state("prep")
-				vis.set_pose("crawler_idle", 0.04)
-				anim("prep", 0.05, true)
+				play_pose_or_clip("prep", "crawler_idle", 0.05, true)
 				vis.squash = Vector2(1.12, 0.85)
 				telegraph.flare(Vector2(56, -34), 0.26, Color(1, 0.45, 0.2))
 				telegraph.danger(Rect2(10, -60, 230, 60), 0.26)
@@ -84,14 +83,14 @@ func _ai(delta: float) -> void:
 				set_state("pounce")
 				attack_hits = {}
 				landed = false
-				vis.set_pose("crawler_pounce", 0.03)
+				play_pose_or_clip("pounce", "crawler_pounce", 0.03, true)
 				velocity = Vector2(facing * 440.0, -330.0)
 				Sfx.play("pounce", -3.0)
 		"pounce":
 			melee(Rect2(0, -64, 96, 64), 10.0, 200.0, {"low": true})
 			if state_t > 0.12 and is_on_floor():
 				set_state("retreat")
-				vis.set_pose("crawler_retreat", 0.06)
+				play_pose_or_clip("retreat", "crawler_retreat", 0.06, true)
 				Fx.dust(global_position, 6)
 		"retreat":
 			velocity.x = -facing * 240.0 * (1.0 - state_t / 0.6)

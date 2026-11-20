@@ -30,7 +30,7 @@ func _ready() -> void:
 
 func _on_spawned() -> void:
 	set_state("alert")
-	vis.set_pose("grunt_alert", 0.1)
+	play_pose_or_clip("alert", "grunt_alert", 0.1, true)
 
 
 func _ai(delta: float) -> void:
@@ -50,7 +50,7 @@ func _ai(delta: float) -> void:
 			if p and (absf(dx) < 430.0 or aggro):
 				set_state("alert")
 				face_toward(p.global_position.x)
-				vis.set_pose("grunt_alert", 0.06)
+				play_pose_or_clip("alert", "grunt_alert", 0.06, true)
 				vis.squash = Vector2(0.94, 1.08)
 				Sfx.play("growl", -6.0, 0.15)
 		"alert":
@@ -84,7 +84,7 @@ func _ai(delta: float) -> void:
 			if state_t >= 0.4:
 				set_state("attack")
 				attack_hits = {}
-				vis.set_pose("grunt_attack", 0.03)
+				play_pose_or_clip("attack", "grunt_attack", 0.03, true)
 				vis.lean = 6.0
 				velocity.x = facing * 230.0
 				Sfx.play("claw", -4.0)
@@ -107,6 +107,6 @@ func _ai(delta: float) -> void:
 
 func _windup() -> void:
 	set_state("windup")
-	vis.set_pose("grunt_windup", 0.06)
+	play_pose_or_clip("windup", "grunt_windup", 0.06, true)
 	telegraph.flare(Vector2(52, -96), 0.4)
 	Sfx.play("growl", -3.0, 0.1, 1.2)

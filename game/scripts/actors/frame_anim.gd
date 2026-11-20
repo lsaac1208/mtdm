@@ -33,6 +33,7 @@ var air_height := 0.0
 
 var _time := 0.0
 var _frame_idx := 0
+var _locked := false
 var _frame_meta := {}
 var _toff := randf() * 10.0
 
@@ -95,6 +96,7 @@ func has_clip(clip: String) -> bool:
 func play(clip: String, restart := false) -> bool:
 	if not has_clip(clip):
 		return false
+	_locked = false
 	if clip == current and not restart:
 		return true
 	current = clip
@@ -102,6 +104,32 @@ func play(clip: String, restart := false) -> bool:
 	_frame_idx = -1
 	_apply_frame(0)
 	return true
+
+
+func set_frame(clip: String, idx: int) -> bool:
+	if not has_clip(clip):
+		return false
+	var c: Dictionary = _data.clips[clip]
+	var frames: Array = c.frames
+	if frames.is_empty():
+		return false
+	var clamped := clampi(idx, 0, frames.size() - 1)
+	_locked = true
+	if clip != current or clamped != _frame_idx:
+		current = clip
+		var fps := maxf(float(c.get("fps", 8.0)), 0.001)
+		_time = float(clamped) / fps
+		_apply_frame(clamped)
+	return true
+
+
+func current_frame_index() -> int:
+	return _frame_idx
+
+
+func sync_facing(f: int) -> void:
+	facing = f
+	pivot.scale = Vector2(facing * squash.x, squash.y) * extra_scale
 
 
 func clip_duration() -> float:
@@ -148,7 +176,7 @@ func step_anim(delta: float, light: Dictionary) -> void:
 	pivot.scale = Vector2(facing * squash.x, squash.y) * extra_scale
 	pivot.rotation = deg_to_rad(lean) * facing
 	pivot.position = Vector2(nudge.x * facing, nudge.y - bob)
-	if current != "" and has_clip(current):
+	if not _locked and current != "" and has_clip(current):
 		var c: Dictionary = _data.clips[current]
 		var frames: Array = c.frames
 		var n := frames.size()

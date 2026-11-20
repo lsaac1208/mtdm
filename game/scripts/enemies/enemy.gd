@@ -11,6 +11,8 @@ var enemy_name := "尸祟"
 var stagger_pose := ""
 var death_pose := ""
 var idle_pose := ""
+var stagger_clip := "hit"
+var death_clip := ""
 var stagger_time := 0.45
 var interrupt_poise := 1.0       # single-hit poise needed to cancel a wind-up
 var armored_states: Array = []   # states that ignore stagger unless poise breaks
@@ -37,6 +39,22 @@ func _make_visual() -> PoseSprite:
 func anim(clip: String, blend := 0.1, restart := false) -> void:
 	if vis is RigVisual:
 		vis.play_clip(clip, blend, restart)
+
+
+## Play a FrameAnim clip when available, otherwise fall back cleanly to the
+## painted pose (or the cutout rig clip if no painted fallback pose is given).
+func play_pose_or_clip(clip: String, fallback_pose: String, blend := 0.06, restart := true) -> void:
+	if vis is RigVisual:
+		var rv := vis as RigVisual
+		if rv.has_frame_clip(clip):
+			rv.play_clip(clip, blend, restart)
+			return
+	if fallback_pose != "":
+		vis.set_pose(fallback_pose, blend)
+	elif vis is RigVisual:
+		(vis as RigVisual).play_clip(clip, blend, restart)
+
+
 var attack_hits := {}
 var burn := 0.0
 var spawn_rise := 0.0
@@ -48,6 +66,7 @@ var _bob_t := 0.0
 var _wall_t := 0.0
 var _dissolve_t := 0.0
 var telegraph: Node2D
+var _mini_bar: MiniBar = null
 
 
 func _ready() -> void:
@@ -57,6 +76,13 @@ func _ready() -> void:
 		vis.set_pose(idle_pose, 0.0)
 	telegraph = preload("res://scripts/fx/telegraph.gd").new()
 	add_child(telegraph)
+	if rig_type != "elite":
+		_mini_bar = MiniBar.new()
+		_mini_bar.owner_enemy = self
+		_mini_bar.bar_w = clampf(40.0 + max_hp * 0.22, 44.0, 60.0)
+		_mini_bar.position = Vector2(0.0, -hurt_size.y - 14.0)
+		_mini_bar.z_index = 18
+		add_child(_mini_bar)
 	if spawn_rise > 0.0:
 		vis.dissolve = 1.0
 		set_state("spawn")
@@ -160,15 +186,33 @@ func _separate(delta: float) -> void:
 		if absf(d) < min_d and absf(global_position.y - o.global_position.y) < 80:
 			var push := (min_d - absf(d)) * (1.0 if d >= 0 else -1.0)
 			if o.team == team:
-				global_position.x += push * minf(1.0, delta * 6.0)
+				_safe_nudge_x(self, push * minf(1.0, delta * 6.0), leash_left, leash_right)
 	_keep_personal_space(delta)
+
+
+func _safe_nudge_x(body: CharacterBody2D, dx: float, min_x := -1e9, max_x := 1e9) -> float:
+	if absf(dx) < 0.001:
+		return 0.0
+	var target_x := clampf(body.global_position.x + dx, min_x, max_x)
+	var want := target_x - body.global_position.x
+	if absf(want) < 0.001:
+		return 0.0
+	var col := KinematicCollision2D.new()
+	var blocked := body.test_move(body.global_transform.translated(Vector2(0.0, -2.0)), Vector2(want, 0.0), col)
+	var actual := want
+	if blocked and absf(col.get_normal().x) > 0.4:
+		var travel := col.get_travel().x
+		actual = travel if signf(travel) == signf(want) else 0.0
+	body.global_position.x += actual
+	return actual
 
 
 ## Bodies of the hero and an upright enemy should not sink into each other:
 ## two full painted figures on top of one another hide both the telegraph and
-## the strike. Only the enemy yields, only in neutral states, and never while
-## the hero dashes through or is airborne, so every attack window, dash-through
-## and jump-over answer keeps its measured timing.
+## the strike. In open ground only the enemy yields (neutral states); if the
+## enemy is pinned against a wall, platform, barrier or leash, the grounded
+## hero absorbs the un-yielded remainder. Never active during dash or while
+## airborne, so attack windows, dash-through and jump-over keep their timing.
 const _YIELD_STATES := ["chase", "alert", "idle", "wander", "detect", "recover", "stagger", "retreat"]
 
 
@@ -183,8 +227,23 @@ func _keep_personal_space(delta: float) -> void:
 	var d: float = global_position.x - p.global_position.x
 	var min_d: float = (hurt_size.x + p.hurt_size.x) * 0.42
 	if absf(d) < min_d:
-		var side := 1.0 if d >= 0.0 else -1.0
-		global_position.x += (min_d - absf(d)) * side * minf(1.0, delta * 30.0)
+		var side := 1.0 if d > 0.5 else (-1.0 if d < -0.5 else 0.0)
+		if side == 0.0:
+			var wall_r := global_position.x + 4.0 > leash_right or test_move(global_transform.translated(Vector2(0.0, -2.0)), Vector2(4.0, 0.0))
+			var wall_l := global_position.x - 4.0 < leash_left or test_move(global_transform.translated(Vector2(0.0, -2.0)), Vector2(-4.0, 0.0))
+			if wall_r and not wall_l:
+				side = 1.0
+			elif wall_l and not wall_r:
+				side = -1.0
+			else:
+				side = float(p.facing) if p.facing != 0 else 1.0
+		var overlap := min_d - absf(d)
+		var want := overlap * side * minf(1.0, delta * 30.0)
+		var moved := _safe_nudge_x(self, want, leash_left, leash_right)
+		var rem := want - moved
+		if absf(rem) > 0.05 and p.is_on_floor() and p.state != "hit":
+			var push_p := minf(overlap - absf(moved), absf(rem) * 1.85) * (-side)
+			_safe_nudge_x(p, push_p)
 
 
 # ---------------------------------------------------------------- damage
@@ -265,7 +324,9 @@ func stagger(dur: float, dir: int, knock: float) -> void:
 	knock_v = dir * knock
 	velocity.x = 0.0
 	face_toward(global_position.x - dir * 10)
-	if stagger_pose != "":
+	if stagger_clip != "":
+		play_pose_or_clip(stagger_clip, stagger_pose, 0.03, true)
+	elif stagger_pose != "":
 		vis.set_pose(stagger_pose, 0.03)
 	vis.lean = -8.0
 	aggro = true
@@ -303,7 +364,9 @@ func _die(dir := 0) -> void:
 	telegraph.stop()
 	still_anim()
 	collision_layer = 0
-	if death_pose != "":
+	if death_clip != "":
+		play_pose_or_clip(death_clip, death_pose, 0.05, true)
+	elif death_pose != "":
 		vis.set_pose(death_pose, 0.05)
 	knock_v = dir * 160.0
 	Game.kills += 1
@@ -350,3 +413,106 @@ func still_anim() -> void:
 	vis.legs = 0.0
 	vis.leg_lift = 0.0
 	vis.bob = 0.0
+
+
+## Diegetic world-space mini HP / poise bar for non-boss enemies.
+class MiniBar extends Node2D:
+	var owner_enemy: Enemy = null
+	var bar_w: float = 48.0
+	var bar_h: float = 5.0
+	var _bar_lag: float = 1.0
+	var _prev_ratio: float = 1.0
+	var _lag_hold: float = 0.0
+	var _alpha: float = 0.0
+	var _pulse_t: float = 0.0
+
+	func _ready() -> void:
+		visible = false
+
+	func _process(delta: float) -> void:
+		if owner_enemy == null or not is_instance_valid(owner_enemy):
+			return
+		var dt: float = Game.unscaled_delta(delta)
+		var max_h: float = maxf(owner_enemy.max_hp, 1.0)
+		var ratio: float = clampf(owner_enemy.hp / max_h, 0.0, 1.0)
+		if ratio < _prev_ratio - 0.001:
+			_bar_lag = maxf(_bar_lag, _prev_ratio)
+			_lag_hold = 0.14
+		_prev_ratio = ratio
+		if _lag_hold > 0.0:
+			_lag_hold = maxf(0.0, _lag_hold - dt)
+		else:
+			_bar_lag = move_toward(_bar_lag, ratio, dt * 1.35)
+		if owner_enemy.dead:
+			_alpha = move_toward(_alpha, 0.0, dt * 4.2)
+		elif owner_enemy.hp < owner_enemy.max_hp - 0.01 or owner_enemy.burn > 0.0:
+			_alpha = move_toward(_alpha, 1.0, dt * 8.5)
+		else:
+			_alpha = move_toward(_alpha, 0.0, dt * 4.0)
+		_pulse_t += dt
+		visible = _alpha > 0.01
+		if visible:
+			queue_redraw()
+
+	func _draw() -> void:
+		if _alpha <= 0.01 or owner_enemy == null:
+			return
+		var a: float = _alpha
+		var w: float = bar_w
+		var h: float = bar_h
+		var x0: float = -w * 0.5
+		var y0: float = -h * 0.5
+		var ratio: float = clampf(owner_enemy.hp / maxf(owner_enemy.max_hp, 1.0), 0.0, 1.0)
+		var burning: bool = owner_enemy.burn > 0.0 and not owner_enemy.dead
+		var burn_pulse: float = 0.5 + 0.5 * sin(_pulse_t * 14.0)
+
+		# Soft ink shadow + warm ink-black backing
+		draw_rect(Rect2(x0 - 2.0, y0 - 1.5, w + 4.0, h + 3.5), Color(0.04, 0.03, 0.025, 0.45 * a), true)
+		draw_rect(Rect2(x0, y0, w, h), Color(0.09, 0.075, 0.065, 0.90 * a), true)
+
+		# Smooth ivory damage-lag trail
+		var lag_w: float = clampf(_bar_lag, 0.0, 1.0) * w
+		if lag_w > 0.5:
+			draw_rect(Rect2(x0, y0, lag_w, h), Color(0.95, 0.90, 0.78, 0.88 * a), true)
+
+		# Crimson HP fill (shifts toward glowing cinnabar when burning)
+		var fill_w: float = ratio * w
+		if fill_w > 0.5:
+			var hp_col := Color(0.76, 0.14, 0.10, 0.96 * a)
+			if burning:
+				hp_col = hp_col.lerp(Color(0.98, 0.40, 0.11, 0.98 * a), 0.45 + 0.45 * burn_pulse)
+			draw_rect(Rect2(x0, y0, fill_w, h), hp_col, true)
+			draw_rect(Rect2(x0, y0, fill_w, 1.2), Color(1.0, 0.78, 0.58, (0.28 + (0.20 if burning else 0.0)) * a), true)
+
+		# Faint aged-brass 1 px border (warmed cinnabar while burning)
+		var border_col := Color(0.95, 0.48, 0.18, 0.88 * a) if burning else Color(0.68, 0.56, 0.36, 0.78 * a)
+		draw_rect(Rect2(x0 - 0.5, y0 - 0.5, w + 1.0, h + 1.0), border_col, false, 1.0)
+
+		# Subtle burn flame icon on right edge during Talisman DoT
+		if burning:
+			var fx: float = x0 + w + 5.5
+			var fy: float = 1.0
+			var fh: float = 5.5 + 1.8 * burn_pulse
+			var fw: float = 2.6 + 0.5 * burn_pulse
+			draw_colored_polygon(PackedVector2Array([
+				Vector2(fx, fy - fh),
+				Vector2(fx + fw, fy - 0.5),
+				Vector2(fx, fy + 2.2),
+				Vector2(fx - fw, fy - 0.5),
+			]), Color(0.94, 0.32, 0.10, 0.92 * a))
+			draw_colored_polygon(PackedVector2Array([
+				Vector2(fx, fy - fh * 0.62),
+				Vector2(fx + fw * 0.5, fy),
+				Vector2(fx, fy + 1.3),
+				Vector2(fx - fw * 0.5, fy),
+			]), Color(1.0, 0.88, 0.44, 0.96 * a))
+
+		# Subtle golden poise bar underneath for armored/multi-poise enemies
+		if owner_enemy.max_poise > 10.0:
+			var py: float = y0 + h + 2.5
+			var pr: float = clampf(owner_enemy.poise / maxf(owner_enemy.max_poise, 1.0), 0.0, 1.0)
+			if owner_enemy.state == "stagger":
+				pr = 0.0
+			draw_rect(Rect2(x0, py, w, 2.0), Color(0.08, 0.065, 0.055, 0.80 * a), true)
+			if pr > 0.01:
+				draw_rect(Rect2(x0, py, w * pr, 2.0), Color(0.92, 0.74, 0.30, 0.92 * a), true)

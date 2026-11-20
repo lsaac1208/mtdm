@@ -2,7 +2,7 @@ name: Native release verification
 on:
   push:
     tags:
-      - 'v0.3.*'
+      - 'v0.*'
   workflow_dispatch:
     inputs:
       tag:

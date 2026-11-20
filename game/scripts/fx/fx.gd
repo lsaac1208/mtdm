@@ -80,6 +80,71 @@ static func blade_glint(pos: Vector2, dir := 1, col := C_GOLD, size := 22.0) -> 
 	return h
 
 
+static func parry_burst(pos: Vector2, dir: int) -> Node2D:
+	var d: int = dir if dir != 0 else 1
+	var h := HitFx.new()
+	h.mode = "parry"
+	h.position = pos
+	h.dir = d
+	h.heavy = true
+	h.color = C_GOLD
+	h.accent = Color(1.0, 0.90, 0.52)
+	h.core = Color(1.0, 0.99, 0.94)
+	h.life = 0.28
+	layer().add_child(h)
+	ring(pos, 10.0, 128.0, Color(1.0, 0.82, 0.34, 0.95), 0.32, 9.0, 0.88)
+	ring(pos, 6.0, 86.0, Color(1.0, 0.98, 0.90, 0.95), 0.22, 4.5, 0.95)
+	particles(pos, 26, Color(1.0, 0.95, 0.72, 0.98), 460.0, 120.0, Vector2(d, -0.35).normalized(), 820.0, 0.38, 4.0, 15)
+	particles(pos, 12, Color(0.08, 0.06, 0.05, 0.82), 260.0, 180.0, Vector2.UP, 320.0, 0.32, 5.5, 12)
+	return h
+
+
+static func heal_spiral(target: Node2D, life := 0.72) -> Node2D:
+	var h := HitFx.new()
+	h.mode = "heal"
+	h.follow_target = target
+	h.position = target.global_position
+	h.accent = C_GOLD
+	h.core = Color(1.0, 0.98, 0.88)
+	h.life = life
+	layer().add_child(h)
+	return h
+
+
+static func afterimage(vis: Node, pos: Vector2, tint := Color(0.95, 0.74, 0.36, 0.48), life := 0.22) -> Node2D:
+	var src: Sprite2D = null
+	if vis is RigVisual:
+		var rv := vis as RigVisual
+		if rv.rig_on and rv.frame_on and rv.frames != null and rv.frames.sprite != null and rv.frames.sprite.texture != null:
+			src = rv.frames.sprite
+		else:
+			src = rv.active_sprite()
+	elif vis != null and vis.has_method("active_sprite"):
+		src = vis.active_sprite()
+	if src == null or src.texture == null:
+		return null
+	var g := Sprite2D.new()
+	g.texture = src.texture
+	g.centered = src.centered
+	g.offset = src.offset
+	g.flip_h = src.flip_h
+	g.flip_v = src.flip_v
+	g.region_enabled = src.region_enabled
+	g.region_rect = src.region_rect
+	var xf: Transform2D = src.global_transform
+	if vis is Node2D:
+		xf.origin += pos - (vis as Node2D).global_position
+	g.global_transform = xf
+	g.modulate = tint
+	g.z_index = 4
+	layer().add_child(g)
+	var tw := g.create_tween()
+	tw.set_ignore_time_scale(true)
+	tw.tween_property(g, "modulate", Color(0.16, 0.11, 0.08, 0.0), maxf(life, 0.04)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(g.queue_free)
+	return g
+
+
 static func ground_slam(pos: Vector2, facing := 1, power := 1.0) -> void:
 	var h := HitFx.new()
 	h.mode = "slam"
@@ -109,6 +174,103 @@ static func ring(pos: Vector2, r0: float, r1: float, color: Color, life := 0.4, 
 
 
 static var _dot: Texture2D
+static var _vignette_tex: Texture2D
+
+
+static func _vignette_texture() -> Texture2D:
+	if _vignette_tex == null:
+		var g := Gradient.new()
+		g.set_color(0, Color(1, 1, 1, 0.0))
+		g.set_color(1, Color(1, 1, 1, 1.0))
+		g.add_point(0.46, Color(1, 1, 1, 0.0))
+		g.add_point(0.76, Color(1, 1, 1, 0.42))
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		t.width = 128
+		t.height = 128
+		_vignette_tex = t
+	return _vignette_tex
+
+
+static func _screen_overlay() -> CanvasLayer:
+	var host: Node = null
+	if Game.level and is_instance_valid(Game.level):
+		host = Game.level
+	else:
+		var ml := Engine.get_main_loop()
+		if ml is SceneTree:
+			host = (ml as SceneTree).current_scene
+	if host == null or not is_instance_valid(host):
+		return null
+	var existing := host.get_node_or_null("FxScreenOverlay")
+	if existing is CanvasLayer:
+		return existing as CanvasLayer
+	var cl := CanvasLayer.new()
+	cl.name = "FxScreenOverlay"
+	cl.layer = 8
+	var flash := ColorRect.new()
+	flash.name = "Flash"
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.color = Color(1, 1, 1, 0)
+	flash.visible = false
+	cl.add_child(flash)
+	var pulse := TextureRect.new()
+	pulse.name = "Pulse"
+	pulse.set_anchors_preset(Control.PRESET_FULL_RECT)
+	pulse.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pulse.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	pulse.stretch_mode = TextureRect.STRETCH_SCALE
+	pulse.texture = _vignette_texture()
+	pulse.modulate = Color(1, 1, 1, 0)
+	pulse.visible = false
+	cl.add_child(pulse)
+	host.add_child(cl)
+	return cl
+
+
+static func screen_flash(color: Color, dur := 0.14) -> void:
+	var cl := _screen_overlay()
+	if cl == null:
+		return
+	var rect := cl.get_node_or_null("Flash") as ColorRect
+	if rect == null:
+		return
+	if rect.has_meta("_tw"):
+		var old_tw = rect.get_meta("_tw")
+		if old_tw is Tween and (old_tw as Tween).is_valid():
+			(old_tw as Tween).kill()
+	rect.color = color
+	rect.visible = true
+	var tw := rect.create_tween()
+	tw.set_ignore_time_scale(true)
+	tw.tween_property(rect, "color:a", 0.0, maxf(dur, 0.04)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(func(): rect.visible = false)
+	rect.set_meta("_tw", tw)
+
+
+static func screen_pulse(color: Color, dur := 0.32) -> void:
+	var cl := _screen_overlay()
+	if cl == null:
+		return
+	var vig := cl.get_node_or_null("Pulse") as TextureRect
+	if vig == null:
+		return
+	if vig.has_meta("_tw"):
+		var old_tw = vig.get_meta("_tw")
+		if old_tw is Tween and (old_tw as Tween).is_valid():
+			(old_tw as Tween).kill()
+	vig.modulate = Color(color.r, color.g, color.b, color.a * 0.45)
+	vig.visible = true
+	var tw := vig.create_tween()
+	tw.set_ignore_time_scale(true)
+	tw.tween_property(vig, "modulate:a", color.a, 0.045).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(vig, "modulate:a", 0.0, maxf(dur - 0.045, 0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(func(): vig.visible = false)
+	vig.set_meta("_tw", tw)
 
 
 ## Soft round brush dab. Untextured CPU particles render as hard squares,

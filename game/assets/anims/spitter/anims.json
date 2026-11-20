@@ -152,46 +152,115 @@
    "loop": false,
    "frames": [
     {
-     "file": "spitter_combat_sheet_c00.png",
-     "w": 247,
-     "h": 290,
-     "body_h": 271.1,
-     "foot_x": 133.18,
-     "foot_y": 280.34,
+     "file": "spitter_combat_v2_sheet_c00.png",
+     "w": 284,
+     "h": 302,
+     "body_h": 285.0,
+     "foot_x": 154.53,
+     "foot_y": 293.7,
      "scale": 0.5,
      "boots": [
       [
-       -55.3,
+       -56.9,
        0.0
       ],
       [
        32.1,
-       -1.2
+       -0.3
       ]
      ]
     }
    ]
   },
   "windup": {
-   "fps": 4.0,
+   "fps": 2.5,
    "loop": false,
    "frames": [
     {
-     "file": "spitter_combat_sheet_c01.png",
-     "w": 261,
-     "h": 298,
-     "body_h": 280.9,
-     "foot_x": 128.9,
-     "foot_y": 288.88,
+     "file": "spitter_combat_v2_sheet_c01.png",
+     "w": 243,
+     "h": 321,
+     "body_h": 303.8,
+     "foot_x": 134.46,
+     "foot_y": 312.44,
      "scale": 0.5,
      "boots": [
       [
-       -50.5,
+       -54.9,
        0.0
       ],
       [
-       48.8,
-       -1.2
+       36.1,
+       -0.3
+      ]
+     ]
+    },
+    {
+     "file": "spitter_combat_v2_sheet_c02.png",
+     "w": 272,
+     "h": 328,
+     "body_h": 311.1,
+     "foot_x": 147.17,
+     "foot_y": 319.13,
+     "scale": 0.5,
+     "boots": [
+      [
+       -56.5,
+       0.0
+      ],
+      [
+       38.1,
+       -0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "spit": {
+   "fps": 6.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "spitter_combat_v2_sheet_c03.png",
+     "w": 343,
+     "h": 294,
+     "body_h": 277.0,
+     "foot_x": 151.85,
+     "foot_y": 285.0,
+     "scale": 0.5,
+     "boots": [
+      [
+       -64.9,
+       0.0
+      ],
+      [
+       34.5,
+       -1.0
+      ]
+     ]
+    }
+   ]
+  },
+  "swipe": {
+   "fps": 7.0,
+   "loop": false,
+   "frames": [
+    {
+     "file": "spitter_combat_v2_sheet_c04.png",
+     "w": 337,
+     "h": 292,
+     "body_h": 275.0,
+     "foot_x": 165.91,
+     "foot_y": 283.67,
+     "scale": 0.5,
+     "boots": [
+      [
+       -71.6,
+       -2.0
+      ],
+      [
+       24.1,
+       0.0
       ]
      ]
     }
@@ -202,21 +271,21 @@
    "loop": false,
    "frames": [
     {
-     "file": "spitter_combat_sheet_c02.png",
-     "w": 256,
-     "h": 272,
-     "body_h": 255.8,
-     "foot_x": 135.01,
-     "foot_y": 263.85,
+     "file": "spitter_combat_v2_sheet_c05.png",
+     "w": 276,
+     "h": 292,
+     "body_h": 275.0,
+     "foot_x": 146.5,
+     "foot_y": 283.0,
      "scale": 0.5,
      "boots": [
       [
-       -47.9,
+       -55.2,
        0.0
       ],
       [
-       37.9,
-       -2.1
+       33.1,
+       -1.0
       ]
      ]
     }
@@ -227,21 +296,21 @@
    "loop": false,
    "frames": [
     {
-     "file": "spitter_combat_sheet_c03.png",
-     "w": 308,
-     "h": 297,
-     "body_h": 280.9,
-     "foot_x": 138.67,
-     "foot_y": 288.88,
+     "file": "spitter_combat_v2_sheet_c00.png",
+     "w": 284,
+     "h": 302,
+     "body_h": 285.0,
+     "foot_x": 154.53,
+     "foot_y": 293.7,
      "scale": 0.5,
      "boots": [
       [
-       -23.2,
+       -56.9,
        0.0
       ],
       [
-       -10.6,
-       0.0
+       32.1,
+       -0.3
       ]
      ]
     }

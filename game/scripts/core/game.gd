@@ -5,9 +5,11 @@ signal checkpoint_changed(id)
 signal hint(text, duration)
 signal zone_entered(title_cn, title_en)
 signal boss_changed(boss)
+signal whisper(mood, speaker, text, duration)
 signal prompts_changed
 
 const TITLE_SCENE := "res://scenes/title.tscn"
+const PROLOGUE_SCENE := "res://scenes/prologue.tscn"
 const LEVEL_SCENE := "res://scenes/level.tscn"
 const END_SCENE := "res://scenes/ending.tscn"
 
@@ -18,10 +20,18 @@ var cleared := {}          # encounter id -> true (persist across deaths)
 var deaths := 0
 var kills := 0
 var parries := 0
+var props_broken := 0
 var run_time := 0.0
 var running := false
 var level: Node = null     # current level node
 var player: Node = null
+var whispers_seen := {}
+var best_rank := ""
+var best_time := 0.0
+var best_diff := -1
+var cleared_once := false
+var prologue_seen := false
+var last_clear_is_best := false
 var args := {}
 var _prompt_pad := -1
 var _pad_family := ""
@@ -275,6 +285,12 @@ func load_settings() -> void:
 					var k := InputEventKey.new()
 					k.physical_keycode = kc
 					InputMap.action_add_event(action, k)
+	if cf.has_section("progress"):
+		best_rank = String(cf.get_value("progress", "best_rank", ""))
+		best_time = float(cf.get_value("progress", "best_time", 0.0))
+		best_diff = int(cf.get_value("progress", "best_diff", -1))
+		cleared_once = bool(cf.get_value("progress", "cleared_once", false))
+		prologue_seen = bool(cf.get_value("progress", "prologue_seen", false))
 	prompts_changed.emit()
 
 
@@ -289,6 +305,11 @@ func save_settings() -> void:
 	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
 	for action in REBINDABLE:
 		cf.set_value("keys", action, action_keys(action))
+	cf.set_value("progress", "best_rank", best_rank)
+	cf.set_value("progress", "best_time", best_time)
+	cf.set_value("progress", "best_diff", best_diff)
+	cf.set_value("progress", "cleared_once", cleared_once)
+	cf.set_value("progress", "prologue_seen", prologue_seen)
 	cf.save(args.get("qa-settings", SETTINGS_PATH))
 
 
@@ -345,15 +366,86 @@ static func unscaled_delta(delta: float) -> float:
 func new_run() -> void:
 	checkpoint_id = 0
 	cleared.clear()
+	whispers_seen.clear()
 	deaths = 0
 	kills = 0
 	parries = 0
+	props_broken = 0
 	run_time = 0.0
+	last_clear_is_best = false
 	telemetry = {"damage": {}, "deaths": [], "encounters": {}}
 	running = true
 	Engine.time_scale = 1.0
 	get_tree().paused = false
 	get_tree().change_scene_to_file(LEVEL_SCENE)
+
+
+func start_story_run() -> void:
+	if args.has("test") or args.has("shots") or args.has("autostart") or args.has("skip_prologue") or args.has("startx"):
+		new_run()
+		return
+	checkpoint_id = 0
+	cleared.clear()
+	whispers_seen.clear()
+	deaths = 0
+	kills = 0
+	parries = 0
+	props_broken = 0
+	run_time = 0.0
+	last_clear_is_best = false
+	telemetry = {"damage": {}, "deaths": [], "encounters": {}}
+	running = false
+	Engine.time_scale = 1.0
+	get_tree().paused = false
+	get_tree().change_scene_to_file(PROLOGUE_SCENE)
+
+
+static func rank_order(grade: String) -> int:
+	match grade:
+		"甲": return 3
+		"乙": return 2
+		"丙": return 1
+		_: return 0
+
+
+static func compute_rank(p_deaths: int, p_parries: int, p_time: float, p_diff: int) -> Dictionary:
+	if (p_deaths == 0 and (p_parries >= 2 or p_time <= 360.0)) or (p_diff >= 2 and p_deaths <= 1 and p_parries >= 3):
+		return {
+			"grade": "甲",
+			"en": "A · MASTER OF TAO",
+			"title": "道心通明",
+			"color": Color(0.76, 0.14, 0.09),
+		}
+	if (p_deaths <= 3 and p_time <= 540.0) or p_diff >= 2:
+		return {
+			"grade": "乙",
+			"en": "B · DEMON SLAYER",
+			"title": "斩妖除祟",
+			"color": Color(0.68, 0.24, 0.11),
+		}
+	return {
+		"grade": "丙",
+		"en": "C · WASTELAND WANDERER",
+		"title": "初涉废土",
+		"color": Color(0.46, 0.30, 0.16),
+	}
+
+
+func record_clear(persist := true) -> Dictionary:
+	var info: Dictionary = compute_rank(deaths, parries, run_time, difficulty)
+	var grade := String(info.grade)
+	var cur_ord := rank_order(grade)
+	var prev_ord := rank_order(best_rank)
+	var improved := (not cleared_once) or cur_ord > prev_ord or (cur_ord == prev_ord and (best_time <= 0.0 or run_time < best_time))
+	last_clear_is_best = improved
+	if improved:
+		best_rank = grade
+		best_time = run_time
+		best_diff = difficulty
+	cleared_once = true
+	if persist:
+		save_settings()
+	return info
 
 
 func to_title() -> void:
@@ -378,6 +470,14 @@ func set_checkpoint(id: int) -> void:
 
 func show_hint(text: String, duration := 4.0) -> void:
 	hint.emit(text, duration)
+
+
+func show_whisper(id: String, mood: String, speaker: String, text: String, duration := 4.5) -> void:
+	if id != "" and whispers_seen.get(id, false):
+		return
+	if id != "":
+		whispers_seen[id] = true
+	whisper.emit(mood, speaker, text, duration)
 
 
 func quit(exit_code := 0) -> void:

@@ -15,9 +15,28 @@ const LANDMARKS := [
 	["bell", 8460, 65, true], ["cairn", 8840, 66, false], ["cairn", 9530, 83, true],
 	["cairn", 9880, 53, false], ["cairn", 10970, 62, true]
 ]
+# Foreground silhouette clusters anchored cleanly in the bottom soil margin
+# (strictly below screen y = 550 ground line) at 1.22x parallax for world depth.
+# [texture, world_x, height_px, flip_h, zone_idx]
+const FG_CLUSTERS := [
+	["fg_village", 420.0, 118.0, false, 0],
+	["fg_village", 1220.0, 132.0, true, 0],
+	["fg_village", 2040.0, 124.0, false, 0],
+	["fg_village", 2820.0, 120.0, true, 1],
+	["fg_village", 3680.0, 134.0, false, 1],
+	["fg_lowland", 4640.0, 126.0, false, 2],
+	["fg_lowland", 5540.0, 136.0, true, 2],
+	["fg_lowland", 6360.0, 124.0, false, 2],
+	["fg_temple", 7060.0, 132.0, false, 3],
+	["fg_temple", 7920.0, 138.0, true, 3],
+	["fg_burial", 8940.0, 128.0, false, 4],
+	["fg_burial", 9740.0, 136.0, true, 4],
+	["fg_burial", 10720.0, 130.0, false, 4],
+]
 
 var paintings: Array[Sprite2D] = []
 var landmarks: Array[Sprite2D] = []
+var fg_props: Array[Sprite2D] = []
 
 
 func texture(key: String) -> Texture2D:
@@ -43,6 +62,21 @@ func _ready() -> void:
 		prop.modulate = Color(0.86, 0.84, 0.78, 0.82)
 		canvas.add_child(prop)
 		landmarks.append(prop)
+	var fg_canvas := CanvasLayer.new()
+	fg_canvas.layer = 2
+	add_child(fg_canvas)
+	for entry in FG_CLUSTERS:
+		var fg := Sprite2D.new()
+		fg.texture = texture(String(entry[0]))
+		fg.offset.y = -fg.texture.get_height() * 0.5
+		fg.scale = Vector2.ONE * (float(entry[2]) * 1.16) / fg.texture.get_height()
+		fg.flip_h = bool(entry[3])
+		var zi: int = int(entry[4])
+		var zshadow: Color = LevelData.ZONES[zi].light.shadow
+		var dark := zshadow.darkened(0.54)
+		fg.modulate = Color(dark.r, dark.g, dark.b, 0.88)
+		fg_canvas.add_child(fg)
+		fg_props.append(fg)
 
 
 func follow(camera: Vector2, viewport: Vector2, weights: Array) -> void:
@@ -72,6 +106,13 @@ func follow(camera: Vector2, viewport: Vector2, weights: Array) -> void:
 		prop.visible = screen_x > -200 and screen_x < viewport.x + 200
 		if prop.visible:
 			prop.position = Vector2(screen_x, viewport.y * 0.5 + 178.0 - dy * 0.79)
+	for i in fg_props.size():
+		var fg := fg_props[i]
+		var screen_x := viewport.x * 0.5 + (float(FG_CLUSTERS[i][1]) - camera.x) * 1.22
+		fg.visible = screen_x > -340.0 and screen_x < viewport.x + 340.0
+		if fg.visible:
+			# Bottom-anchored below screen y = 550 ground line so silhouettes never occlude actors.
+			fg.position = Vector2(screen_x, viewport.y + 18.0 - dy * 1.15)
 
 
 func add_soil(left: float, right: float, floor_y: float) -> void:

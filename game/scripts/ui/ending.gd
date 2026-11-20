@@ -25,6 +25,8 @@ var shadow_node: Node2D
 var motes_node: Node2D
 var _motes: Array = []
 var t := 0.0
+var _action_taken := false
+var rank_info: Dictionary = {}
 
 
 func _ready() -> void:
@@ -41,13 +43,13 @@ func _ready() -> void:
 		tr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		add_child(tr)
 	holder = Node2D.new()
-	holder.position = Vector2(260, 616)
+	holder.position = Vector2(190, 666)
 	add_child(holder)
 	shadow_node = Node2D.new()
 	shadow_node.draw.connect(_draw_shadow)
 	holder.add_child(shadow_node)
 	hero = HERO_VISUAL.new()
-	hero.extra_scale = 1.28
+	hero.extra_scale = 1.12
 	hero.facing = 1
 	hero.walk_speed = 92.0
 	hero.locomotion_speed = WALK_SPEED
@@ -69,32 +71,204 @@ func _ready() -> void:
 			"ph": rng.randf_range(0.0, TAU),
 			"leaf": i < 8,
 		})
-	var lines := [
-		["第一章 · 序　完", BRUSH_FONT, 72, Color(0.12, 0.09, 0.08), Vector2(0, 90)],
-		["尸将已镇，乱葬岗归于沉寂。前路秽气未散 —— 道行者仍要前行。", null, 22, Color(0.20, 0.14, 0.11), Vector2(0, 198)],
-		["%s　·　用时 %s　·　战死 %d 次　·　斩祟 %d　·　弹反 %d" % [["故事", "常规", "修行"][Game.difficulty], Game.format_time(Game.run_time), Game.deaths, Game.kills, Game.parries], null, 22, Color(0.50, 0.13, 0.09), Vector2(0, 256)],
-		["感谢试玩　Thank you for playing the Taoist Wanderer vertical slice", null, 18, Color(0.26, 0.20, 0.16), Vector2(0, 314)],
-		["按 %s 返回标题" % Game.binding_label("confirm", true), null, 18, Color(0.18, 0.13, 0.10), Vector2(0, 668)],
+	rank_info = Game.record_clear(not Game.args.has("test"))
+	# Top calligraphic heading & epilogue
+	var head := Label.new()
+	head.text = "第一章 · 序　完"
+	head.add_theme_font_override("font", BRUSH_FONT)
+	head.add_theme_font_size_override("font_size", 66)
+	head.add_theme_color_override("font_color", Color(0.12, 0.09, 0.08))
+	head.add_theme_color_override("font_outline_color", Color(0.95, 0.89, 0.78, 0.78))
+	head.add_theme_constant_override("outline_size", 5)
+	head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	head.anchor_right = 1.0
+	head.offset_top = 20
+	head.modulate.a = 0.0
+	add_child(head)
+	var htw := head.create_tween()
+	htw.tween_interval(0.2)
+	htw.tween_property(head, "modulate:a", 1.0, 0.8)
+
+	var sub := Label.new()
+	sub.text = "尸将已镇，乱葬岗归于沉寂。前路秽气未散 —— 道行者仍要前行。"
+	sub.add_theme_font_size_override("font_size", 20)
+	sub.add_theme_color_override("font_color", Color(0.20, 0.14, 0.11))
+	sub.add_theme_color_override("font_outline_color", Color(0.95, 0.89, 0.78, 0.75))
+	sub.add_theme_constant_override("outline_size", 4)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.anchor_right = 1.0
+	sub.offset_top = 96
+	sub.modulate.a = 0.0
+	add_child(sub)
+	var subtw := sub.create_tween()
+	subtw.tween_interval(0.45)
+	subtw.tween_property(sub, "modulate:a", 1.0, 0.8)
+
+	# Structured Journey Ledger (行旅录) + Animated Vermilion Seal Rank (甲 / 乙 / 丙)
+	var ledger := PanelContainer.new()
+	ledger.add_theme_stylebox_override("panel", InkTheme.scroll_panel(30, 16, 0.90))
+	ledger.position = Vector2(276.0, 138.0)
+	ledger.size = Vector2(728.0, 250.0)
+	ledger.modulate.a = 0.0
+	add_child(ledger)
+	var ltw := ledger.create_tween()
+	ltw.tween_interval(0.65)
+	ltw.tween_property(ledger, "modulate:a", 1.0, 0.65)
+
+	var hbox := HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 28)
+	ledger.add_child(hbox)
+
+	var left := VBoxContainer.new()
+	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left.add_theme_constant_override("separation", 6)
+	hbox.add_child(left)
+
+	var ltitle := Label.new()
+	var best_tag := "　★ 新纪录" if Game.last_clear_is_best else ""
+	ltitle.text = "行 旅 录  ·  JOURNEY LEDGER%s" % best_tag
+	ltitle.add_theme_font_size_override("font_size", 17)
+	ltitle.add_theme_color_override("font_color", Color(0.95, 0.80, 0.48))
+	left.add_child(ltitle)
+
+	var sep := ColorRect.new()
+	sep.custom_minimum_size = Vector2(0, 1)
+	sep.color = Color(0.76, 0.59, 0.34, 0.45)
+	left.add_child(sep)
+
+	var diff_str: String = ["故事 · Story", "常规 · Normal", "修行 · Hard"][clampi(Game.difficulty, 0, 2)]
+	var stats_rows := [
+		["修行难度", diff_str],
+		["行旅用时", Game.format_time(Game.run_time)],
+		["战死次数", "%d 次" % Game.deaths],
+		["斩除妖祟", "%d" % Game.kills],
+		["精准弹反", "%d" % Game.parries],
+		["破除残器", "%d" % Game.props_broken],
 	]
-	for l in lines:
-		var lb := Label.new()
-		lb.text = l[0]
-		if l[1]:
-			lb.add_theme_font_override("font", l[1])
-		lb.add_theme_font_size_override("font_size", l[2])
-		lb.add_theme_color_override("font_color", l[3])
-		lb.add_theme_color_override("font_outline_color", Color(0.95, 0.89, 0.78, 0.72))
-		lb.add_theme_constant_override("outline_size", 4)
-		lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lb.anchor_right = 1.0
-		lb.offset_top = l[4].y
-		lb.modulate.a = 0.0
-		add_child(lb)
-		var tw := lb.create_tween()
-		tw.tween_interval(0.4 + lines.find(l) * 0.5)
-		tw.tween_property(lb, "modulate:a", 1.0, 1.0)
+	for row_data in stats_rows:
+		var rbox := HBoxContainer.new()
+		var k := Label.new()
+		k.text = String(row_data[0])
+		k.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		k.add_theme_font_size_override("font_size", 17)
+		k.add_theme_color_override("font_color", Color(0.76, 0.70, 0.60))
+		rbox.add_child(k)
+		var v := Label.new()
+		v.text = String(row_data[1])
+		v.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		v.add_theme_font_size_override("font_size", 18)
+		v.add_theme_color_override("font_color", Color(0.96, 0.91, 0.80))
+		rbox.add_child(v)
+		left.add_child(rbox)
+
+	var right := VBoxContainer.new()
+	right.custom_minimum_size = Vector2(196, 0)
+	right.alignment = BoxContainer.ALIGNMENT_CENTER
+	right.add_theme_constant_override("separation", 10)
+	hbox.add_child(right)
+
+	var seal_holder := Control.new()
+	seal_holder.custom_minimum_size = Vector2(150, 150)
+	seal_holder.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	right.add_child(seal_holder)
+
+	var seal := Control.new()
+	seal.position = Vector2(75.0, 75.0)
+	seal.scale = Vector2(2.1, 2.1)
+	seal.rotation = -0.14
+	seal.modulate.a = 0.0
+	seal_holder.add_child(seal)
+
+	var seal_col: Color = rank_info.color
+	var sq := ColorRect.new()
+	sq.color = Color(seal_col.r, seal_col.g, seal_col.b, 0.94)
+	sq.position = Vector2(-60, -60)
+	sq.size = Vector2(120, 120)
+	seal.add_child(sq)
+
+	var inner := ReferenceRect.new()
+	inner.border_color = Color(0.96, 0.88, 0.74, 0.92)
+	inner.border_width = 3.0
+	inner.editor_only = false
+	inner.position = Vector2(-52, -52)
+	inner.size = Vector2(104, 104)
+	seal.add_child(inner)
+
+	var grade_lbl := Label.new()
+	grade_lbl.text = String(rank_info.grade)
+	grade_lbl.add_theme_font_override("font", BRUSH_FONT)
+	grade_lbl.add_theme_font_size_override("font_size", 86)
+	grade_lbl.add_theme_color_override("font_color", Color(0.97, 0.91, 0.79))
+	grade_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	grade_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	grade_lbl.position = Vector2(-60, -66)
+	grade_lbl.size = Vector2(120, 128)
+	seal.add_child(grade_lbl)
+
+	var stw := create_tween()
+	stw.tween_interval(1.15)
+	stw.tween_property(seal, "modulate:a", 1.0, 0.08)
+	stw.parallel().tween_property(seal, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	stw.parallel().tween_property(seal, "rotation", -0.06, 0.22)
+	stw.tween_callback(func(): InkTheme.play_ui("seal_stamp", "seal_burst", -4.0))
+
+	var epithet := Label.new()
+	epithet.text = String(rank_info.title)
+	epithet.add_theme_font_override("font", BRUSH_FONT)
+	epithet.add_theme_font_size_override("font_size", 30)
+	epithet.add_theme_color_override("font_color", Color(0.95, 0.84, 0.62))
+	epithet.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	right.add_child(epithet)
+
+	var rank_en := Label.new()
+	rank_en.text = String(rank_info.en)
+	rank_en.add_theme_font_size_override("font_size", 12)
+	rank_en.add_theme_color_override("font_color", Color(0.76, 0.68, 0.56))
+	rank_en.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	right.add_child(rank_en)
+
+	# Interactive Replay / Title buttons
+	var btn_row := HBoxContainer.new()
+	btn_row.position = Vector2(360.0, 406.0)
+	btn_row.size = Vector2(560.0, 48.0)
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_theme_constant_override("separation", 24)
+	btn_row.modulate.a = 0.0
+	add_child(btn_row)
+	var again_btn := Button.new()
+	again_btn.text = "再行此道  ·  Play Again"
+	again_btn.custom_minimum_size = Vector2(256, 46)
+	again_btn.add_theme_font_size_override("font_size", 19)
+	again_btn.pressed.connect(_play_again)
+	InkTheme.wire_hover(again_btn)
+	btn_row.add_child(again_btn)
+
+	var title_btn := Button.new()
+	title_btn.text = "返回标题  ·  Title"
+	title_btn.custom_minimum_size = Vector2(236, 46)
+	title_btn.add_theme_font_size_override("font_size", 19)
+	title_btn.pressed.connect(_go_title)
+	InkTheme.wire_hover(title_btn)
+	btn_row.add_child(title_btn)
+	var btw := btn_row.create_tween()
+	btw.tween_interval(1.45)
+	btw.tween_property(btn_row, "modulate:a", 1.0, 0.5)
+	btw.tween_callback(func():
+		if is_instance_valid(title_btn):
+			title_btn.grab_focus())
+
+	var thanks := Label.new()
+	thanks.text = "感谢试玩《道行者》序章试玩版  ·  Thank you for playing Taoist Wanderer"
+	thanks.add_theme_font_size_override("font_size", 15)
+	thanks.add_theme_color_override("font_color", Color(0.24, 0.18, 0.14))
+	thanks.add_theme_color_override("font_outline_color", Color(0.95, 0.89, 0.78, 0.72))
+	thanks.add_theme_constant_override("outline_size", 3)
+	thanks.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	thanks.anchor_right = 1.0
+	thanks.offset_top = 668
+	add_child(thanks)
 	Sfx.play_music("music_title")
-	print("DEMO_COMPLETE time=%s deaths=%d kills=%d parries=%d" % [Game.format_time(Game.run_time), Game.deaths, Game.kills, Game.parries])
+	print("DEMO_COMPLETE time=%s deaths=%d kills=%d parries=%d rank=%s" % [Game.format_time(Game.run_time), Game.deaths, Game.kills, Game.parries, String(rank_info.grade)])
 
 
 func _process(delta: float) -> void:
@@ -167,6 +341,22 @@ func _draw_motes() -> void:
 			motes_node.draw_circle(Vector2(mx, my), mr * 0.7, Color(1.0, 0.88, 0.68, 0.34 * pulse))
 
 
+func _play_again() -> void:
+	if _action_taken:
+		return
+	_action_taken = true
+	Sfx.play("ui_confirm", -2.0)
+	Game.new_run()
+
+
+func _go_title() -> void:
+	if _action_taken:
+		return
+	_action_taken = true
+	InkTheme.play_ui("ui_back", "ui_move", -4.0)
+	Game.to_title()
+
+
 func _unhandled_input(e: InputEvent) -> void:
 	if t > 1.5 and (e.is_action_pressed("confirm") or e.is_action_pressed("attack")):
-		Game.to_title()
+		_go_title()
