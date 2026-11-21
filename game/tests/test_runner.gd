@@ -499,7 +499,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1300,6 +1300,53 @@ func t_guard_stance() -> void:
 ## Walking into an upright enemy must not stack the two figures — both in open
 ## ground (enemy yields) and when pinned against a leash/wall (hero stops cleanly);
 ## a dash still passes through.
+func t_pack_spread() -> void:
+	# burial-mound case from the rendered run: the hero stands on a slab and a
+	# crawler pack chases from the right. They must queue in a readable line
+	# instead of piling into one blob at the slab's edge. (Uses the rubble slab
+	# 2700-2830, top 520, away from encounter triggers; pre-placed enemies are
+	# removed so only the pack is measured.)
+	var p := await _fresh_level(2765.0)
+	p.max_hp = 99999.0
+	p.hp = 99999.0
+	p.global_position = Vector2(2765.0, 510.0)
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy:
+			n.queue_free()
+	await _wait(0.4)
+	var pack: Array = []
+	for i in 3:
+		pack.append(await spawn("crawler", 2960.0 + i * 6.0, false))
+	# fraction of sampled frames (after the pack arrives) in which any two
+	# crawlers are stacked closer than 40 px — brief crossings during a
+	# pounce are fine, a standing blob is not
+	var stacked := 0
+	var samples := 0
+	var worst := 999.0
+	for i in 360:
+		await _frames(1)
+		p.hp = p.max_hp
+		p.invuln = 1.0
+		if i > 120:
+			var xs: Array = pack.filter(func(c): return is_instance_valid(c) and not c.dead).map(func(c): return c.global_position.x)
+			xs.sort()
+			var g := 999.0
+			for k in range(1, xs.size()):
+				g = minf(g, xs[k] - xs[k - 1])
+			worst = minf(worst, g)
+			samples += 1
+			if i % 30 == 0 and Game.args.has("dbg"):
+				print("DBG ", pack.map(func(c): return "%s@%.0f cd%.2f q%s v%.0f" % [c.state, c.global_position.x, c.cd, c.ally_ahead(), c.velocity.x]))
+			if g < 40.0:
+				stacked += 1
+	var frac := float(stacked) / maxf(1.0, float(samples))
+	var on_slab := p.global_position.y < 530.0
+	_log("pack_spreads_at_ledge", frac < 0.15, "stacked=%.0f%% min_gap=%.0f hero_on_slab=%s" % [frac * 100.0, worst, on_slab])
+	for c in pack:
+		if is_instance_valid(c):
+			c.queue_free()
+
+
 func t_personal_space() -> void:
 	var p := await _fresh_level(500.0)
 	p.max_hp = 9999.0

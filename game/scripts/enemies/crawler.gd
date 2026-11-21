@@ -65,8 +65,9 @@ func _ai(delta: float) -> void:
 				return
 			face_toward(p.global_position.x)
 			vis.set_pose("crawler_crawl", 0.06)
-			if absf(dx) > 210.0 or cd > 0.0:
-				var sp := 215.0 if absf(dx) > 120.0 else 0.0
+			var queued := ally_ahead()
+			if absf(dx) > 210.0 or cd > 0.0 or queued:
+				var sp := 215.0 if absf(dx) > 120.0 and not queued else 0.0
 				velocity.x = facing * sp
 				walk_anim(delta, sp / 215.0, 16.0, 0.05)
 			else:
@@ -93,7 +94,8 @@ func _ai(delta: float) -> void:
 				play_pose_or_clip("retreat", "crawler_retreat", 0.06, true)
 				Fx.dust(global_position, 6)
 		"retreat":
-			velocity.x = -facing * 240.0 * (1.0 - state_t / 0.6)
+			# don't scuttle back into a packmate queued behind
+			velocity.x = 0.0 if ally_ahead(-1.0, true) else -facing * 240.0 * (1.0 - state_t / 0.6)
 			walk_anim(delta, 1.0, 18.0, 0.05)
 			if state_t >= 0.6:
 				cd = 0.7

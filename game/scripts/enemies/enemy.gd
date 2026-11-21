@@ -181,13 +181,47 @@ func _separate(delta: float) -> void:
 	for o in Combat.actors:
 		if o == self or o.dead or not is_instance_valid(o):
 			continue
+		if o.team != team:
+			continue
 		var d: float = global_position.x - o.global_position.x
-		var min_d: float = (hurt_size.x + o.hurt_size.x) * 0.38
+		var min_d: float = (hurt_size.x + o.hurt_size.x) * 0.42
 		if absf(d) < min_d and absf(global_position.y - o.global_position.y) < 80:
-			var push := (min_d - absf(d)) * (1.0 if d >= 0 else -1.0)
-			if o.team == team:
-				_safe_nudge_x(self, push * minf(1.0, delta * 6.0), leash_left, leash_right)
+			# exact ties resolve by instance id so the pair splits instead of
+			# both stepping the same way
+			var side := signf(d) if absf(d) > 0.5 else (1.0 if get_instance_id() > o.get_instance_id() else -1.0)
+			var want := (min_d - absf(d)) * side * minf(1.0, delta * 6.0)
+			var moved := _safe_nudge_x(self, want, leash_left, leash_right)
+			# pinned against a wall / ledge / leash: shove the neighbour instead,
+			# otherwise a pack piles into one unreadable blob at an obstacle
+			var rem := want - moved
+			if absf(rem) > 0.05 and o is Enemy:
+				_safe_nudge_x(o, -rem, o.leash_left, o.leash_right)
 	_keep_personal_space(delta)
+
+
+## Queueing: true when a living ally already stands between this enemy and
+## the hero within `spacing` px (default: shoulder to shoulder). Chasers hold
+## their slot instead of walking into that ally, so a pack forms a readable
+## line and takes turns rather than collapsing into one stacked silhouette.
+func ally_ahead(spacing := -1.0, behind := false) -> bool:
+	var p := player()
+	if p == null:
+		return false
+	var my_d := absf(global_position.x - p.global_position.x)
+	for o in Combat.actors:
+		if o == self or not (o is Enemy) or o.dead or not is_instance_valid(o) or o.team != team:
+			continue
+		if absf(o.global_position.y - global_position.y) > 80.0:
+			continue
+		var rel: float = o.global_position.x - global_position.x
+		var dir := -float(facing) if behind else float(facing)
+		if signf(rel) != dir and absf(rel) > 0.5:
+			continue
+		var gap: float = spacing if spacing > 0.0 else (hurt_size.x + o.hurt_size.x) * 0.55
+		var o_d := absf(o.global_position.x - p.global_position.x)
+		if absf(rel) < gap and ((not behind and o_d < my_d - 0.5) or (behind and o_d > my_d + 0.5)):
+			return true
+	return false
 
 
 func _safe_nudge_x(body: CharacterBody2D, dx: float, min_x := -1e9, max_x := 1e9) -> float:

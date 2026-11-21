@@ -69,7 +69,10 @@ func _ai(delta: float) -> void:
 				return
 			face_toward(p.global_position.x)
 			vis.set_pose("grunt_walk", 0.1)
-			if absf(dx) > 125.0:
+			if absf(dx) > 125.0 and ally_ahead():
+				velocity.x = 0.0
+				still_anim()
+			elif absf(dx) > 125.0:
 				velocity.x = facing * 95.0
 				walk_anim(delta, 1.0, 7.0)
 			else:
