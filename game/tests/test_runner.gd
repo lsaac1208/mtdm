@@ -499,7 +499,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -533,6 +533,42 @@ func t_movement() -> void:
 	await press(p, "dash", {"move_left": true})
 	await _wait(0.4)
 	_log("dash", xd - p.global_position.x > 90, "dash dist=%.0f (left)" % (xd - p.global_position.x))
+
+
+func t_input_feel() -> void:
+	# 1) a dash pressed during the slash's active frames is buffered, not dropped
+	var p := await _fresh_level(600.0)
+	p.facing = 1
+	await press(p, "attack")
+	await _wait(0.09)   # inside slash1 startup/active window
+	var st_at_press := p.state
+	await press(p, "dash")
+	var dashed := false
+	for i in 30:
+		await _frames(1)
+		if p.state == "dash":
+			dashed = true
+			break
+	_log("dash_buffered_from_attack", st_at_press == "attack" and dashed, "pressed in %s -> dash=%s" % [st_at_press, dashed])
+	# 2) only one air dash per airtime
+	await _wait(0.6)
+	await press(p, "jump", {"jump": true})
+	hold(p, {"jump": true})
+	await _frames(8)
+	await press(p, "dash", {"jump": true})
+	var first := p.state == "dash"
+	await _wait(0.5)   # past dash_cd, still airborne?
+	var airborne := not p.is_on_floor()
+	await press(p, "dash", {"jump": true})
+	await _frames(2)
+	var second := p.state == "dash"
+	hold(p, {})
+	await _wait(1.2)
+	_log("air_dash_once", first and not second, "first=%s second=%s airborne_at_2nd=%s" % [first, second, airborne])
+	# 3) air dash refreshes after landing
+	await press(p, "dash")
+	await _frames(2)
+	_log("dash_after_landing", p.state == "dash", "state=%s" % p.state)
 
 
 func t_crawler_bands() -> void:

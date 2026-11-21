@@ -74,6 +74,10 @@ var _block_recoil := 0.0   # sword-arm rot, back-arm rot, sword-arm offset along
 var combo_hits := 0
 var combo_timer := 0.0
 var input_override = null   # test harness: Dictionary of action -> bool
+## Press buffer for dash and skills: an early press (during an attack's active
+## frames, landing, hit-stun tail…) is honoured as soon as the hero can act.
+const ACT_BUFFER := 0.18
+var _act_buf := {"dash": 0.0, "talisman": 0.0, "gourd": 0.0, "beads": 0.0}
 
 
 func _init() -> void:
@@ -121,6 +125,20 @@ func _pressed(a: String) -> bool:
 	return Input.is_action_just_pressed(a)
 
 
+## True while a press of `a` is buffered (see ACT_BUFFER). Consumed by the
+## matching _start_* call.
+func _wants(a: String) -> bool:
+	return _act_buf.get(a, 0.0) > 0.0
+
+
+func _can_dash() -> bool:
+	return dash_cd <= 0.0 and (air_dash or is_on_floor())
+
+
+func _consume(a: String) -> void:
+	_act_buf[a] = 0.0
+
+
 func _held(a: String) -> bool:
 	if controls_locked:
 		return false
@@ -162,6 +180,8 @@ func _physics_process(delta: float) -> void:
 	if _pressed("attack"):
 		atk_buf = BUFFER
 		atk_buf_down = _held("move_down")
+	for a in _act_buf:
+		_act_buf[a] = ACT_BUFFER if _pressed(a) else maxf(0.0, _act_buf[a] - delta)
 	if is_on_floor():
 		coyote = COYOTE
 		air_dash = true
@@ -213,16 +233,16 @@ func _speed_mul() -> float:
 
 # Shared: what a free (actionable) character can start from the ground.
 func _try_actions() -> bool:
-	if _pressed("talisman") and qi >= TALISMAN_COST and skill_cd <= 0.0:
+	if _wants("talisman") and qi >= TALISMAN_COST and skill_cd <= 0.0:
 		_start_skill("talisman")
 		return true
-	if _pressed("gourd") and gourd > 0 and skill_cd <= 0.0:
+	if _wants("gourd") and gourd > 0 and skill_cd <= 0.0:
 		_start_skill("gourd")
 		return true
-	if _pressed("beads") and qi >= BEADS_COST and skill_cd <= 0.0:
+	if _wants("beads") and qi >= BEADS_COST and skill_cd <= 0.0:
 		_start_skill("beads_a")
 		return true
-	if _pressed("dash") and dash_cd <= 0.0:
+	if _wants("dash") and _can_dash():
 		_start_dash()
 		return true
 	if atk_buf > 0.0:
@@ -426,20 +446,20 @@ func _st_attack(delta: float) -> void:
 	if can_cancel and combo_queued != "":
 		_start_attack(combo_queued)
 		return
-	if can_cancel and _pressed("dash") and dash_cd <= 0.0:
+	if can_cancel and _wants("dash") and _can_dash():
 		_start_dash()
 		return
 	if can_cancel and jump_buf > 0.0 and not hit_set.is_empty() and is_on_floor():
 		_jump()
 		return
 	if can_cancel and skill_cd <= 0.0:
-		if _pressed("talisman") and qi >= TALISMAN_COST:
+		if _wants("talisman") and qi >= TALISMAN_COST:
 			_start_skill("talisman")
 			return
-		if _pressed("beads") and qi >= BEADS_COST:
+		if _wants("beads") and qi >= BEADS_COST:
 			_start_skill("beads_a")
 			return
-		if _pressed("gourd") and gourd > 0:
+		if _wants("gourd") and gourd > 0:
 			_start_skill("gourd")
 			return
 	if can_cancel and _held("block") and t >= st + ac + 0.08:
@@ -469,6 +489,7 @@ func _on_melee_connect(hits: Array) -> void:
 
 # ---------------------------------------------------------------- dash
 func _start_dash() -> void:
+	_consume("dash")
 	set_state("dash")
 	var ax := _axis()
 	if ax != 0.0:
@@ -591,7 +612,7 @@ func _st_block(delta: float) -> void:
 	if not _held("block"):
 		set_state("idle")
 		return
-	if _pressed("dash") and dash_cd <= 0.0:
+	if _wants("dash") and _can_dash():
 		_start_dash()
 	elif atk_buf > 0.0 and block_t > 0.12:
 		atk_buf = 0.0
@@ -600,6 +621,7 @@ func _st_block(delta: float) -> void:
 
 # ---------------------------------------------------------------- skills
 func _start_skill(s: String) -> void:
+	_consume("beads" if s == "beads_a" else s)
 	set_state(s)
 	hit_set = {}
 	velocity.x = 0.0
