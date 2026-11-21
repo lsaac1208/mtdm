@@ -324,7 +324,26 @@ static func _round_portrait(tex: Texture2D) -> Texture2D:
 	return ImageTexture.create_from_image(img)
 
 
+var _hint_presses := 0
+
+
+## Contextual tutorial: once the player performs the move a hint teaches, the
+## strip lingers ~1.2 s as confirmation and then gets out of the way.
+func _track_hint_learning() -> void:
+	if Game.hint_learn.is_empty() or hint_t <= 0.0:
+		return
+	for a in Game.hint_learn:
+		if InputMap.has_action(a) and Input.is_action_just_pressed(a):
+			_hint_presses += 1
+	if _hint_presses >= Game.hint_need:
+		Game.mark_hint_learned()
+		hint_t = minf(hint_t, 1.2)
+		hint_label.add_theme_color_override("font_color", Color(1.0, 0.93, 0.62))
+
+
 func _on_hint(text: String, dur: float) -> void:
+	_hint_presses = 0
+	hint_label.add_theme_color_override("font_color", Color(0.95, 0.88, 0.7))
 	hint_template = text
 	hint_label.text = Game.fmt_keys(hint_template)
 	hint_t = dur
@@ -370,6 +389,7 @@ func _process(delta: float) -> void:
 		var bt: float = clampf(maxf(0.0, float(boss.hp)) / boss_max_hp, 0.0, 1.0)
 		boss_lag = maxf(bt, boss_lag - delta * 0.25)
 	hint_t = maxf(0.0, hint_t - delta)
+	_track_hint_learning()
 	# During the boss fight the bottom band holds the boss bar and the fight
 	# itself fills the ground line, so the hint moves under the top HUD
 	# instead of covering both fighters' feet.

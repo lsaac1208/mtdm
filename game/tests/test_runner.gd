@@ -499,7 +499,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "boss_body", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "boss_body", "smart_hints", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1369,6 +1369,36 @@ func t_boss_body() -> void:
 	hold(p, {})
 	_log("boss_body_block", closest > 70.0, "closest=%.0f px (painted half-width ~80)" % closest)
 	e.queue_free()
+
+
+func t_smart_hints() -> void:
+	# walking onto the movement sign shows its hint; a real jump press makes it
+	# bow out early, and walking back past the sign does not repeat it
+	var p := await _fresh_level(300.0)
+	var hud = Game.level.hud
+	p.input_override = null   # real Input for this test
+	p.global_position.x = 470.0
+	await _frames(4)
+	var shown: bool = hud.hint_t > 4.0
+	Input.action_press("jump")
+	await _frames(2)
+	Input.action_release("jump")
+	await _frames(2)
+	var shortened: bool = hud.hint_t <= 1.2
+	var learned := Game.hints_learned.size() == 1
+	await _wait(1.6)
+	p.global_position.x = 950.0   # > 400 px away resets the sign trigger
+	await _frames(4)
+	p.global_position.x = 470.0
+	await _frames(4)
+	var repeated: bool = hud.hint_t > 1.3
+	# an unlearned hint (attack sign) still runs its full duration
+	p.global_position.x = 760.0
+	await _frames(4)
+	var other: bool = hud.hint_t > 4.0
+	p.input_override = {}
+	_log("hint_dismissed_when_learned", shown and shortened and learned and not repeated and other,
+		"shown=%s shortened=%s learned=%s repeated=%s next_hint=%s" % [shown, shortened, learned, repeated, other])
 
 
 func t_personal_space() -> void:

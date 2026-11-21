@@ -26,6 +26,12 @@ var running := false
 var level: Node = null     # current level node
 var player: Node = null
 var whispers_seen := {}
+## Contextual tutorial: the actions the current hint teaches, how many presses
+## count as "learned", and which hints are already learned this run.
+var hint_learn: Array = []
+var hint_need := 1
+var hint_key := ""
+var hints_learned := {}
 var best_rank := ""
 var best_time := 0.0
 var best_diff := -1
@@ -367,6 +373,8 @@ func new_run() -> void:
 	checkpoint_id = 0
 	cleared.clear()
 	whispers_seen.clear()
+	hints_learned.clear()
+	hint_learn = []
 	deaths = 0
 	kills = 0
 	parries = 0
@@ -468,8 +476,18 @@ func set_checkpoint(id: int) -> void:
 	checkpoint_changed.emit(id)
 
 
-func show_hint(text: String, duration := 4.0) -> void:
+func show_hint(text: String, duration := 4.0, learn: Array = [], need := 1, key := "") -> void:
+	hint_learn = learn
+	hint_need = need
+	hint_key = key if key != "" else text
 	hint.emit(text, duration)
+
+
+## Called by the HUD once the player has performed the hinted action.
+func mark_hint_learned() -> void:
+	if hint_key != "":
+		hints_learned[hint_key] = true
+	hint_learn = []
 
 
 func show_whisper(id: String, mood: String, speaker: String, text: String, duration := 4.5) -> void:
