@@ -32,6 +32,8 @@ func _init() -> void:
 	max_hp = 460.0
 	max_poise = 110.0
 	hurt_size = Vector2(72, 172)
+	body_space = 84.0
+	body_block = true
 	idle_pose = "elite_main"
 	stagger_pose = "elite_idle"
 	death_pose = "elite_idle"

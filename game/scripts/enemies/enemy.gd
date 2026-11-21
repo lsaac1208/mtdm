@@ -250,16 +250,34 @@ func _safe_nudge_x(body: CharacterBody2D, dx: float, min_x := -1e9, max_x := 1e9
 const _YIELD_STATES := ["chase", "alert", "idle", "wander", "detect", "recover", "stagger", "retreat"]
 
 
+## Optional painted-body spacing (px, centre to centre). Large painted
+## figures whose hurtbox is narrower than the drawing (the elite) set this so
+## the hero stops at the armour rather than inside it.
+var body_space := 0.0
+## When true the hero is also body-blocked while this enemy winds up, strikes
+## or recovers (the enemy itself never yields then, so timing is unchanged).
+var body_block := false
+
+
 func _keep_personal_space(delta: float) -> void:
 	var p = Game.player
 	if p == null or not is_instance_valid(p) or p.dead or hurt_size.y < 100.0:
 		return
-	if not (state in _YIELD_STATES) or p.state in ["dash", "dash_attack"]:
+	if p.state in ["dash", "dash_attack"]:
+		return
+	var yielding := state in _YIELD_STATES
+	if not yielding and not (body_block and state != "dead" and state != "spawn"):
 		return
 	if absf(global_position.y - p.global_position.y) > 24.0:
 		return
 	var d: float = global_position.x - p.global_position.x
-	var min_d: float = (hurt_size.x + p.hurt_size.x) * 0.42
+	var min_d: float = body_space if body_space > 0.0 else (hurt_size.x + p.hurt_size.x) * 0.42
+	if not yielding:
+		# attacking: hold ground, only the grounded hero is eased back out
+		if absf(d) < min_d and p.is_on_floor() and p.state != "hit":
+			var side_b := 1.0 if d > 0.0 else -1.0
+			_safe_nudge_x(p, -(min_d - absf(d)) * side_b * minf(1.0, delta * 40.0))
+		return
 	if absf(d) < min_d:
 		var side := 1.0 if d > 0.5 else (-1.0 if d < -0.5 else 0.0)
 		if side == 0.0:

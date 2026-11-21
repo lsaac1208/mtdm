@@ -499,7 +499,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "boss_body", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1345,6 +1345,30 @@ func t_pack_spread() -> void:
 	for c in pack:
 		if is_instance_valid(c):
 			c.queue_free()
+
+
+func t_boss_body() -> void:
+	# walking into the elite while it winds up must stop at its armour, not
+	# sink inside the painted body (rendered run: silhouettes merged)
+	var p := await _fresh_level(10300.0)
+	p.max_hp = 99999.0
+	p.hp = 99999.0
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy:
+			n.queue_free()
+	await _wait(0.3)
+	var e := await spawn("elite", 10480.0)
+	var closest := 999.0
+	hold(p, {"move_right": true})
+	for i in 150:
+		await _frames(1)
+		p.hp = p.max_hp
+		p.invuln = 1.0
+		if e.state.begins_with("windup") or e.state in ["chop", "sweep", "recover_chop", "recover_sweep", "chase", "idle"]:
+			closest = minf(closest, absf(e.global_position.x - p.global_position.x))
+	hold(p, {})
+	_log("boss_body_block", closest > 70.0, "closest=%.0f px (painted half-width ~80)" % closest)
+	e.queue_free()
 
 
 func t_personal_space() -> void:
