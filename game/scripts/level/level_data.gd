@@ -123,7 +123,10 @@ const ENCOUNTERS := [
 		"enemies": [["husk", 8300.0, -1.0, 0.0], ["grunt", 8100.0, 0.5, 0.9], ["grunt", 8380.0, 1.2, 0.9]]},
 	{"id": "e7c_burial_wave", "group": "A+", "trigger": 9080.0, "lock": [8960.0, 9640.0],
 		"enemies": [["grunt", 9450.0, 0.3, 0.9], ["crawler", 9560.0, 0.9, 0.6], ["grunt", 9050.0, 3.2, 0.9],
-			["crawler", 9550.0, 3.8, 0.6], ["grunt", 9500.0, 4.4, 0.9]]},
+			["crawler", 9550.0, 3.8, 0.6], ["grunt", 9500.0, 4.4, 0.9],
+			# finale variety: a spitter rises at the far end so the wave mixes
+			# ranged pressure (talisman / push through) with the crawler rush
+			["spitter", 9600.0, 2.2, 0.8]]},
 	{"id": "e8_elite", "group": "D", "trigger": 10000.0, "lock": [9800.0, 10900.0], "boss": true,
 		"enemies": [["elite", 10600.0, -1.0, 0.0], ["grunt", 10420.0, 1.4, 0.9]]},
 ]
