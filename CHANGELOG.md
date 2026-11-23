@@ -4,6 +4,9 @@ All versions are pre-release vertical slices. Automated tests and GPU captures a
 
 ## 0.4.0 — 2026-11-20## 0.6.0-dev — in progress
 
+### Changed
+- **Chapter-ready route data**: chapter 1's route data moved verbatim to `scripts/level/chapters/chapter1.gd`; `LevelData` is now an active-chapter facade (typed static vars with the same names, `LevelData.use_chapter(id)`), so all 76 existing call sites are unchanged. The run save records the chapter and Continue restores it. Test `chapter_facade`; 82/82 in source and inside the exported Linux build, soak clean.
+
 ### Added
 - **Controller vibration**: `Game.rumble()` sends to the active pad only — hurt (stronger for heavy hits), parry (crisp high-frequency), heavy combo/down-slash connects, hero death, and the General's fall; 手柄震动 toggle in Options (persisted). Verified structurally (test `rumble_events_and_toggle`); **not felt on a physical pad**.
 - **Boss rematch (post-clear challenge)**: after a first clear the title offers 再战尸将 · Rematch — start at the last campfire with only the General uncleared; the ending shows 尸将再战 · 已镇 with the run time and this difficulty's best (★ on a new record); Play Again restarts the rematch. Never touches the story save or the main rank; per-difficulty bests persist and show on the title status plate. Six-entry title layout tightened. Test `rematch_flow`.

@@ -170,6 +170,7 @@ func save_run() -> void:
 	if not _run_save_enabled() or not running or mode != "story":
 		return
 	var cf := ConfigFile.new()
+	cf.set_value("run", "chapter", LevelData.CHAPTER)
 	cf.set_value("run", "checkpoint", checkpoint_id)
 	cf.set_value("run", "cleared", cleared.keys())
 	cf.set_value("run", "lore", lore_read.keys())
@@ -258,6 +259,8 @@ func continue_run() -> bool:
 	var cf := ConfigFile.new()
 	if cf.load(_run_path()) != OK:
 		return false
+	if not LevelData.use_chapter(String(cf.get_value("run", "chapter", "ch1"))):
+		LevelData.use_chapter("ch1")
 	checkpoint_id = clampi(int(cf.get_value("run", "checkpoint", 0)), 0, LevelData.CHECKPOINTS.size() - 1)
 	cleared = _keys_to_set(cf.get_value("run", "cleared", []))
 	lore_read = _keys_to_set(cf.get_value("run", "lore", []))

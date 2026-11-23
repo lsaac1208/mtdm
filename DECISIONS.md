@@ -158,3 +158,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D40 · Rematch mode is isolated from story progress (0.6.0)
 - `Game.mode` ("story" / "rematch"). `start_rematch()` marks every encounter except `e8_elite` cleared and spawns at `REMATCH_CP` (5). In rematch: `save_run()` is a no-op, `finish_demo()` keeps the story save, the ending calls `record_rematch()` (per-difficulty `best_rematch`, persisted under `[progress]`) instead of `record_clear()`. Gated behind `cleared_once` so it reads as a reward.
+
+## D41 · LevelData as an active-chapter facade (0.6.0)
+- Route data per chapter lives in `scripts/level/chapters/<id>.gd` (plain consts, same names as before) and is registered in `LevelData.CHAPTERS`. `LevelData` exposes typed `static var`s filled by `use_chapter(id)` (`_static_init` selects `ch1`). Chosen over rewriting 76 call sites to pass a chapter object: zero behavioural change, and a chapter 2 only needs a data file + registry entry (plus its own painted zone art). Run saves store `chapter`.

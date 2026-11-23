@@ -560,7 +560,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1786,6 +1786,18 @@ func t_rumble() -> void:
 	g.queue_free()
 	_log("rumble_events_and_toggle", hurt.size() == 3 and parry.size() == 3 and parry[0] > parry[1] and silenced,
 		"hurt=%s parry=%s off_silenced=%s" % [str(hurt), str(parry), silenced])
+
+
+func t_chapters() -> void:
+	# route data comes through the LevelData facade from a chapter module
+	var ch1 = LevelData.CHAPTERS["ch1"]
+	var same: bool = LevelData.CHAPTER == "ch1" and LevelData.ZONES == ch1.ZONES \
+		and LevelData.ENCOUNTERS == ch1.ENCOUNTERS and is_equal_approx(LevelData.END_X, ch1.END_X)
+	var unknown_rejected := not LevelData.use_chapter("ch_missing") and LevelData.CHAPTER == "ch1"
+	var reapplied := LevelData.use_chapter("ch1") and LevelData.ZONES.size() == 5
+	_log("chapter_facade", same and unknown_rejected and reapplied,
+		"active=%s zones=%d unknown_rejected=%s" % [LevelData.CHAPTER, LevelData.ZONES.size(), unknown_rejected])
+	await _frames(1)
 
 
 func t_personal_space() -> void:
