@@ -66,7 +66,12 @@ func _ai(delta: float) -> void:
 			face_toward(p.global_position.x)
 			vis.set_pose("crawler_crawl", 0.06)
 			var queued := ally_ahead()
-			if absf(dx) > 210.0 or cd > 0.0 or queued:
+			if absf(dx) < 90.0 and cd > 0.0:
+				# still inside the hero's reach while recovering: back off to
+				# pounce range rather than camp under him (soak soft-lock)
+				velocity.x = -facing * 170.0
+				walk_anim(delta, 0.8, 16.0, 0.05)
+			elif absf(dx) > 210.0 or cd > 0.0 or queued:
 				var sp := 215.0 if absf(dx) > 120.0 and not queued else 0.0
 				velocity.x = facing * sp
 				walk_anim(delta, sp / 215.0, 16.0, 0.05)
@@ -90,6 +95,10 @@ func _ai(delta: float) -> void:
 		"pounce":
 			melee(Rect2(0, -64, 96, 64), 10.0, 200.0, {"low": true})
 			if state_t > 0.12 and is_on_floor():
+				# the pounce often overshoots the hero: turn to face him so the
+				# retreat backs *away* instead of scuttling back underneath him
+				if p:
+					face_toward(p.global_position.x)
 				set_state("retreat")
 				play_pose_or_clip("retreat", "crawler_retreat", 0.06, true)
 				Fx.dust(global_position, 6)
