@@ -526,7 +526,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1539,6 +1539,34 @@ func t_held_frames() -> void:
 	_log("held_frames_alive", span_x > 0.6 and coil > 0.005 and hero_off,
 		"tremble_span=%.2f px coil=%.3f hero_hold_life=%s" % [span_x, coil, not hero_off])
 	sp.queue_free()
+
+
+func t_telegraphs() -> void:
+	# measured crouch -> pounce time of a live crawler on each difficulty
+	var got := []
+	for d in [0, 1, 2]:
+		Game.difficulty = d
+		var p := await _fresh_level(2560.0)
+		p.max_hp = 9999.0
+		p.hp = 9999.0
+		for n in Game.level.get_node("Actors").get_children():
+			if n is Enemy:
+				n.queue_free()
+		var c := await spawn("crawler", 2700.0)
+		var t0 := -1.0
+		var t := 0.0
+		for i in 240:
+			await _frames(1)
+			t += 1.0 / 60.0
+			if c.state == "prep" and t0 < 0.0:
+				t0 = t
+			if c.state == "pounce" and t0 >= 0.0:
+				got.append(snappedf(t - t0, 0.01))
+				break
+		c.queue_free()
+	Game.difficulty = 1
+	var ok: bool = got.size() == 3 and absf(got[1] - 0.32) < 0.04 and got[0] > got[1] + 0.06 and got[2] < got[1]
+	_log("crawler_telegraph_by_difficulty", ok, "story/normal/hard = %s s (normal spec 0.32)" % str(got))
 
 
 func t_personal_space() -> void:

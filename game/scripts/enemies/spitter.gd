@@ -95,16 +95,16 @@ func _ai(delta: float) -> void:
 				if cd <= 0.0:
 					set_state("windup")
 					play_pose_or_clip("windup", "spitter_windup", 0.08, true)
-					telegraph.flare(Vector2(20, -112), 0.9, Color(0.7, 1.0, 0.3))
+					telegraph.flare(Vector2(20, -112), Game.tele(0.9), Color(0.7, 1.0, 0.3))
 					Sfx.play("sac_swell", -2.0)
 		"windup":
 			velocity.x = 0.0
-			glow_amt = 0.4 + state_t / 0.9 * 1.0
+			glow_amt = 0.4 + state_t / Game.tele(0.9) * 1.0
 			vis.squash = Vector2(1.0 + state_t * 0.05, 1.0 + state_t * 0.08)
 			vis.lean = lerpf(vis.lean, -10.0, delta * 4.0)
 			if p:
 				face_toward(p.global_position.x)
-			if state_t >= 0.9:
+			if state_t >= Game.tele(0.9):
 				_spit()
 		"spit":
 			glow_amt = move_toward(glow_amt, 0.0, delta * 5.0)

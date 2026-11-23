@@ -155,6 +155,13 @@ var shake_scale := 1.0
 var difficulty := 1
 const DIFF_DAMAGE := [0.55, 1.0, 1.3]     # damage taken by the player
 const DIFF_POISE := [0.7, 1.0, 1.2]       # elite armour (poise) multiplier
+## Rank-and-file wind-up length per difficulty (Story gives newcomers longer
+## tells; the elite's spec-locked 0.65-0.85 s wind-ups are not scaled).
+const DIFF_TELEGRAPH := [1.35, 1.0, 0.88]
+
+
+func tele(sec: float) -> float:
+	return sec * DIFF_TELEGRAPH[clampi(difficulty, 0, 2)]
 var hitstop_on := true
 const REBINDABLE := ["move_left", "move_right", "move_down", "jump", "attack", "dash", "block", "talisman", "gourd", "beads"]
 const BUS_NAMES := ["Master", "Music", "SFX"]

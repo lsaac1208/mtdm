@@ -84,7 +84,7 @@ func _ai(delta: float) -> void:
 			velocity.x = move_toward(velocity.x, -facing * 20.0, 400 * delta)
 			still_anim()
 			vis.lean = lerpf(vis.lean, -6.0, delta * 8.0)
-			if state_t >= 0.4:
+			if state_t >= Game.tele(0.4):
 				set_state("attack")
 				attack_hits = {}
 				play_pose_or_clip("attack", "grunt_attack", 0.03, true)
@@ -111,5 +111,5 @@ func _ai(delta: float) -> void:
 func _windup() -> void:
 	set_state("windup")
 	play_pose_or_clip("windup", "grunt_windup", 0.06, true)
-	telegraph.flare(Vector2(52, -96), 0.4)
+	telegraph.flare(Vector2(52, -96), Game.tele(0.4))
 	Sfx.play("growl", -3.0, 0.1, 1.2)

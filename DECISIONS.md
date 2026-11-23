@@ -146,3 +146,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D36 · Held-frame life for enemy frame sheets (0.5.0)
 - `FrameAnim.hold_life` (set by `RigVisual.hold_life`, enabled in `Enemy._make_visual`) adds motion once a frame has been held > 0.12 s, by clip role: `windup*/prep/alert/awaken/roar` coil (≤3 % squash build over 0.6 s) + tremble (≤1.45 px); `recover*/kneel/hit/recoil/stagger/retreat` heave-breathe; others gentle breathe; `walk/run` untouched. Reset on every frame change. Painted in-betweens remain the long-term fix (needs new art).
+
+## D37 · Difficulty scales rank-and-file telegraphs (0.5.0)
+- `Game.DIFF_TELEGRAPH = [1.35, 1.0, 0.88]` via `Game.tele(sec)` for crawler prep (base 0.32 s), grunt wind-up (0.4 s) and spitter wind-up (0.9 s); Story previously only reduced damage. The elite's 0.65–0.85 s windows are spec-locked and not scaled (`elite_windup_readable`). Crawler prep start plays `hiss` (−9 dB) as an audio tell.

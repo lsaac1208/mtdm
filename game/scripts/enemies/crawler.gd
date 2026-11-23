@@ -80,12 +80,15 @@ func _ai(delta: float) -> void:
 				set_state("prep")
 				play_pose_or_clip("prep", "crawler_idle", 0.05, true)
 				vis.squash = Vector2(1.12, 0.85)
-				telegraph.flare(Vector2(56, -34), 0.26, Color(1, 0.45, 0.2))
-				telegraph.danger(Rect2(10, -60, 230, 60), 0.26)
+				# 0.26 s was the shortest tell in the game (~human reaction time);
+				# 0.32 s plus a low hiss gives an audible cue off-focus too
+				telegraph.flare(Vector2(56, -34), prep_time(), Color(1, 0.45, 0.2))
+				telegraph.danger(Rect2(10, -60, 230, 60), prep_time())
+				Sfx.play("hiss", -9.0, 0.06, 1.25)
 		"prep":
 			velocity.x = -facing * 30.0
 			still_anim()
-			if state_t >= 0.26:
+			if state_t >= prep_time():
 				set_state("pounce")
 				attack_hits = {}
 				landed = false
@@ -109,6 +112,10 @@ func _ai(delta: float) -> void:
 			if state_t >= 0.6:
 				cd = 0.7
 				set_state("chase")
+
+
+func prep_time() -> float:
+	return Game.tele(0.32)
 
 
 func stagger(dur: float, dir: int, knock: float) -> void:
