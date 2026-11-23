@@ -916,6 +916,8 @@ func fade_in(dur: float) -> void:
 
 ## Boss defeat: white flash, letterbox, red 镇 seal stamp with caption.
 func boss_defeated(cn: String, en: String) -> void:
+	# a still-visible boss intro / zone title would stack under the seal card
+	zone_t = minf(zone_t, 0.25)
 	var flash := ColorRect.new()
 	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	flash.color = Color(1, 0.97, 0.9, 0.85)
@@ -943,6 +945,10 @@ func boss_defeated(cn: String, en: String) -> void:
 			tw.tween_property(b, "offset_top", -70.0, 0.4)
 	var seal := Control.new()
 	seal.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	# lift the card into the sky band: centred it covered the falling elite
+	# and the hero for the whole slow-motion payoff (rendered defeatcap)
+	seal.offset_top -= 150.0
+	seal.offset_bottom -= 150.0
 	seal.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(seal)
 	var sq := ColorRect.new()

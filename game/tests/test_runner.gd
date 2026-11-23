@@ -91,6 +91,37 @@ func _run() -> void:
 			await _shot("title_%d" % k)
 		Game.quit()
 		return
+	if only == "defeatcap":
+		# the real elite defeat: kill blow -> slow fall -> seal card -> dissolve
+		# -> stele rising, sampled on the wall clock (hit-stop slows game time)
+		shot_dir = Game.args.get("shots", "user://shots")
+		Game.args["skip_cleared"] = "1"
+		var p := await _fresh_level(10380.0)
+		p.max_hp = 99999.0
+		p.hp = 99999.0
+		await _wait(2.0)
+		var el: Enemy = null
+		for n in Game.level.get_node("Actors").get_children():
+			if n is Enemy and n.rig_type == "elite":
+				el = n
+			elif n is Enemy:
+				n.queue_free()
+		if el == null:
+			print("DEFEATCAP no elite")
+			Game.quit()
+			return
+		el.global_position.x = p.global_position.x + 150.0
+		el.phase = 2   # already past the 50% summon, like a real final blow
+		el.hp = 1.0
+		el.set_state("chase")
+		await _wait(0.2)
+		p.facing = 1
+		await press(p, "attack")
+		for i in 30:
+			await get_tree().create_timer(0.16, true, false, true).timeout
+			await _shot("defeat_%02d" % i)
+		Game.quit()
+		return
 	if only == "sealcap":
 		shot_dir = Game.args.get("shots", "user://shots")
 		await _fresh_level(1500.0)
