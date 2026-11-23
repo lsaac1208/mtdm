@@ -296,6 +296,17 @@ var hitstop_on := true
 var flash_scale := 1.0
 ## Roadside tutorial hint strips (story hints such as respawn lines stay on).
 var tutorial_hints := true
+## Gamepad vibration (only ever sent to the pad the player is using).
+var rumble_on := true
+var last_rumble := []   # [weak, strong, duration] of the last request (QA)
+
+
+func rumble(weak: float, strong: float, dur: float) -> void:
+	if not rumble_on:
+		return
+	last_rumble = [weak, strong, dur]
+	if _prompt_pad >= 0:
+		Input.start_joy_vibration(_prompt_pad, clampf(weak, 0.0, 1.0), clampf(strong, 0.0, 1.0), dur)
 const REBINDABLE := ["move_left", "move_right", "move_down", "jump", "attack", "dash", "block", "talisman", "gourd", "beads"]
 const BUS_NAMES := ["Master", "Music", "SFX"]
 
@@ -421,6 +432,7 @@ func load_settings() -> void:
 	hitstop_on = cf.get_value("video", "hitstop", true)
 	flash_scale = clampf(float(cf.get_value("video", "flash", 1.0)), 0.0, 1.0)
 	tutorial_hints = bool(cf.get_value("game", "hints", true))
+	rumble_on = bool(cf.get_value("game", "rumble", true))
 	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
 		get_window().mode = Window.MODE_FULLSCREEN
 	if cf.has_section("keys"):
@@ -456,6 +468,7 @@ func save_settings() -> void:
 	cf.set_value("video", "hitstop", hitstop_on)
 	cf.set_value("video", "flash", flash_scale)
 	cf.set_value("game", "hints", tutorial_hints)
+	cf.set_value("game", "rumble", rumble_on)
 	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
 	for action in REBINDABLE:
 		cf.set_value("keys", action, action_keys(action))

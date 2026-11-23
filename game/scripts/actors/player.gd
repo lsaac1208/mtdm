@@ -476,6 +476,8 @@ func _st_attack(delta: float) -> void:
 
 
 func _on_melee_connect(hits: Array) -> void:
+	if cur_atk_name in ["slash3", "down"]:
+		Game.rumble(0.2, 0.35, 0.08)   # heavy blows land with weight
 	_gain_qi(5.0 * hits.size())
 	register_hit(hits.size())
 	var heavy := cur_atk_name in ["slash3", "down"]
@@ -785,6 +787,7 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 	Fx.hit_ink(global_position + Vector2(0, -80), dir, Fx.C_CINNABAR)
 	Fx.hit_impact(global_position + Vector2(0, -84), dir, "slash1", atk.damage >= 20, Fx.C_CINNABAR, Color(1.0, 0.72, 0.4))
 	Sfx.play("player_hurt", -2.0)
+	Game.rumble(0.45, 0.7 if atk.damage >= 20 else 0.4, 0.22 if atk.damage >= 20 else 0.14)
 	return {}
 
 
@@ -807,6 +810,7 @@ func _take(dmg: float, flash_: bool) -> void:
 
 
 func _parry(atk: Dictionary) -> void:
+	Game.rumble(0.8, 0.25, 0.12)   # crisp, high-frequency parry snap
 	Game.parries += 1
 	_gain_qi(15.0)
 	Sfx.play("parry", 0.0, 0.03)
@@ -834,6 +838,7 @@ func _st_hit(delta: float) -> void:
 
 
 func _die() -> void:
+	Game.rumble(0.3, 1.0, 0.45)
 	Game.telemetry.deaths.append(last_hit_source)
 	dead = true
 	combo_hits = 0

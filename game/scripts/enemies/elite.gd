@@ -438,6 +438,7 @@ func _die(dir := 0) -> void:
 	vis.squash = Vector2(1.05, 0.84)
 	vis.rig.skew = 0.0
 	Sfx.play("elite_die", 2.0)
+	Game.rumble(0.6, 1.0, 0.9)   # the General falls
 	play_pose_or_clip("dead", "", 0.1, true)
 	Fx.shake(10.0, 0.6)
 	Fx.punch(0.08, 0.9)

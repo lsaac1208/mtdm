@@ -560,7 +560,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1759,6 +1759,33 @@ func t_rematch() -> void:
 		"at_fire=%s only_boss=%s recorded=%s story_save_kept=%s heading=%s" % [at_fire, only_boss, recorded, story_kept, heading_ok])
 	Game.to_title()
 	await _wait(0.5)
+
+
+func t_rumble() -> void:
+	# vibration requests fire on hurt / parry and are silenced by the option
+	var p := await _fresh_level(600.0)
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy:
+			n.queue_free()
+	var old := Game.rumble_on
+	Game.rumble_on = true
+	Game.last_rumble = []
+	var g := await spawn("grunt", 680.0)
+	p.receive_hit({"damage": 10.0, "poise": 5.0, "knock": 100.0, "dir": -1, "kind": "melee", "owner": g, "tag": "attack"})
+	var hurt: Array = Game.last_rumble.duplicate()
+	await _wait(1.0)
+	Game.last_rumble = []
+	p._parry({"damage": 10.0, "poise": 5.0, "knock": 100.0, "dir": -1, "kind": "melee", "owner": g})
+	var parry: Array = Game.last_rumble.duplicate()
+	Game.rumble_on = false
+	Game.last_rumble = []
+	await _wait(1.0)
+	p.receive_hit({"damage": 10.0, "poise": 5.0, "knock": 100.0, "dir": -1, "kind": "melee", "owner": g, "tag": "attack"})
+	var silenced := Game.last_rumble.is_empty()
+	Game.rumble_on = old
+	g.queue_free()
+	_log("rumble_events_and_toggle", hurt.size() == 3 and parry.size() == 3 and parry[0] > parry[1] and silenced,
+		"hurt=%s parry=%s off_silenced=%s" % [str(hurt), str(parry), silenced])
 
 
 func t_personal_space() -> void:
