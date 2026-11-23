@@ -561,7 +561,7 @@ func _update_signs() -> void:
 		if near and not _sign_shown.get(s.x, false):
 			_sign_shown[s.x] = true
 			# a hint whose move the player has already performed isn't repeated
-			if not Game.hints_learned.has(s.text):
+			if not Game.hints_learned.has(s.text) and Game.tutorial_hints:
 				Game.show_hint(s.text, 6.0, s.get("learn", []), int(s.get("need", 1)), s.text)
 		elif not near and absf(player.global_position.x - s.x) > 400.0:
 			_sign_shown[s.x] = false

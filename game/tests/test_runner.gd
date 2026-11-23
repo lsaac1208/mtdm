@@ -557,7 +557,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1661,6 +1661,43 @@ func t_run_save() -> void:
 		"saved=%s info=%s at_fire=%s restored=%s wiped=%s" % [saved, str(info), at_fire, restored, wiped])
 	Game.to_title()
 	await _wait(0.5)
+
+
+func t_accessibility() -> void:
+	var p := await _fresh_level(300.0)
+	var old_f := Game.flash_scale
+	var old_h := Game.tutorial_hints
+	# flashes off: a parry-strength flash leaves the overlay invisible
+	Game.flash_scale = 0.0
+	Fx.screen_flash(Color(1, 1, 1, 0.8), 0.3)
+	Fx.screen_pulse(Color(0.7, 0.1, 0.05, 0.5), 0.3)
+	await _frames(1)
+	var ov = Game.level.get_node_or_null("FxScreenOverlay")
+	var off_ok: bool = ov == null or (not ov.get_node("Flash").visible and not ov.get_node("Pulse").visible)
+	# half: alpha is scaled
+	Game.flash_scale = 0.5
+	Fx.screen_flash(Color(1, 1, 1, 0.8), 0.3)
+	ov = Game.level.get_node_or_null("FxScreenOverlay")
+	var half_a: float = ov.get_node("Flash").color.a
+	# persistence
+	Game.flash_scale = 0.25
+	Game.tutorial_hints = false
+	Game.save_settings()
+	Game.flash_scale = 1.0
+	Game.tutorial_hints = true
+	Game.load_settings()
+	var persisted := absf(Game.flash_scale - 0.25) < 0.01 and not Game.tutorial_hints
+	# hints off: walking onto the movement sign shows no strip
+	var hud = Game.level.hud
+	hud.hint_t = 0.0
+	p.global_position.x = 470.0
+	await _frames(4)
+	var suppressed: bool = hud.hint_t <= 0.0
+	Game.flash_scale = old_f
+	Game.tutorial_hints = old_h
+	Game.save_settings()
+	_log("accessibility_flash_and_hints", off_ok and absf(half_a - 0.4) < 0.02 and persisted and suppressed,
+		"off=%s half_a=%.2f persisted=%s hints_suppressed=%s" % [off_ok, half_a, persisted, suppressed])
 
 
 func t_personal_space() -> void:

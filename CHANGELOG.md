@@ -5,6 +5,7 @@ All versions are pre-release vertical slices. Automated tests and GPU captures a
 ## 0.4.0 — 2026-11-20## 0.6.0-dev — in progress
 
 ### Added
+- **Accessibility options**: 闪屏强度 Screen flashes (0–100 %) scales every full-screen flash and colour pulse (parry, hurt, phase-2, boss-defeat white flash) — 0 removes them; 教学提示 Tutorial hints toggles the roadside hint strips. Both persisted in `settings.cfg`. Test `accessibility_flash_and_hints`.
 - **Campfire save + Continue**: resting at a campfire saves the run (`user://run.cfg`: checkpoint, cleared encounters, steles, whispers, learned hints, stats, time, difficulty). The title shows 继续 · <zone> <time> first when a save exists; New Game or finishing the demo deletes it. Tests write only with `--qa-run=PATH`. Test `run_save_and_continue`.
 
 ## 0.5.0 — 2026-11-23 (release candidate, not published)

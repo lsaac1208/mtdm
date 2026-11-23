@@ -920,7 +920,7 @@ func boss_defeated(cn: String, en: String) -> void:
 	zone_t = minf(zone_t, 0.25)
 	var flash := ColorRect.new()
 	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	flash.color = Color(1, 0.97, 0.9, 0.85)
+	flash.color = Color(1, 0.97, 0.9, 0.85 * Game.flash_scale)
 	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(flash)
 	create_tween().set_ignore_time_scale(true).tween_property(flash, "color:a", 0.0, 0.6)

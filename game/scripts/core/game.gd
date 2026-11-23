@@ -247,6 +247,10 @@ const DIFF_TELEGRAPH := [1.35, 1.0, 0.88]
 func tele(sec: float) -> float:
 	return sec * DIFF_TELEGRAPH[clampi(difficulty, 0, 2)]
 var hitstop_on := true
+## Photosensitivity: scales every full-screen flash / colour pulse (0 = off).
+var flash_scale := 1.0
+## Roadside tutorial hint strips (story hints such as respawn lines stay on).
+var tutorial_hints := true
 const REBINDABLE := ["move_left", "move_right", "move_down", "jump", "attack", "dash", "block", "talisman", "gourd", "beads"]
 const BUS_NAMES := ["Master", "Music", "SFX"]
 
@@ -370,6 +374,8 @@ func load_settings() -> void:
 	shake_scale = cf.get_value("video", "shake", 1.0)
 	difficulty = clampi(cf.get_value("game", "difficulty", 1), 0, 2)
 	hitstop_on = cf.get_value("video", "hitstop", true)
+	flash_scale = clampf(float(cf.get_value("video", "flash", 1.0)), 0.0, 1.0)
+	tutorial_hints = bool(cf.get_value("game", "hints", true))
 	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
 		get_window().mode = Window.MODE_FULLSCREEN
 	if cf.has_section("keys"):
@@ -400,6 +406,8 @@ func save_settings() -> void:
 	cf.set_value("video", "shake", shake_scale)
 	cf.set_value("game", "difficulty", difficulty)
 	cf.set_value("video", "hitstop", hitstop_on)
+	cf.set_value("video", "flash", flash_scale)
+	cf.set_value("game", "hints", tutorial_hints)
 	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
 	for action in REBINDABLE:
 		cf.set_value("keys", action, action_keys(action))

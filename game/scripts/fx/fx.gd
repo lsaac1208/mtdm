@@ -233,6 +233,9 @@ static func _screen_overlay() -> CanvasLayer:
 
 
 static func screen_flash(color: Color, dur := 0.14) -> void:
+	color.a *= Game.flash_scale
+	if color.a <= 0.005:
+		return
 	var cl := _screen_overlay()
 	if cl == null:
 		return
@@ -253,6 +256,9 @@ static func screen_flash(color: Color, dur := 0.14) -> void:
 
 
 static func screen_pulse(color: Color, dur := 0.32) -> void:
+	color.a *= Game.flash_scale
+	if color.a <= 0.005:
+		return
 	var cl := _screen_overlay()
 	if cl == null:
 		return
