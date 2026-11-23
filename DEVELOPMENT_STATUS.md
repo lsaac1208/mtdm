@@ -5,8 +5,8 @@
 _2026-11-23 · 分支 `claude/autonomous-v05`（基于 `codex/demo-v0.4.0` @ `bd25e07`）· Godot 4.7.2_
 
 - 已完成：输入缓冲 + 空中冲刺限一次；敌群排队防叠影；尸将体积阻挡；教学提示学会即收；五块可读残碑（尸将墓志于 Boss 战后升起）；修复 v0.4.0 起就存在的伏爬者扑击软锁（soak 29 死的根因）。
-- 已验证（本机 Linux，软件 GL）：`--test=all` 74/74；soak ×4（8 次连续通关，`nodes 86->86 orphans 0->0`）；拟人机器人多次通关（0–1 死）；渲染截图前后对照见 `evidence/v0.5.0/shots/`。
-- 未验证：真人试玩、扬声器听感、实体手柄、Windows/macOS 实机；v0.5.0 导出包尚未构建。
+- 已验证（本机 Linux，软件 GL）：`--test=all` 74/74；soak ×4（8 次连续通关，`nodes 86->86 orphans 0->0`）；拟人机器人多次通关（0–1 死）；渲染截图前后对照见 `evidence/v0.5.0/shots/`；Linux 导出包（`package.py 0.5.0-dev linux`）解压后包内 74/74 + 机器人通关；新版完整渲染录像（拟人机器人）已复查。
+- 未验证：真人试玩、扬声器听感、实体手柄、Windows/macOS 实机（Windows/macOS 0.5.0 包尚未构建）。
 - 下一步见 ROADMAP「0.5.0」。
 
 
