@@ -121,7 +121,7 @@ func _ready() -> void:
 
 	var left := VBoxContainer.new()
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.add_theme_constant_override("separation", 6)
+	left.add_theme_constant_override("separation", 3)
 	hbox.add_child(left)
 
 	var ltitle := Label.new()
@@ -230,7 +230,10 @@ func _ready() -> void:
 
 	# Interactive Replay / Title buttons
 	var btn_row := HBoxContainer.new()
-	btn_row.position = Vector2(360.0, 406.0)
+	# sit just below the ledger's real laid-out height so added ledger rows
+	# can never run into the buttons
+	var ledger_h := maxf(ledger.size.y, ledger.get_combined_minimum_size().y)
+	btn_row.position = Vector2(360.0, ledger.position.y + ledger_h + 16.0)
 	btn_row.size = Vector2(560.0, 48.0)
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	btn_row.add_theme_constant_override("separation", 24)

@@ -7,7 +7,7 @@ const CONTROLS := """移动  {move_left} / {move_right}　　跳跃  {jump}　�
 攻击  {attack}（三段连斩）　　下劈  {move_down} + {attack}　　冲刺斩  冲刺中按 {attack}　　跳劈  空中按 {attack}
 格挡  按住 {block}（出手瞬间格挡 = 弹反）
 符箓  {talisman}（20 道力）　　阴阳葫芦  {gourd}（回血 + 震开）　　念珠  {beads}（50 道力）
-暂停  {pause}　　F11 全屏"""
+读碑  靠近残碑按 {move_up}　　暂停  {pause}　　F11 全屏"""
 
 var root: Control
 var _ctl: Label
