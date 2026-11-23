@@ -166,6 +166,9 @@ func _run() -> void:
 		Game.kills = 27
 		Game.deaths = 2
 		Game.parries = 6
+		if Game.args.get("mode", "") == "rematch":
+			Game.mode = "rematch"
+			Game.run_time = 61.5
 		Game.finish_demo()
 		await _wait(4.5)
 		await _shot("ending")

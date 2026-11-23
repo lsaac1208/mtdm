@@ -155,6 +155,9 @@ func _ready() -> void:
 		["破除残器", "%d" % Game.props_broken],
 		["拓得碑文", "%d / %d" % [Game.lore_read.size(), LevelData.LORE.size()]],
 	]
+	if rematch:
+		# props and steles along the route aren't part of the boss challenge
+		stats_rows = stats_rows.slice(0, 5)
 	for row_data in stats_rows:
 		var rbox := HBoxContainer.new()
 		var k := Label.new()
