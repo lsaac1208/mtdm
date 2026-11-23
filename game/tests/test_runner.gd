@@ -526,7 +526,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1513,6 +1513,32 @@ func t_lore() -> void:
 	_log("lore_gated_by_boss", hidden_before and risen, "hidden_before=%s risen=%s" % [hidden_before, risen])
 	_log("lore_read_and_close", opened and paused and counted and resumed and not stray,
 		"opened=%s paused=%s counted=%s resumed=%s stray=%s" % [opened, paused, counted, resumed, stray])
+
+
+func t_held_frames() -> void:
+	# a held 1-2 frame wind-up must not be a frozen drawing: the visual pivot
+	# coils/trembles while the frame is held; hitbox timing is untouched
+	var p := await _fresh_level(600.0)
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy:
+			n.queue_free()
+	var sp := await spawn("spitter", 900.0)
+	var fa: FrameAnim = sp.vis.frames
+	sp.set_physics_process(false)
+	fa.play("windup", true)
+	fa.set_frame("windup", 0)
+	var xs := []
+	var sy := []
+	for i in 40:
+		await _frames(1)
+		xs.append(fa.pivot.position.x)
+		sy.append(absf(fa.pivot.scale.y))
+	var span_x: float = xs.max() - xs.min()
+	var coil: float = sy[0] - sy[-1]
+	var hero_off: bool = not p.vis.frames.hold_life
+	_log("held_frames_alive", span_x > 0.6 and coil > 0.005 and hero_off,
+		"tremble_span=%.2f px coil=%.3f hero_hold_life=%s" % [span_x, coil, not hero_off])
+	sp.queue_free()
 
 
 func t_personal_space() -> void:

@@ -17,6 +17,7 @@ Built on `v0.4.0` (`codex/demo-v0.4.0` @ `bd25e07`). Not released.
 - **Lore steles (残碑)**: five readable inscribed steles, one per zone, with an ink-scroll reading card; the General's epitaph rises in the boss arena once he is sealed. Journey Ledger shows `拓得碑文 n/5`.
 - **Contextual tutorial**: roadside hint strips close 1.2 s after the player performs the taught move and are not repeated.
 - **Burial-wave finale variety**: a Taint Spitter rises at the far end 2.2 s in, mixing ranged pressure and taint puddles with the crawler rush (6/6 human-like clears, 0 deaths; rendered check `evidence/v0.5.0/shots/burial_wave_spitter.jpg`).
+- **Held-frame life (animation)**: enemy combat clips are mostly 1–2 painted frames held up to ~1.8 s; held frames now coil and tremble during wind-ups (tension rising to the strike) and heave-breathe in recoveries/kneel/hit. Visual-only (pivot + shader breathe), enemies only; hitboxes, timings and `hero_anim_no_pops` unchanged. Test `held_frames_alive`.
 - **UI**: Journey Ledger button row follows the ledger's laid-out height (lore row no longer overlaps buttons); controls card lists 读碑.
 - QA: `lorecap` capture mode; 11 new engine checks (74 total).
 

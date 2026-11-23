@@ -143,3 +143,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D35 · Crawler retreat faces the hero (0.5.0)
 - Pre-existing soft-lock: retreat used the stale pre-pounce facing. Retreat now re-faces the hero; recovering crawlers inside 90 px back off.
+
+## D36 · Held-frame life for enemy frame sheets (0.5.0)
+- `FrameAnim.hold_life` (set by `RigVisual.hold_life`, enabled in `Enemy._make_visual`) adds motion once a frame has been held > 0.12 s, by clip role: `windup*/prep/alert/awaken/roar` coil (≤3 % squash build over 0.6 s) + tremble (≤1.45 px); `recover*/kneel/hit/recoil/stagger/retreat` heave-breathe; others gentle breathe; `walk/run` untouched. Reset on every frame change. Painted in-betweens remain the long-term fix (needs new art).

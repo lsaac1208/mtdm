@@ -20,6 +20,8 @@ var frames: FrameAnim
 var rig_on := false
 var frame_on := false
 var _w := 0.0          # 0 = painted pose, 1 = rig/frame-anim
+## Procedural life on held painted frames (enemies): see FrameAnim.hold_life.
+var hold_life := false
 
 
 func _ready() -> void:
@@ -158,6 +160,7 @@ func _process(delta: float) -> void:
 		frames.nudge = Vector2(nudge.x + _jit_off.x * facing, nudge.y + _jit_off.y)
 		frames.extra_scale = extra_scale
 		frames.breathe = 0.006 if cname in ["idle", "guard_idle"] else 0.0
+		frames.hold_life = hold_life
 		frames.flash = flash
 		frames.tint = tint
 		frames.dissolve = dissolve

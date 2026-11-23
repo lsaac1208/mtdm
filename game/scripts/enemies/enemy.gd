@@ -32,6 +32,7 @@ func _make_visual() -> PoseSprite:
 	rv.clip_set = clips
 	rv.pose_map = EnemyClips.pose_map(rig_type)
 	rv.walk_speed = walk_speed
+	rv.hold_life = true
 	return rv
 
 

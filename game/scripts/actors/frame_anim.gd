@@ -36,6 +36,17 @@ var _frame_idx := 0
 var _locked := false
 var _frame_meta := {}
 var _toff := randf() * 10.0
+## Held-frame life. Many enemy combat clips are 1-2 painted frames held for
+## up to ~1.8 s (wind-ups, recoveries, kneel); a perfectly frozen drawing reads
+## as a paper cut-out. When on, a frame held past HOLD_START gets visual-only
+## motion keyed to the clip's role (never touches hitboxes or timings):
+##   wind-up/prep/alert -> coil (slow squash build) + tremble rising to the strike
+##   recover/kneel/hit/recoil/stagger -> heavy, quicker breathing
+##   anything else held -> gentle breathing
+var hold_life := false
+const HOLD_START := 0.12
+var _hold_t := 0.0
+var _hold_breathe := 0.0
 
 
 func _init() -> void:
@@ -172,10 +183,56 @@ func visual_center() -> Vector2:
 	return global_position + Vector2(0.0, -_target_h * 0.5)
 
 
+func _hold_role(clip: String) -> String:
+	if clip.begins_with("windup") or clip in ["prep", "alert", "awaken", "roar"]:
+		return "coil"
+	if clip.begins_with("recover") or clip in ["kneel", "hit", "recoil", "stagger", "retreat"]:
+		return "heave"
+	if clip in ["walk", "run"]:
+		return ""
+	return "rest"
+
+
+## Returns [squash_mul: Vector2, offset: Vector2, extra_breathe: float].
+func hold_motion(delta: float) -> Array:
+	_hold_t += delta
+	if not hold_life or current == "":
+		return [Vector2.ONE, Vector2.ZERO, 0.0]
+	var role := _hold_role(current)
+	var k := clampf((_hold_t - HOLD_START) / 0.25, 0.0, 1.0)   # ease in after a short hold
+	if role == "" or k <= 0.0:
+		return [Vector2.ONE, Vector2.ZERO, 0.0]
+	var t := _time_global()
+	match role:
+		"coil":
+			# gather: sink and widen up to ~3 % over ~0.6 s, then tremble harder
+			var g := clampf((_hold_t - HOLD_START) / 0.6, 0.0, 1.0)
+			var amp := (0.35 + 1.1 * g) * k
+			var off := Vector2(sin(t * 47.0) * amp, sin(t * 39.0 + 1.3) * amp * 0.4)
+			return [Vector2(1.0 + 0.022 * g * k, 1.0 - 0.03 * g * k), off, 0.003 * k]
+		"heave":
+			var b := 0.5 + 0.5 * sin(t * 5.2)
+			return [Vector2(1.0 + 0.006 * b * k, 1.0 - 0.012 * b * k), Vector2(0.0, 0.8 * b * k), 0.009 * k]
+		_:
+			return [Vector2.ONE, Vector2.ZERO, 0.004 * k]
+
+
+var _gt := 0.0
+
+
+func _time_global() -> float:
+	return _gt + _toff
+
+
 func step_anim(delta: float, light: Dictionary) -> void:
-	pivot.scale = Vector2(facing * squash.x, squash.y) * extra_scale
+	_gt += delta
+	var hm: Array = hold_motion(delta)
+	var hs: Vector2 = hm[0]
+	var ho: Vector2 = hm[1]
+	pivot.scale = Vector2(facing * squash.x * hs.x, squash.y * hs.y) * extra_scale
 	pivot.rotation = deg_to_rad(lean) * facing
-	pivot.position = Vector2(nudge.x * facing, nudge.y - bob)
+	pivot.position = Vector2((nudge.x + ho.x) * facing, nudge.y - bob + ho.y)
+	_hold_breathe = float(hm[2])
 	if not _locked and current != "" and has_clip(current):
 		var c: Dictionary = _data.clips[current]
 		var frames: Array = c.frames
@@ -202,6 +259,7 @@ func _apply_frame(idx: int) -> void:
 	if idx < 0 or idx >= frames.size():
 		return
 	_frame_idx = idx
+	_hold_t = 0.0
 	var md: Dictionary = frames[idx]
 	_frame_meta = md
 	var fname: String = md.file
@@ -236,7 +294,7 @@ func _update_shader(light: Dictionary) -> void:
 	_mat.set_shader_parameter("ribbon", 0.0)
 	_mat.set_shader_parameter("arm0_tp", Vector4.ZERO)
 	_mat.set_shader_parameter("arm1_tp", Vector4.ZERO)
-	_mat.set_shader_parameter("breathe", breathe)
+	_mat.set_shader_parameter("breathe", breathe + _hold_breathe)
 	_mat.set_shader_parameter("flash", flash)
 	_mat.set_shader_parameter("tint", tint)
 	_mat.set_shader_parameter("dissolve", dissolve)
