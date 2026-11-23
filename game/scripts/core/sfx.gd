@@ -25,6 +25,14 @@ var _fades := {}
 var _fade_gen := {}
 var _next_fade_id := 0
 var _shutting_down := false
+## Adaptive mix. "neutral" (menus) leaves both layers at 0 dB; in a level the
+## zone music sits back and the ambience bed carries exploration, and the music
+## swells while fighting. Applied on dedicated sub-buses so the user's volume
+## sliders (Music / SFX buses) and the crossfade tweens are never touched.
+const MIX_DB := {"neutral": [0.0, 0.0], "explore": [-4.0, 0.0], "combat": [0.0, -5.0]}
+var mix_state := "neutral"
+var _mix_music_db := 0.0
+var _mix_amb_db := 0.0
 
 
 static func ensure_bus(name_: String) -> int:
@@ -60,6 +68,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	ensure_bus("Music")
 	ensure_bus("SFX")
+	var md := ensure_bus("MusicDyn")
+	AudioServer.set_bus_send(md, "Music")
+	var ad := ensure_bus("AmbDyn")
+	AudioServer.set_bus_send(ad, "SFX")
 	for i in POOL:
 		var p := AudioStreamPlayer.new()
 		p.bus = "SFX"
@@ -70,11 +82,11 @@ func _ready() -> void:
 		up.bus = "SFX"
 		add_child(up)
 		_ui_players.append(up)
-	_music_a = _make_layer_player("Music", -9.0)
-	_music_b = _make_layer_player("Music", FADE_FLOOR_DB)
+	_music_a = _make_layer_player("MusicDyn", -9.0)
+	_music_b = _make_layer_player("MusicDyn", FADE_FLOOR_DB)
 	music = _music_a
-	_ambience_a = _make_layer_player("SFX", -14.0)
-	_ambience_b = _make_layer_player("SFX", FADE_FLOOR_DB)
+	_ambience_a = _make_layer_player("AmbDyn", -14.0)
+	_ambience_b = _make_layer_player("AmbDyn", FADE_FLOOR_DB)
 	ambience = _ambience_a
 	# master bus safety: soft compression + hard limiter so stacked hits never clip
 	if AudioServer.get_bus_effect_count(0) == 0:
@@ -89,6 +101,27 @@ func _ready() -> void:
 		AudioServer.add_bus_effect(0, lim)
 	if Game.args.has("mute"):
 		AudioServer.set_bus_mute(0, true)
+
+
+func set_mix_state(s: String) -> void:
+	if MIX_DB.has(s):
+		mix_state = s
+
+
+func _process(delta: float) -> void:
+	var dt := Game.unscaled_delta(delta)
+	var tgt: Array = MIX_DB[mix_state]
+	# swell in ~1 s, settle back over ~2.5 s so short lulls between hits don't pump
+	var m_rate := 4.0 if tgt[0] > _mix_music_db else 1.6
+	var a_rate := 5.0 if tgt[1] < _mix_amb_db else 2.0
+	_mix_music_db = move_toward(_mix_music_db, tgt[0], m_rate * dt)
+	_mix_amb_db = move_toward(_mix_amb_db, tgt[1], a_rate * dt)
+	var mi := AudioServer.get_bus_index("MusicDyn")
+	var ai := AudioServer.get_bus_index("AmbDyn")
+	if mi >= 0:
+		AudioServer.set_bus_volume_db(mi, _mix_music_db)
+	if ai >= 0:
+		AudioServer.set_bus_volume_db(ai, _mix_amb_db)
 
 
 func _make_layer_player(bus_name: String, initial_db: float) -> AudioStreamPlayer:

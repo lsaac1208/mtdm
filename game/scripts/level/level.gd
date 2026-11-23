@@ -473,6 +473,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	_update_mix()
 	var udt := Game.unscaled_delta(delta)
 	if Game.args.has("noshake") or Game.shake_scale <= 0.0:
 		_shake = 0.0
@@ -580,6 +581,23 @@ func _trigger_zone_whisper(zid: String, first: bool) -> void:
 
 func resume_zone_music() -> void:
 	Sfx.play_music(LevelData.ZONES[maxi(zone_idx, 0)].music)
+
+
+## Mix state for Sfx: combat while an encounter is locked or an aggro enemy
+## is near the hero, exploration otherwise.
+func _update_mix() -> void:
+	var fighting := active_encounter_id() != ""
+	if not fighting and player != null and is_instance_valid(player):
+		for n in $Actors.get_children():
+			if n is Enemy and not n.dead and n.aggro \
+					and absf(n.global_position.x - player.global_position.x) < 600.0:
+				fighting = true
+				break
+	Sfx.set_mix_state("combat" if fighting else "explore")
+
+
+func _exit_tree() -> void:
+	Sfx.set_mix_state("neutral")
 
 
 func active_encounter_id() -> String:

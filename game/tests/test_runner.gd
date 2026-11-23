@@ -557,7 +557,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1600,6 +1600,27 @@ func t_telegraphs() -> void:
 	_log("crawler_telegraph_by_difficulty", ok, "story/normal/hard = %s s (normal spec 0.32)" % str(got))
 
 
+func t_adaptive_mix() -> void:
+	var p := await _fresh_level(600.0)
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy:
+			n.queue_free()
+	await _wait(3.5)
+	var mi := AudioServer.get_bus_index("MusicDyn")
+	var ai := AudioServer.get_bus_index("AmbDyn")
+	var explore := [Sfx.mix_state, AudioServer.get_bus_volume_db(mi), AudioServer.get_bus_volume_db(ai)]
+	var g := await spawn("grunt", 820.0)
+	await _wait(1.6)
+	var combat := [Sfx.mix_state, AudioServer.get_bus_volume_db(mi), AudioServer.get_bus_volume_db(ai)]
+	g.queue_free()
+	await _wait(3.5)
+	var after := [Sfx.mix_state, AudioServer.get_bus_volume_db(mi)]
+	var music_routed := AudioServer.get_bus_send(mi) == &"Music" and Sfx.music.bus == &"MusicDyn"
+	var ok: bool = explore[0] == "explore" and absf(explore[1] + 4.0) < 0.3 and combat[0] == "combat" \
+		and absf(combat[1]) < 0.3 and combat[2] < -4.0 and after[0] == "explore" and after[1] < -3.5 and music_routed
+	_log("adaptive_mix", ok, "explore=%s combat=%s after=%s routed=%s" % [str(explore), str(combat), str(after), music_routed])
+
+
 func t_personal_space() -> void:
 	var p := await _fresh_level(500.0)
 	p.max_hp = 9999.0
@@ -1818,7 +1839,9 @@ func t_options() -> void:
 	var mv := Game.bus_volume("Music")
 	Game.set_bus_volume("Music", 1.0)
 	_log("audio_buses", AudioServer.get_bus_index("Music") > 0 and AudioServer.get_bus_index("SFX") > 0 and absf(mv - 0.3) < 0.01
-		and Sfx.music.bus == "Music", "music=%.2f" % mv)
+		# music reaches the user's Music bus via the adaptive-mix sub-bus
+		and (Sfx.music.bus == &"Music" or (Sfx.music.bus == &"MusicDyn" \
+			and AudioServer.get_bus_send(AudioServer.get_bus_index("MusicDyn")) == &"Music")), "music=%.2f" % mv)
 	# the options menu builds and closes
 	var o := OptionsMenu.new()
 	Game.level.add_child(o)

@@ -149,3 +149,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D37 · Difficulty scales rank-and-file telegraphs (0.5.0)
 - `Game.DIFF_TELEGRAPH = [1.35, 1.0, 0.88]` via `Game.tele(sec)` for crawler prep (base 0.32 s), grunt wind-up (0.4 s) and spitter wind-up (0.9 s); Story previously only reduced damage. The elite's 0.65–0.85 s windows are spec-locked and not scaled (`elite_windup_readable`). Crawler prep start plays `hiss` (−9 dB) as an audio tell.
+
+## D38 · Adaptive mix on sub-buses (0.5.0)
+- `Sfx.MIX_DB` states neutral / explore / combat applied to `MusicDyn` (→ Music) and `AmbDyn` (→ SFX) bus gains, smoothed in `Sfx._process` on unscaled time. `Level._update_mix()` sets combat while an encounter is locked or an aggro enemy is within 600 px; `Level._exit_tree` restores neutral. Chosen over per-player volume offsets because crossfade tweens own player `volume_db`, and over the Music/SFX buses because those belong to the user's sliders.
