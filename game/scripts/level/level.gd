@@ -214,6 +214,7 @@ func _ready() -> void:
 	for s in LevelData.SIGNS:
 		_add_sign(s)
 	_build_destructibles()
+	_build_lore()
 	_build_gate()
 	player = PlayerScript.new()
 	var start_x: float = LevelData.CHECKPOINTS[Game.checkpoint_id].x + 60.0
@@ -404,6 +405,24 @@ func _build_destructibles() -> void:
 		pr.zone_tint = Color(shade.r, shade.g, shade.b, 1.0)
 		$Props.add_child(pr)
 		destructibles.append(pr)
+
+
+var lore_steles: Array = []
+
+
+func _build_lore() -> void:
+	for d in LevelData.LORE:
+		var st := LoreStele.new()
+		st.data = d
+		st.position = Vector2(float(d.x), Game.GROUND_Y)
+		var zi := 0
+		for k in LevelData.ZONES.size():
+			if float(d.x) >= float(LevelData.ZONES[k].x):
+				zi = k
+		var shade: Color = (LevelData.ZONES[zi].light.shadow as Color).lerp(Color.WHITE, 0.6)
+		st.zone_tint = Color(shade.r, shade.g, shade.b, 1.0)
+		$Props.add_child(st)
+		lore_steles.append(st)
 
 
 func _build_gate() -> void:

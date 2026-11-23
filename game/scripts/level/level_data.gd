@@ -66,6 +66,29 @@ const SIGNS := [
 	{"x": 9840.0, "art": "chime", "text": "尸将：读它的举刀前摇 —— 竖劈要跳开震地，横扫可冲刺穿过；收招时反击"},
 ]
 
+# Readable lore steles (残碑): one per zone, off the encounter locks. Walk up
+# and press {move_up} to read; finds are tallied in the Journey Ledger. The
+# last one rises in the elite's arena only once it is sealed ("after") and
+# recasts the fight that just ended.
+const LORE := [
+	{"id": "well", "x": 2300.0, "title": "村口残碑", "en": "Village Stele",
+		"text": "某年三月，秽雨七日不绝。\n里正率众以石封井，自此井中夜夜有人叩壁。\n\n碑脚另有一行新刻，字迹潦草：\n「勿开井。」",
+		"en_text": "Tainted rain fell seven days. The headman sealed the well with stone; every night since, something knocks from inside. Scratched below: \"Do not open the well.\""},
+	{"id": "road", "x": 2480.0, "title": "驿道里程碑", "en": "Waymarker",
+		"text": "此去青云观六十里。\n\n旁有刀刻小字：\n「观中已无灯火。逃者勿往，往者勿回。」",
+		"en_text": "Qingyun Temple, sixty li. Knife-cut beside it: \"No lamps burn at the temple. Those who flee, do not go; those who go, do not return.\""},
+	{"id": "ward", "x": 5420.0, "title": "镇水碑", "en": "Water-Ward Stele",
+		"text": "镇水以符，镇符以血。\n\n碑上黄符早已化作青黑浆水，顺着字口流下，碑底爬满秽苔。\n镇物尚在，镇人已无。",
+		"en_text": "Ward the water with talismans; ward the talismans with blood. The seals have rotted to black sludge. The ward remains; its keepers do not."},
+	{"id": "temple", "x": 7540.0, "title": "青云观功德碑", "en": "Temple Merit Stele",
+		"text": "功德主姓名尽数被凿去，唯余末行未损：\n「师兄弃观而去，携镇尸铃一枚，不知所终。」\n\n道行者以指抚过凿痕，良久无言。",
+		"en_text": "Every donor's name has been chiselled away save the last line: \"Elder brother abandoned the temple, taking the corpse-binding bell. Whereabouts unknown.\""},
+	{"id": "general", "x": 10760.0, "after": "e8_elite", "title": "尸将墓志", "en": "The General's Epitaph",
+		"text": "镇关校尉，殉于大疫。\n生前誓守此关，死后不渝。\n\n——原来那具铁甲，守的从来不是乱葬岗，而是这道关。\n道行者合掌：「关已无人可守。安息吧。」",
+		"en_text": "A garrison captain, fallen in the great plague, sworn to hold this pass in life and after. The armour never guarded the graves - it guarded the gate. \"There is no one left to guard. Rest now.\""},
+]
+
+
 # Breakable painted props across all five zones (spaced clear of signs, pools,
 # platforms, checkpoints, and readcap capture positions).
 const DESTRUCTIBLES := [

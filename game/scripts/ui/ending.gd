@@ -144,6 +144,7 @@ func _ready() -> void:
 		["斩除妖祟", "%d" % Game.kills],
 		["精准弹反", "%d" % Game.parries],
 		["破除残器", "%d" % Game.props_broken],
+		["拓得碑文", "%d / %d" % [Game.lore_read.size(), LevelData.LORE.size()]],
 	]
 	for row_data in stats_rows:
 		var rbox := HBoxContainer.new()

@@ -330,6 +330,33 @@ func _run() -> void:
 		else:
 			await review.replay(self)
 		return
+	if only == "lorecap":
+		shot_dir = Game.args.get("shots", "user://shots")
+		var lx := float(Game.args.get("lorex", "2300"))
+		Game.args["skip_cleared"] = "1"
+		var p := await _fresh_level(lx - 150.0)
+		if Game.args.has("all_cleared"):
+			for e in LevelData.ENCOUNTERS:
+				Game.cleared[e.id] = true
+			await _wait(1.6)
+		for n in Game.level.get_node("Actors").get_children():
+			if n is Enemy:
+				n.queue_free()
+		await _wait(1.0)
+		await _shot("lore_far")
+		hold(p, {"move_right": true})
+		var guard := 0
+		while p.global_position.x < lx - 56.0 and guard < 600:
+			guard += 1
+			await _frames(1)
+		hold(p, {})
+		await _wait(0.6)
+		await _shot("lore_near")
+		await press(p, "move_up")
+		await get_tree().create_timer(0.6, true, false, true).timeout
+		await _shot("lore_card")
+		Game.quit()
+		return
 	if only == "pausecap":
 		shot_dir = Game.args.get("shots", "user://shots")
 		var p := await _fresh_level(700.0)
@@ -499,7 +526,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "boss_body", "smart_hints", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1347,6 +1374,43 @@ func t_pack_spread() -> void:
 			c.queue_free()
 
 
+func t_pounce_retreat() -> void:
+	# soak failure (29 deaths, all 伏爬者:pounce at one spot): a crawler that
+	# landed under the hero refused to retreat because a packmate stood behind
+	# it, then re-pounced point-blank forever. After every pounce the crawler
+	# must get back out of the hero's body within its retreat window.
+	var p := await _fresh_level(2765.0)
+	p.global_position = Vector2(2560.0, 598.0)
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy:
+			n.queue_free()
+	await _wait(0.3)
+	var front := await spawn("crawler", 2700.0)
+	var back := await spawn("crawler", 2790.0)
+	var pounces := 0
+	var stuck_frames := 0
+	var was := ""
+	for i in 600:
+		await _frames(1)
+		p.hp = p.max_hp
+		p.invuln = 1.0
+		if front.dead:
+			break
+		if front.state == "pounce" and was != "pounce":
+			pounces += 1
+		was = front.state
+		if Game.args.has("dbg") and i % 10 == 0:
+			print("DBG f=%s dx=%.0f cd=%.2f q=%s | b=%s dx=%.0f" % [front.state, front.global_position.x - p.global_position.x, front.cd, front.ally_ahead(), back.state, back.global_position.x - p.global_position.x])
+		# "camping": back in chase/prep while still inside the hero's body
+		if front.state in ["chase", "prep"] and absf(front.global_position.x - p.global_position.x) < 60.0:
+			stuck_frames += 1
+	_log("crawler_retreats_after_pounce", pounces >= 2 and stuck_frames < 20,
+		"pounces=%d camping_frames=%d" % [pounces, stuck_frames])
+	for c in [front, back]:
+		if is_instance_valid(c):
+			c.queue_free()
+
+
 func t_boss_body() -> void:
 	# walking into the elite while it winds up must stop at its armour, not
 	# sink inside the painted body (rendered run: silhouettes merged)
@@ -1399,6 +1463,56 @@ func t_smart_hints() -> void:
 	p.input_override = {}
 	_log("hint_dismissed_when_learned", shown and shortened and learned and not repeated and other,
 		"shown=%s shortened=%s learned=%s repeated=%s next_hint=%s" % [shown, shortened, learned, repeated, other])
+
+
+func t_lore() -> void:
+	var p := await _fresh_level(2200.0)
+	var lv = Game.level
+	_log("lore_steles_placed", lv.lore_steles.size() == LevelData.LORE.size(), "count=%d" % lv.lore_steles.size())
+	# every stele sits outside every encounter lock (reading never pauses a fight)
+	var clash := []
+	for d in LevelData.LORE:
+		for e in LevelData.ENCOUNTERS:
+			if String(d.get("after", "")) == String(e.id):
+				continue   # gated: only appears once that fight is over
+			if e.lock.size() == 2 and float(d.x) > float(e.lock[0]) - 40.0 and float(d.x) < float(e.lock[1]) + 40.0:
+				clash.append([d.id, e.id])
+	_log("lore_outside_locks", clash.is_empty(), str(clash))
+	p.global_position.x = 2300.0
+	await _frames(6)
+	await press(p, "move_up")
+	await _frames(3)
+	var reader: Node = null
+	for n in get_tree().root.get_children():
+		if n.get_script() != null and String(n.get_script().resource_path).ends_with("lore_reader.gd"):
+			reader = n
+	var paused := get_tree().paused
+	var opened := reader != null
+	var counted := Game.lore_read.has("well")
+	if reader:
+		await get_tree().create_timer(0.4, true, false, true).timeout
+		reader.close()
+		await get_tree().create_timer(0.5, true, false, true).timeout
+	var resumed := not get_tree().paused and (reader == null or not is_instance_valid(reader))
+	# far from a stele, up does nothing
+	p.global_position.x = 2600.0
+	await _frames(4)
+	await press(p, "move_up")
+	await _frames(3)
+	var stray := get_tree().paused
+	# the General's epitaph is buried until the elite is sealed
+	var gen = null
+	for st in lv.lore_steles:
+		if String(st.data.id) == "general":
+			gen = st
+	var hidden_before: bool = not gen.is_available()
+	Game.cleared["e8_elite"] = true
+	await _wait(2.0)
+	var risen: bool = gen.is_available() and gen.visible
+	Game.cleared.erase("e8_elite")
+	_log("lore_gated_by_boss", hidden_before and risen, "hidden_before=%s risen=%s" % [hidden_before, risen])
+	_log("lore_read_and_close", opened and paused and counted and resumed and not stray,
+		"opened=%s paused=%s counted=%s resumed=%s stray=%s" % [opened, paused, counted, resumed, stray])
 
 
 func t_personal_space() -> void:

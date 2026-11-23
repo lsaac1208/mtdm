@@ -32,6 +32,7 @@ var hint_learn: Array = []
 var hint_need := 1
 var hint_key := ""
 var hints_learned := {}
+var lore_read := {}          # LoreStele id -> true (this run)
 var best_rank := ""
 var best_time := 0.0
 var best_diff := -1
@@ -374,6 +375,7 @@ func new_run() -> void:
 	cleared.clear()
 	whispers_seen.clear()
 	hints_learned.clear()
+	lore_read.clear()
 	hint_learn = []
 	deaths = 0
 	kills = 0
