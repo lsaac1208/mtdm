@@ -120,7 +120,9 @@ const ENCOUNTERS := [
 	{"id": "e6_husk", "group": "", "trigger": 0.0, "lock": [],
 		"enemies": [["husk", 7380.0, -1.0, 0.0]]},
 	{"id": "e7_group_b", "group": "B", "trigger": 7820.0, "lock": [7620.0, 8480.0],
-		"enemies": [["husk", 8300.0, -1.0, 0.0], ["grunt", 8100.0, 0.5, 0.9], ["grunt", 8380.0, 1.2, 0.9]]},
+		# husk duo: two sealed husks (entrance + far end) and one grunt, so the
+		# player must manage two seal-pressure meters instead of trading hits
+		"enemies": [["husk", 8300.0, -1.0, 0.0], ["husk", 7960.0, -1.0, 0.0], ["grunt", 8100.0, 0.5, 0.9]]},
 	{"id": "e7c_burial_wave", "group": "A+", "trigger": 9080.0, "lock": [8960.0, 9640.0],
 		"enemies": [["grunt", 9450.0, 0.3, 0.9], ["crawler", 9560.0, 0.9, 0.6], ["grunt", 9050.0, 3.2, 0.9],
 			["crawler", 9550.0, 3.8, 0.6], ["grunt", 9500.0, 4.4, 0.9],
