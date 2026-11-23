@@ -557,7 +557,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1619,6 +1619,48 @@ func t_adaptive_mix() -> void:
 	var ok: bool = explore[0] == "explore" and absf(explore[1] + 4.0) < 0.3 and combat[0] == "combat" \
 		and absf(combat[1]) < 0.3 and combat[2] < -4.0 and after[0] == "explore" and after[1] < -3.5 and music_routed
 	_log("adaptive_mix", ok, "explore=%s combat=%s after=%s routed=%s" % [str(explore), str(combat), str(after), music_routed])
+
+
+func t_run_save() -> void:
+	# campfire rest saves the run; Continue restores it at that campfire with
+	# progress intact; finishing the demo deletes the save
+	var path := "user://qa_run_test.cfg"
+	Game.args["qa-run"] = path
+	Game.clear_saved_run()
+	var p := await _fresh_level(2300.0)
+	Game.cleared["e1_village"] = true
+	Game.lore_read["well"] = true
+	Game.deaths = 2
+	Game.kills = 7
+	Game.run_time = 123.0
+	Game.running = true
+	p.global_position.x = LevelData.CHECKPOINTS[1].x
+	await _wait(0.6)   # stand at the road campfire -> rest -> save
+	var saved := Game.has_saved_run()
+	var info := Game.saved_run_info()
+	# wipe live state, then continue
+	Game.cleared.clear()
+	Game.lore_read.clear()
+	Game.deaths = 0
+	Game.kills = 0
+	var old = Game.level
+	Game.continue_run()
+	await _frames(3)
+	while Game.level == null or not is_instance_valid(Game.level) or Game.level == old or Game.level.player == null:
+		await _frames(1)
+	await _frames(5)
+	var np: Player = Game.level.player
+	var at_fire := absf(np.global_position.x - LevelData.CHECKPOINTS[1].x) < 120.0
+	var restored := Game.cleared.has("e1_village") and Game.lore_read.has("well") and Game.deaths == 2 \
+		and Game.kills == 7 and absf(Game.run_time - 123.0) < 2.0
+	Game.finish_demo()
+	await _frames(5)
+	var wiped := not Game.has_saved_run()
+	Game.args.erase("qa-run")
+	_log("run_save_and_continue", saved and String(info.get("zone", "")) != "" and at_fire and restored and wiped,
+		"saved=%s info=%s at_fire=%s restored=%s wiped=%s" % [saved, str(info), at_fire, restored, wiped])
+	Game.to_title()
+	await _wait(0.5)
 
 
 func t_personal_space() -> void:

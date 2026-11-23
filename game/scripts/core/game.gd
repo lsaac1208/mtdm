@@ -148,6 +148,90 @@ func _process(delta: float) -> void:
 
 
 const SETTINGS_PATH := "user://settings.cfg"
+## Mid-run save (campfire rest). Tests only write it when given --qa-run=PATH.
+const RUN_PATH := "user://run.cfg"
+
+
+func _run_path() -> String:
+	return String(args.get("qa-run", RUN_PATH))
+
+
+func _run_save_enabled() -> bool:
+	return args.has("qa-run") or not (args.has("test") or args.has("shots"))
+
+
+func save_run() -> void:
+	if not _run_save_enabled() or not running:
+		return
+	var cf := ConfigFile.new()
+	cf.set_value("run", "checkpoint", checkpoint_id)
+	cf.set_value("run", "cleared", cleared.keys())
+	cf.set_value("run", "lore", lore_read.keys())
+	cf.set_value("run", "whispers", whispers_seen.keys())
+	cf.set_value("run", "hints", hints_learned.keys())
+	cf.set_value("run", "deaths", deaths)
+	cf.set_value("run", "kills", kills)
+	cf.set_value("run", "parries", parries)
+	cf.set_value("run", "props", props_broken)
+	cf.set_value("run", "time", run_time)
+	cf.set_value("run", "difficulty", difficulty)
+	cf.save(_run_path())
+
+
+func has_saved_run() -> bool:
+	return FileAccess.file_exists(_run_path())
+
+
+## Summary for the title's Continue entry: {zone_cn, time}; empty if none.
+func saved_run_info() -> Dictionary:
+	var cf := ConfigFile.new()
+	if not has_saved_run() or cf.load(_run_path()) != OK:
+		return {}
+	var cp := clampi(int(cf.get_value("run", "checkpoint", 0)), 0, LevelData.CHECKPOINTS.size() - 1)
+	var cx: float = LevelData.CHECKPOINTS[cp].x
+	var zone := String(LevelData.ZONES[0].cn)
+	for z in LevelData.ZONES:
+		if cx >= float(z.x):
+			zone = String(z.cn)
+	return {"zone": zone, "time": float(cf.get_value("run", "time", 0.0))}
+
+
+func clear_saved_run() -> void:
+	if has_saved_run() and _run_save_enabled():
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(_run_path()))
+
+
+static func _keys_to_set(arr) -> Dictionary:
+	var d := {}
+	for k in arr:
+		d[k] = true
+	return d
+
+
+## Resume a saved run at its last campfire (no prologue).
+func continue_run() -> bool:
+	var cf := ConfigFile.new()
+	if cf.load(_run_path()) != OK:
+		return false
+	checkpoint_id = clampi(int(cf.get_value("run", "checkpoint", 0)), 0, LevelData.CHECKPOINTS.size() - 1)
+	cleared = _keys_to_set(cf.get_value("run", "cleared", []))
+	lore_read = _keys_to_set(cf.get_value("run", "lore", []))
+	whispers_seen = _keys_to_set(cf.get_value("run", "whispers", []))
+	hints_learned = _keys_to_set(cf.get_value("run", "hints", []))
+	hint_learn = []
+	deaths = int(cf.get_value("run", "deaths", 0))
+	kills = int(cf.get_value("run", "kills", 0))
+	parries = int(cf.get_value("run", "parries", 0))
+	props_broken = int(cf.get_value("run", "props", 0))
+	run_time = float(cf.get_value("run", "time", 0.0))
+	difficulty = clampi(int(cf.get_value("run", "difficulty", difficulty)), 0, 2)
+	last_clear_is_best = false
+	telemetry = {"damage": {}, "deaths": [], "encounters": {}}
+	running = true
+	Engine.time_scale = 1.0
+	get_tree().paused = false
+	get_tree().change_scene_to_file(LEVEL_SCENE)
+	return true
 
 
 var shake_scale := 1.0
@@ -398,6 +482,7 @@ func new_run() -> void:
 
 
 func start_story_run() -> void:
+	clear_saved_run()   # a new journey replaces any unfinished one
 	if args.has("test") or args.has("shots") or args.has("autostart") or args.has("skip_prologue") or args.has("startx"):
 		new_run()
 		return
@@ -473,6 +558,7 @@ func to_title() -> void:
 
 
 func finish_demo() -> void:
+	clear_saved_run()
 	running = false
 	get_tree().paused = false
 	Engine.time_scale = 1.0
@@ -483,6 +569,7 @@ func set_checkpoint(id: int) -> void:
 	if id != checkpoint_id:
 		checkpoint_id = id
 	checkpoint_changed.emit(id)
+	save_run()
 
 
 func show_hint(text: String, duration := 4.0, learn: Array = [], need := 1, key := "") -> void:

@@ -96,7 +96,15 @@ func _ready() -> void:
 	menu.position = Vector2(130, 410)
 	menu.add_theme_constant_override("separation", 10)
 	add_child(menu)
-	for b in [["开始游戏  ·  Start", "_start"], ["操作说明  ·  Controls", "_help"], ["设置  ·  Options", "_options"], ["退出  ·  Quit", "_quit"]]:
+	var entries := [["开始游戏  ·  Start", "_start"], ["操作说明  ·  Controls", "_help"], ["设置  ·  Options", "_options"], ["退出  ·  Quit", "_quit"]]
+	var saved := Game.saved_run_info()
+	if not saved.is_empty():
+		# an unfinished journey: offer to resume at its last campfire, first
+		entries.insert(0, ["继续 · %s  %s" % [saved.zone, Game.format_time(float(saved.time))], "_continue"])
+		entries[1][0] = "新的旅程  ·  New Game"
+		menu.position.y = 364.0   # five entries must clear the version footer
+		menu.add_theme_constant_override("separation", 8)
+	for b in entries:
 		var btn := Button.new()
 		btn.text = b[0]
 		btn.custom_minimum_size = Vector2(300, 48)
@@ -216,6 +224,15 @@ func _draw_motes() -> void:
 			motes_node.draw_colored_polygon(pts, Color(0.64, 0.30, 0.16, 0.46 * pulse))
 		else:
 			motes_node.draw_circle(Vector2(mx, my), mr * 0.65, Color(1.0, 0.88, 0.68, 0.32 * pulse))
+
+
+func _continue() -> void:
+	if _started:
+		return
+	_started = true
+	Sfx.play("ui_confirm", -2.0)
+	if not Game.continue_run():
+		_started = false
 
 
 func _start() -> void:

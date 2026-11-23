@@ -2,7 +2,12 @@
 
 All versions are pre-release vertical slices. Automated tests and GPU captures are not a substitute for human playtest approval.
 
-## 0.4.0 — 2026-11-20## 0.5.0 — 2026-11-23 (release candidate, not published)
+## 0.4.0 — 2026-11-20## 0.6.0-dev — in progress
+
+### Added
+- **Campfire save + Continue**: resting at a campfire saves the run (`user://run.cfg`: checkpoint, cleared encounters, steles, whispers, learned hints, stats, time, difficulty). The title shows 继续 · <zone> <time> first when a save exists; New Game or finishing the demo deletes it. Tests write only with `--qa-run=PATH`. Test `run_save_and_continue`.
+
+## 0.5.0 — 2026-11-23 (release candidate, not published)
 
 Branch `claude/autonomous-v05`, built on `v0.4.0` (`codex/demo-v0.4.0` @ `bd25e07`). Packages built locally; no GitHub Release has been published (needs the owner's approval).
 

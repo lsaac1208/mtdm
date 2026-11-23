@@ -152,3 +152,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D38 · Adaptive mix on sub-buses (0.5.0)
 - `Sfx.MIX_DB` states neutral / explore / combat applied to `MusicDyn` (→ Music) and `AmbDyn` (→ SFX) bus gains, smoothed in `Sfx._process` on unscaled time. `Level._update_mix()` sets combat while an encounter is locked or an aggro enemy is within 600 px; `Level._exit_tree` restores neutral. Chosen over per-player volume offsets because crossfade tweens own player `volume_db`, and over the Music/SFX buses because those belong to the user's sliders.
+
+## D39 · Campfire save, not autosave anywhere (0.6.0)
+- The run saves only in `Game.set_checkpoint` (campfire rest), matching the death/respawn model: Continue always resumes at a campfire with full HP/gourd, encounters cleared before it stay cleared. Broken props and lit campfires are not persisted (cosmetic). Tests never touch the player's save unless `--qa-run` is given.
