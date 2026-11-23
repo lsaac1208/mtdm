@@ -557,7 +557,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1698,6 +1698,64 @@ func t_accessibility() -> void:
 	Game.save_settings()
 	_log("accessibility_flash_and_hints", off_ok and absf(half_a - 0.4) < 0.02 and persisted and suppressed,
 		"off=%s half_a=%.2f persisted=%s hints_suppressed=%s" % [off_ok, half_a, persisted, suppressed])
+
+
+func t_rematch() -> void:
+	var path := "user://qa_rematch_run.cfg"
+	Game.args["qa-run"] = path
+	# a story save exists and must survive the rematch untouched
+	var p0 := await _fresh_level(2300.0)
+	Game.running = true
+	Game.mode = "story"
+	Game.save_run()
+	var story_before := FileAccess.get_file_as_string(path)
+	var rank_before := [Game.best_rank, Game.best_time]
+	var br_before: float = Game.best_rematch[Game.difficulty]
+	Game.best_rematch[Game.difficulty] = 0.0
+	var old = Game.level
+	Game.args.erase("startx")   # harness override from _fresh_level; real play has none
+	Game.start_rematch()
+	await _frames(3)
+	while Game.level == null or not is_instance_valid(Game.level) or Game.level == old or Game.level.player == null:
+		await _frames(1)
+	await _frames(5)
+	var p: Player = Game.level.player
+	var at_fire := absf(p.global_position.x - LevelData.CHECKPOINTS[Game.REMATCH_CP].x) < 120.0
+	var only_boss := not Game.cleared.has("e8_elite") and Game.cleared.has("e7c_burial_wave") and Game.cleared.size() == LevelData.ENCOUNTERS.size() - 1
+	p.max_hp = 99999.0
+	p.hp = 99999.0
+	p.global_position.x = 10380.0
+	await _wait(2.0)
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy and n.rig_type == "elite":
+			n.phase = 2
+			n.hp = 1.0
+			n.global_position.x = p.global_position.x + 120.0
+		elif n is Enemy:
+			n.hp = 0.5
+	p.facing = 1
+	for i in 6:
+		await press(p, "attack")
+		await _wait(0.4)
+	Game.run_time = 42.0
+	Game.finish_demo()
+	await _wait(1.0)
+	var end_scene = get_tree().current_scene
+	var heading_ok := false
+	for n in end_scene.get_children():
+		if n is Label and String(n.text).begins_with("尸将再战"):
+			heading_ok = true
+	var recorded: bool = absf(Game.best_rematch[Game.difficulty] - 42.0) < 0.5
+	var story_kept := FileAccess.get_file_as_string(path) == story_before and [Game.best_rank, Game.best_time] == rank_before
+	Game.best_rematch[Game.difficulty] = br_before
+	Game.save_settings()
+	Game.clear_saved_run()
+	Game.args.erase("qa-run")
+	Game.mode = "story"
+	_log("rematch_flow", at_fire and only_boss and recorded and story_kept and heading_ok,
+		"at_fire=%s only_boss=%s recorded=%s story_save_kept=%s heading=%s" % [at_fire, only_boss, recorded, story_kept, heading_ok])
+	Game.to_title()
+	await _wait(0.5)
 
 
 func t_personal_space() -> void:

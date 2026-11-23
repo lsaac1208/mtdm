@@ -37,6 +37,12 @@ var best_rank := ""
 var best_time := 0.0
 var best_diff := -1
 var cleared_once := false
+## "story" = the full prologue; "rematch" = post-clear boss challenge started
+## at the last campfire (never touches the story save or the main rank).
+var mode := "story"
+const REMATCH_CP := 5
+var best_rematch := [0.0, 0.0, 0.0]   # best rematch time per difficulty
+var last_rematch_best := false
 var prologue_seen := false
 var last_clear_is_best := false
 var args := {}
@@ -161,7 +167,7 @@ func _run_save_enabled() -> bool:
 
 
 func save_run() -> void:
-	if not _run_save_enabled() or not running:
+	if not _run_save_enabled() or not running or mode != "story":
 		return
 	var cf := ConfigFile.new()
 	cf.set_value("run", "checkpoint", checkpoint_id)
@@ -209,7 +215,46 @@ static func _keys_to_set(arr) -> Dictionary:
 
 
 ## Resume a saved run at its last campfire (no prologue).
+## Post-clear challenge: straight to the General from the last campfire.
+func start_rematch() -> void:
+	mode = "rematch"
+	checkpoint_id = REMATCH_CP
+	cleared.clear()
+	for e in LevelData.ENCOUNTERS:
+		if String(e.id) != "e8_elite":
+			cleared[e.id] = true
+	whispers_seen.clear()
+	hints_learned.clear()
+	lore_read.clear()
+	hint_learn = []
+	deaths = 0
+	kills = 0
+	parries = 0
+	props_broken = 0
+	run_time = 0.0
+	last_clear_is_best = false
+	last_rematch_best = false
+	telemetry = {"damage": {}, "deaths": [], "encounters": {}}
+	running = true
+	Engine.time_scale = 1.0
+	get_tree().paused = false
+	get_tree().change_scene_to_file(LEVEL_SCENE)
+
+
+## Records a finished rematch; returns true if it beat this difficulty's best.
+func record_rematch(persist := true) -> bool:
+	var d := clampi(difficulty, 0, 2)
+	var prev: float = best_rematch[d]
+	last_rematch_best = prev <= 0.0 or run_time < prev
+	if last_rematch_best:
+		best_rematch[d] = run_time
+		if persist:
+			save_settings()
+	return last_rematch_best
+
+
 func continue_run() -> bool:
+	mode = "story"
 	var cf := ConfigFile.new()
 	if cf.load(_run_path()) != OK:
 		return false
@@ -394,6 +439,9 @@ func load_settings() -> void:
 		best_time = float(cf.get_value("progress", "best_time", 0.0))
 		best_diff = int(cf.get_value("progress", "best_diff", -1))
 		cleared_once = bool(cf.get_value("progress", "cleared_once", false))
+		var br = cf.get_value("progress", "best_rematch", [0.0, 0.0, 0.0])
+		if br is Array and br.size() == 3:
+			best_rematch = [float(br[0]), float(br[1]), float(br[2])]
 		prologue_seen = bool(cf.get_value("progress", "prologue_seen", false))
 	prompts_changed.emit()
 
@@ -415,6 +463,7 @@ func save_settings() -> void:
 	cf.set_value("progress", "best_time", best_time)
 	cf.set_value("progress", "best_diff", best_diff)
 	cf.set_value("progress", "cleared_once", cleared_once)
+	cf.set_value("progress", "best_rematch", best_rematch)
 	cf.set_value("progress", "prologue_seen", prologue_seen)
 	cf.save(args.get("qa-settings", SETTINGS_PATH))
 
@@ -470,6 +519,7 @@ static func unscaled_delta(delta: float) -> float:
 
 
 func new_run() -> void:
+	mode = "story"
 	checkpoint_id = 0
 	cleared.clear()
 	whispers_seen.clear()
@@ -566,7 +616,8 @@ func to_title() -> void:
 
 
 func finish_demo() -> void:
-	clear_saved_run()
+	if mode == "story":
+		clear_saved_run()
 	running = false
 	get_tree().paused = false
 	Engine.time_scale = 1.0

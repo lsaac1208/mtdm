@@ -155,3 +155,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D39 · Campfire save, not autosave anywhere (0.6.0)
 - The run saves only in `Game.set_checkpoint` (campfire rest), matching the death/respawn model: Continue always resumes at a campfire with full HP/gourd, encounters cleared before it stay cleared. Broken props and lit campfires are not persisted (cosmetic). Tests never touch the player's save unless `--qa-run` is given.
+
+## D40 · Rematch mode is isolated from story progress (0.6.0)
+- `Game.mode` ("story" / "rematch"). `start_rematch()` marks every encounter except `e8_elite` cleared and spawns at `REMATCH_CP` (5). In rematch: `save_run()` is a no-op, `finish_demo()` keeps the story save, the ending calls `record_rematch()` (per-difficulty `best_rematch`, persisted under `[progress]`) instead of `record_clear()`. Gated behind `cleared_once` so it reads as a reward.

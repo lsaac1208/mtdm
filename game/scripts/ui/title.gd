@@ -102,12 +102,21 @@ func _ready() -> void:
 		# an unfinished journey: offer to resume at its last campfire, first
 		entries.insert(0, ["继续 · %s  %s" % [saved.zone, Game.format_time(float(saved.time))], "_continue"])
 		entries[1][0] = "新的旅程  ·  New Game"
-		menu.position.y = 364.0   # five entries must clear the version footer
+	if Game.cleared_once:
+		# post-clear challenge: fight the General again from the last campfire
+		entries.insert(entries.size() - 3, ["再战尸将  ·  Rematch", "_rematch"])
+	var btn_h := 48.0
+	if entries.size() == 5:
+		menu.position.y = 364.0   # clear the version footer
 		menu.add_theme_constant_override("separation", 8)
+	elif entries.size() >= 6:
+		menu.position.y = 360.0
+		menu.add_theme_constant_override("separation", 6)
+		btn_h = 44.0
 	for b in entries:
 		var btn := Button.new()
 		btn.text = b[0]
-		btn.custom_minimum_size = Vector2(300, 48)
+		btn.custom_minimum_size = Vector2(300, btn_h)
 		btn.add_theme_font_size_override("font_size", 22)
 		# On the parchment, idle entries are brushed ink text on a faint wash;
 		# the focused one becomes the cinnabar plate from InkTheme.
@@ -226,6 +235,14 @@ func _draw_motes() -> void:
 			motes_node.draw_circle(Vector2(mx, my), mr * 0.65, Color(1.0, 0.88, 0.68, 0.32 * pulse))
 
 
+func _rematch() -> void:
+	if _started:
+		return
+	_started = true
+	Sfx.play("ui_confirm", -2.0)
+	Game.start_rematch()
+
+
 func _continue() -> void:
 	if _started:
 		return
@@ -250,6 +267,9 @@ func _refresh_status() -> void:
 	var dtxt: String = diffs[clampi(Game.difficulty, 0, 2)]
 	if Game.cleared_once and not Game.best_rank.is_empty():
 		_status_lbl.text = "当前难度：%s\n最佳评价：%s · %s" % [dtxt, Game.best_rank, Game.format_time(Game.best_time)]
+		var br: float = Game.best_rematch[clampi(Game.difficulty, 0, 2)]
+		if br > 0.0:
+			_status_lbl.text += "\n再战尸将：%s" % Game.format_time(br)
 	else:
 		_status_lbl.text = "当前难度：%s\n序章五区 · 尸将待镇" % dtxt
 

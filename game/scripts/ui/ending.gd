@@ -71,10 +71,16 @@ func _ready() -> void:
 			"ph": rng.randf_range(0.0, TAU),
 			"leaf": i < 8,
 		})
-	rank_info = Game.record_clear(not Game.args.has("test"))
+	var rematch := Game.mode == "rematch"
+	if rematch:
+		# challenge result: never overwrites the story rank or best time
+		Game.record_rematch(not Game.args.has("test"))
+		rank_info = Game.compute_rank(Game.deaths, Game.parries, Game.run_time, Game.difficulty)
+	else:
+		rank_info = Game.record_clear(not Game.args.has("test"))
 	# Top calligraphic heading & epilogue
 	var head := Label.new()
-	head.text = "第一章 · 序　完"
+	head.text = "尸将再战 · 已镇" if rematch else "第一章 · 序　完"
 	head.add_theme_font_override("font", BRUSH_FONT)
 	head.add_theme_font_size_override("font_size", 66)
 	head.add_theme_color_override("font_color", Color(0.12, 0.09, 0.08))
@@ -91,6 +97,9 @@ func _ready() -> void:
 
 	var sub := Label.new()
 	sub.text = "尸将已镇，乱葬岗归于沉寂。前路秽气未散 —— 道行者仍要前行。"
+	if rematch:
+		var best: float = Game.best_rematch[clampi(Game.difficulty, 0, 2)]
+		sub.text = "再战用时 %s　·　本难度最佳 %s%s" % [Game.format_time(Game.run_time), Game.format_time(best), "　★ 新纪录" if Game.last_rematch_best else ""]
 	sub.add_theme_font_size_override("font_size", 20)
 	sub.add_theme_color_override("font_color", Color(0.20, 0.14, 0.11))
 	sub.add_theme_color_override("font_outline_color", Color(0.95, 0.89, 0.78, 0.75))
@@ -350,7 +359,10 @@ func _play_again() -> void:
 		return
 	_action_taken = true
 	Sfx.play("ui_confirm", -2.0)
-	Game.new_run()
+	if Game.mode == "rematch":
+		Game.start_rematch()
+	else:
+		Game.new_run()
 
 
 func _go_title() -> void:
