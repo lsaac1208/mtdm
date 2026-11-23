@@ -2,9 +2,9 @@
 
 All versions are pre-release vertical slices. Automated tests and GPU captures are not a substitute for human playtest approval.
 
-## 0.4.0 — 2026-11-20## 0.5.0-dev — in progress (branch `claude/autonomous-v05`)
+## 0.4.0 — 2026-11-20## 0.5.0 — 2026-11-23 (release candidate, not published)
 
-Built on `v0.4.0` (`codex/demo-v0.4.0` @ `bd25e07`). Not released.
+Branch `claude/autonomous-v05`, built on `v0.4.0` (`codex/demo-v0.4.0` @ `bd25e07`). Packages built locally; no GitHub Release has been published (needs the owner's approval).
 
 ### Fixed
 - **Crawler soft-lock** (pre-existing since v0.4.0): a pounce that overshot the hero made the crawler retreat back *under* him and re-pounce point-blank forever (soak run: 29 deaths at one spot). It now faces the hero before retreating and backs off while recovering. Test `crawler_retreats_after_pounce`: camping frames 284 → 0.

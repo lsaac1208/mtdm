@@ -1,6 +1,6 @@
 # Developer Handoff — Taoist Wanderer (道行者) v0.4.0
 
-> **Active development:** branch `claude/autonomous-v05` (0.5.0-dev, built on `bd25e07`). See CHANGELOG "0.5.0-dev" and DEVELOPMENT_STATUS for what changed since 0.4.0; 74 engine checks.
+> **Active development:** branch `claude/autonomous-v05` — **0.5.0 release candidate** (built on `bd25e07`, not published). See CHANGELOG "0.5.0", RELEASE_NOTES and [evidence/v0.5.0/README.md](evidence/v0.5.0/README.md); 77 engine checks. New capture modes: `lorecap`, `defeatcap`.
 
 This is the English entry point for a developer taking over the project. The design documents in `docs/` and most status notes are in Chinese; this file summarises what you need to build, test and continue the game.
 
