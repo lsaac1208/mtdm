@@ -129,3 +129,17 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D31 · 44.1 kHz stereo audio mastering & automated review gate (0.4.0)
 - Upgraded `tools/audio/make_audio.py` and `tools/audio/audio_review.py` to 44.1 kHz across all 75 WAV assets (30 stereo music/ambience/stinger/climax + 45 mono SFX, including 10 new v0.4.0 UI/destructible/ignition/whisper/stamp cues), enforcing `-1.00 dBFS` ceiling, seam continuity (`<= 0.0115`), and stereo correlation checks (`0 flagged`).
+
+## D32 · Input buffer for dash and skills (0.5.0)
+- `Player._act_buf` keeps dash/talisman/gourd/beads presses for 0.18 s; `_wants()` replaces `_pressed()` at every decision point and `_start_dash/_start_skill` consume. Air dash gated by `_can_dash()` (one per airtime).
+
+## D33 · Pack queueing and body blocking (0.5.0)
+- `Enemy.ally_ahead()` makes chasers hold their slot behind an ally already nearer the hero (crawler, grunt). Same-team separation splits exact ties by instance id and pushes the neighbour when pinned.
+- `Enemy.body_space` / `body_block` (elite: 84 px): during wind-up/strike/recovery only the grounded hero is eased out; dash, jump and hit-stun are exempt so `elite_fairness` windows are unchanged.
+
+## D34 · Lore steles and contextual hints (0.5.0)
+- `LevelData.LORE` entries (`after` gates a stele behind an encounter). Reading pauses the tree (player-initiated); `LoreReader` handles close in `_input` so Esc doesn't also open the pause menu. Interaction check runs in `_physics_process` because Props tick before Actors (harness one-shot presses).
+- Signs declare `learn` actions (+`need`); the HUD shortens the strip once performed and `Game.hints_learned` suppresses repeats.
+
+## D35 · Crawler retreat faces the hero (0.5.0)
+- Pre-existing soft-lock: retreat used the stale pre-pounce facing. Retreat now re-faces the hero; recovering crawlers inside 90 px back off.

@@ -2,7 +2,23 @@
 
 All versions are pre-release vertical slices. Automated tests and GPU captures are not a substitute for human playtest approval.
 
-## 0.4.0 — 2026-11-20 (Pre-Commercial Prologue Demo)
+## 0.4.0 — 2026-11-20## 0.5.0-dev — in progress (branch `claude/autonomous-v05`)
+
+Built on `v0.4.0` (`codex/demo-v0.4.0` @ `bd25e07`). Not released.
+
+### Fixed
+- **Crawler soft-lock** (pre-existing since v0.4.0): a pounce that overshot the hero made the crawler retreat back *under* him and re-pounce point-blank forever (soak run: 29 deaths at one spot). It now faces the hero before retreating and backs off while recovering. Test `crawler_retreats_after_pounce`: camping frames 284 → 0.
+- **Unlimited air dash**: `air_dash` was set but never checked; now one air dash per airtime (`air_dash_once`).
+- **Dropped inputs**: dash / talisman / gourd / beads pressed during attack active frames, landing or hit-stun were ignored; now buffered 0.18 s (`dash_buffered_from_attack`).
+- **Enemy pile-ups**: crawlers and grunts no longer stack into one silhouette at slabs/walls; they queue behind an ally nearer the hero and a pinned enemy shoves its neighbour (`pack_spreads_at_ledge`: 54 % → 0 % stacked frames).
+- **Boss body overlap**: the hero no longer sinks into the Undead General's painted armour (`boss_body_block`: 1 px → 79 px), timing windows unchanged.
+
+### Added
+- **Lore steles (残碑)**: five readable inscribed steles, one per zone, with an ink-scroll reading card; the General's epitaph rises in the boss arena once he is sealed. Journey Ledger shows `拓得碑文 n/5`.
+- **Contextual tutorial**: roadside hint strips close 1.2 s after the player performs the taught move and are not repeated.
+- QA: `lorecap` capture mode; 11 new engine checks (74 total).
+
+ (Pre-Commercial Prologue Demo)
 
 Branch `codex/demo-v0.4.0`, built on `v0.3.2` (branched from `origin/claude/post-codex-continuation` @ `8eb690d`).
 
