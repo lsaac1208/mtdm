@@ -13,8 +13,14 @@
 | Platform | Status |
 | --- | --- |
 | Linux x86_64 | **BUILT + RUNTIME VERIFIED** on Linux 6.12 x86_64 (Mesa llvmpipe, Xvfb): **90/90** engine checks and a human-like full clear run *inside the unpacked package*; `native_release.py`: archive-executable / engine / normal-route / soak PASS; rendered title + village launches exit 0 with no errors using `--audio-driver Dummy` (the sandbox has no audio device — without it the only errors are ALSA `ERR_CANT_OPEN`, see `native/linux/*.log`). |
-| Windows x86_64 | **BUILT — RUNTIME NOT VERIFIED** (no Windows host; Wine unavailable). |
-| macOS universal | **BUILT — RUNTIME NOT VERIFIED** (no Mac host; ad-hoc signed, not notarized). |
+| Windows x86_64 | Local: **BUILT — RUNTIME NOT VERIFIED** (no Windows host). After publication: automated native checks PASS on a GitHub-hosted Windows Server 2025 VM (see below); real player PCs still pending. |
+| macOS universal | Local: **BUILT — RUNTIME NOT VERIFIED** (no Mac host; ad-hoc signed, not notarized). After publication: automated native checks PASS on a GitHub-hosted macOS 15 arm64 VM; real Macs (incl. Intel) still pending. |
+
+## Published release (2026-11-24)
+
+- GitHub **Pre-release** `v0.6.0` — https://github.com/lsaac1208/mtdm/releases/tag/v0.6.0 (annotated tag → `9c363c8`; not marked latest; `main` untouched).
+- All 15 assets re-downloaded (API and public direct links, HTTP 200) and byte-identical to `SHA256SUMS` / `MANIFEST.json`; GitHub asset digests match.
+- Native workflow run 45347180031 on the published ZIPs: Ubuntu 24.04 x86_64, Windows Server 2025 x86_64, macOS 15.8 arm64 — digest, engine, normal-route, title, village **all PASS** (`native-ci/*.json`). Cloud VMs, not player hardware; Intel Macs not covered.
 
 ## Automated verification (source, this stabilization pass)
 

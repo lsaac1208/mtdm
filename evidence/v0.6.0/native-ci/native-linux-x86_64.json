@@ -1,0 +1,58 @@
+{
+  "archive": "TaoistWanderer-v0.6.0-linux-x86_64.zip",
+  "sha256": "9937169ef90f7027b1a55c503ffb01e74696185569be1b8ece8c87decfcb748a",
+  "os": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+  "architecture": "x86_64",
+  "checks": {
+    "archive-digest": {
+      "pass": true,
+      "expected": "9937169ef90f7027b1a55c503ffb01e74696185569be1b8ece8c87decfcb748a"
+    },
+    "archive-executable": {
+      "pass": true,
+      "mode": "0o755",
+      "zip_host": 3
+    },
+    "engine": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "normal-route": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "soak": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "title": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": [
+        "shot_00.png"
+      ],
+      "renderer": "OpenGL API 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.5 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 20.1.2, 256 bits)"
+    },
+    "village": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": [
+        "village.png"
+      ],
+      "renderer": "OpenGL API 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.5 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 20.1.2, 256 bits)"
+    }
+  }
+}

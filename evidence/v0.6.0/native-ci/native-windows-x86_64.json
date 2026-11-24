@@ -1,0 +1,46 @@
+{
+  "archive": "TaoistWanderer-v0.6.0-windows-x86_64.zip",
+  "sha256": "2f7cc524b476c0be3853a2901a3253992684fc29b4617e7ec4b11bf7d96fb7f7",
+  "os": "Windows-2025Server-10.0.26100-SP0",
+  "architecture": "AMD64",
+  "checks": {
+    "archive-digest": {
+      "pass": true,
+      "expected": "2f7cc524b476c0be3853a2901a3253992684fc29b4617e7ec4b11bf7d96fb7f7"
+    },
+    "engine": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "normal-route": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "title": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": [
+        "shot_00.png"
+      ],
+      "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.26100.33648)"
+    },
+    "village": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": [
+        "village.png"
+      ],
+      "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.26100.33648)"
+    }
+  }
+}

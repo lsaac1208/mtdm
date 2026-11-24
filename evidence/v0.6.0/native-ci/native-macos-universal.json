@@ -1,0 +1,46 @@
+{
+  "archive": "TaoistWanderer-v0.6.0-macos-universal.zip",
+  "sha256": "2dc22a265cf48aec56bd97dbc5ec90a4b0ddc7af54f4d910dd49d776c650040e",
+  "os": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+  "architecture": "arm64",
+  "checks": {
+    "archive-digest": {
+      "pass": true,
+      "expected": "2dc22a265cf48aec56bd97dbc5ec90a4b0ddc7af54f4d910dd49d776c650040e"
+    },
+    "engine": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "normal-route": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "title": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": [
+        "shot_00.png"
+      ],
+      "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Apple) - ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.8.2 (Build 24H232))"
+    },
+    "village": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": [
+        "village.png"
+      ],
+      "renderer": "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Apple) - ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.8.2 (Build 24H232))"
+    }
+  }
+}
