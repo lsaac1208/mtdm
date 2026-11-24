@@ -1,6 +1,16 @@
 # DEVELOPMENT_STATUS — 道行者 / Taoist Wanderer
 
-## 0.6.0 候选版（当前，未发布）
+## 稳定化阶段（当前 · 功能冻结）
+
+_2026-11-24 · 项目方指令：停止功能扩展，进入稳定化与发布候选准备。_
+
+- 冻结后修复：手柄无法操作菜单（Godot 默认 ui_accept/ui_cancel 无手柄键，D44）；结算「再行此道」用 Enter/A 误回标题；英文长提示溢出提示牌（Boss 布局下压住副标题）。
+- 新增回归：`pad_menu_navigation`、`pad_pause_menu`、`pad_ending_play_again`、`epitaph_readable_after_boss`，长提示适配断言。共 90 项。
+- 视觉复查：中文/标准画质与英文/精简画质各一次完整渲染通关，五区、Boss、结算均已目检；16:10 与 21:9 已检查。
+- 音频：资源门禁 75/0；实录混音峰值 −1.35 dBFS、0 削波、无静音断档。
+- 试玩包文档：`playtest/`（安装、操作、首玩指引、反馈表、已知问题）。
+
+## 0.6.0 候选版（未发布）
 
 _2026-11-23 · 分支 `claude/autonomous-v05`（0.5.0 候选之后）_
 
