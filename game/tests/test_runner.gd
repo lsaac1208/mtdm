@@ -605,7 +605,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "pad_menus", "pad_ending", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "pad_menus", "pad_ending", "epitaph_after_boss", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -2063,6 +2063,50 @@ func t_pad_ending() -> void:
 	var in_level: bool = Game.level != null and is_instance_valid(Game.level) and get_tree().current_scene == Game.level
 	_log("pad_ending_play_again", start_is_btn and moved and in_level,
 		"focus=%s -> %s, new_run=%s" % [start_txt, left_txt, in_level])
+
+
+func t_epitaph_after_boss() -> void:
+	# real flow: kill the General -> encounter clears -> mix leaves combat ->
+	# the epitaph rises and can actually be read. Earlier encounters are
+	# cleared first, as they are in real play on reaching the arena.
+	Game.args["skip_cleared"] = "1"
+	var p := await _fresh_level(10380.0)
+	Game.args.erase("skip_cleared")
+	p.max_hp = 99999.0
+	p.hp = p.max_hp
+	await _wait(2.0)
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy and n.rig_type == "elite":
+			n.phase = 2
+			n.hp = 1.0
+			n.global_position.x = p.global_position.x + 120.0
+		elif n is Enemy:
+			n.hp = 0.5
+	p.facing = 1
+	for i in 8:
+		await press(p, "attack")
+		await _wait(0.35)
+		if Game.cleared.has("e8_elite"):
+			break
+	var cleared := Game.cleared.has("e8_elite")
+	await _wait(4.0)   # seal cinematic, stele rise, mix release
+	var calm := Sfx.mix_state != "combat"
+	if Game.args.has("dbg"):
+		for n in Game.level.get_node("Actors").get_children():
+			if n is Enemy:
+				print("DBG enemy ", n.rig_type, " dead=", n.dead, " aggro=", n.aggro, " state=", n.state, " x=", int(n.global_position.x), " hp=", n.hp)
+		print("DBG active_enc=", Game.level.active_encounter_id())
+	p.global_position.x = 10760.0 - 30.0
+	p.velocity = Vector2.ZERO
+	await _wait(0.5)
+	await press(p, "move_up")
+	await _frames(3)
+	var opened := get_tree().paused and Game.lore_read.has("general")
+	for n in get_tree().root.get_children():
+		if n.has_method("close") and n.get_script() != null and String(n.get_script().resource_path).ends_with("lore_reader.gd"):
+			n.close()
+	await get_tree().create_timer(0.6, true, false, true).timeout
+	_log("epitaph_readable_after_boss", cleared and calm and opened, "boss_cleared=%s calm=%s (mix=%s) opened=%s" % [cleared, calm, Sfx.mix_state, opened])
 
 
 func t_personal_space() -> void:
