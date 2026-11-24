@@ -132,13 +132,26 @@ func _run() -> void:
 			p.hp = p.max_hp
 			p.invuln = 9999.0
 			await _wait(1.5)
+			var ab := String(Game.args.get("ablate", ""))
+			if ab != "":
+				for n in Game.level.get_node("Actors").get_children():
+					if (ab == "enemies" and n is Enemy) or (ab == "player" and n is Player):
+						n.set_physics_process(false)
+				if ab == "level":
+					Game.level.set_physics_process(false)
+					for e in Game.level.encounters:
+						e.set_physics_process(false)
 			var times := []
+			var proc := 0.0
+			var phys := 0.0
 			var last := Time.get_ticks_usec()
 			for i in 240:
 				await get_tree().process_frame
 				var now := Time.get_ticks_usec()
 				times.append((now - last) / 1000.0)
 				last = now
+				proc += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
+				phys += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 				p.hp = p.max_hp
 				p.invuln = 9999.0
 				if i % 40 == 0:
@@ -146,7 +159,7 @@ func _run() -> void:
 			times.sort()
 			var n := times.size()
 			var fog_on: bool = Game.level.fog_rect.visible
-			print("PERF q%d fog=%s %-12s p50=%.2f p95=%.2f p99=%.2f ms  nodes=%d" % [Game.quality, fog_on, sc[0], times[n / 2], times[int(n * 0.95)], times[int(n * 0.99)], Performance.get_monitor(Performance.OBJECT_NODE_COUNT)])
+			print("PERF q%d fog=%s %-12s p50=%.2f p95=%.2f p99=%.2f ms  process=%.2f physics=%.2f ms  nodes=%d" % [Game.quality, fog_on, sc[0], times[n / 2], times[int(n * 0.95)], times[int(n * 0.99)], proc / 240.0, phys / 240.0, Performance.get_monitor(Performance.OBJECT_NODE_COUNT)])
 		Game.quit()
 		return
 	if only == "sealcap":

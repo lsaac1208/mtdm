@@ -161,3 +161,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D41 · LevelData as an active-chapter facade (0.6.0)
 - Route data per chapter lives in `scripts/level/chapters/<id>.gd` (plain consts, same names as before) and is registered in `LevelData.CHAPTERS`. `LevelData` exposes typed `static var`s filled by `use_chapter(id)` (`_static_init` selects `ch1`). Chosen over rewriting 76 call sites to pass a chapter object: zero behavioural change, and a chapter 2 only needs a data file + registry entry (plus its own painted zone art). Run saves store `chapter`.
+
+## D42 · No "lite" character shader — measured, not needed (0.7.0)
+- `--test=perfcap` (rendered, llvmpipe, Low quality) with `--ablate=enemies|player|level`: physics is 5–7.5 ms/frame in fights and no single group dominates (each removal saves 1–3 ms); the rest of the 18–20 ms p50 is software-GL fill-rate on the stacked full-screen painted layers. FrameAnim characters already take the cheap shader path (rig and outline/halo disabled: two texture fetches + lighting math), so a lite variant would not move the fight p95. Real GPUs were measured at p50 ≈ 2 ms in v0.4.0. If low-end GPUs need more, the next lever is render-resolution scaling, not the character shader.
