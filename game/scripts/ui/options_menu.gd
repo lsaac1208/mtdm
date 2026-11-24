@@ -70,6 +70,7 @@ func _ready() -> void:
 	_check(box, "手柄震动 Controller vibration", Game.rumble_on, func(on): Game.rumble_on = on)
 	_check(box, "精简画质 Low graphics (faster)", Game.quality == 0, func(on):
 		Game.quality = 0 if on else 1
+		Game.apply_render_scale()
 		if Game.level and is_instance_valid(Game.level) and Game.level.has_method("apply_quality"):
 			Game.level.apply_quality())
 	_check(box, "全屏 Fullscreen (F11)", get_window().mode == Window.MODE_FULLSCREEN,

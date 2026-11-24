@@ -1856,14 +1856,18 @@ func t_quality() -> void:
 	var old := Game.quality
 	Game.quality = 0
 	Game.level.apply_quality()
-	var low_ok: bool = not Game.level.fog_rect.visible and Game.level.motes.amount < 100 and Game.fx_amount(20) == 10
+	Game.apply_render_scale()
+	var low_ok: bool = not Game.level.fog_rect.visible and Game.level.motes.amount < 100 and Game.fx_amount(20) == 10 \
+		and get_tree().root.content_scale_mode == Window.CONTENT_SCALE_MODE_VIEWPORT
 	Game.save_settings()
 	Game.quality = 1
 	Game.load_settings()
 	var persisted := Game.quality == 0
 	Game.quality = 1
 	Game.level.apply_quality()
-	var high_ok: bool = Game.level.fog_rect.visible and Game.level.motes.amount == 220 and Game.fx_amount(20) == 20
+	Game.apply_render_scale()
+	var high_ok: bool = Game.level.fog_rect.visible and Game.level.motes.amount == 220 and Game.fx_amount(20) == 20 \
+		and get_tree().root.content_scale_mode == Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	Game.quality = old
 	Game.save_settings()
 	_log("graphics_quality_toggle", low_ok and high_ok and persisted, "low=%s high=%s persisted=%s" % [low_ok, high_ok, persisted])

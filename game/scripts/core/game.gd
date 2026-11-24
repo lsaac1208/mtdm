@@ -307,6 +307,14 @@ var rumble_on := true
 var quality := 1
 
 
+## Low quality also renders the 2D scene at the 1280x720 base resolution and
+## upscales (stretch "viewport"); high renders at full window resolution
+## ("canvas_items"). On a 1080p window that is ~2.25x less fill work.
+func apply_render_scale() -> void:
+	var w := get_tree().root
+	w.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS if quality >= 1 else Window.CONTENT_SCALE_MODE_VIEWPORT
+
+
 func fx_amount(n: int) -> int:
 	return n if quality >= 1 else maxi(1, n / 2)
 var last_rumble := []   # [weak, strong, duration] of the last request (QA)
@@ -431,9 +439,18 @@ func fmt_keys(text: String) -> String:
 	return out
 
 
+## Runs after settings load on every path (incl. a fresh install with no
+## settings file): CLI overrides, then settings that touch the window.
+func _post_settings() -> void:
+	if args.has("quality"):   # QA / perf override wins over the saved value
+		quality = clampi(int(args.quality), 0, 1)
+	apply_render_scale()
+
+
 func load_settings() -> void:
 	var cf := ConfigFile.new()
 	if cf.load(args.get("qa-settings", SETTINGS_PATH)) != OK:
+		_post_settings()
 		return
 	set_bus_volume("Master", cf.get_value("audio", "volume", 1.0))
 	set_bus_volume("Music", cf.get_value("audio", "music", 1.0))
@@ -445,8 +462,7 @@ func load_settings() -> void:
 	tutorial_hints = bool(cf.get_value("game", "hints", true))
 	rumble_on = bool(cf.get_value("game", "rumble", true))
 	quality = clampi(int(cf.get_value("video", "quality", 1)), 0, 1)
-	if args.has("quality"):   # QA / perf override wins over the saved value
-		quality = clampi(int(args.quality), 0, 1)
+	_post_settings()
 	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
 		get_window().mode = Window.MODE_FULLSCREEN
 	if cf.has_section("keys"):
