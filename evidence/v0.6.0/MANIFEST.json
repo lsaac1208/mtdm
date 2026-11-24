@@ -1,0 +1,42 @@
+{
+  "name": "Taoist Wanderer (道行者)",
+  "version": "0.6.0",
+  "channel": "playtest release candidate (unpublished)",
+  "source_branch": "claude/autonomous-v05",
+  "source_commit": "9c363c8e53c9a26744a319c6d6c84bad1d3ba39b",
+  "engine": "Godot 4.7.2.stable.official.ed1daf0bf",
+  "built": "2026-11-24",
+  "files": {
+    "TaoistWanderer-v0.6.0-linux-x86_64.zip": {
+      "bytes": 90640629,
+      "sha256": "9937169ef90f7027b1a55c503ffb01e74696185569be1b8ece8c87decfcb748a"
+    },
+    "TaoistWanderer-v0.6.0-macos-universal.zip": {
+      "bytes": 124713883,
+      "sha256": "2dc22a265cf48aec56bd97dbc5ec90a4b0ddc7af54f4d910dd49d776c650040e"
+    },
+    "TaoistWanderer-v0.6.0-windows-x86_64.zip": {
+      "bytes": 100293662,
+      "sha256": "2f7cc524b476c0be3853a2901a3253992684fc29b4617e7ec4b11bf7d96fb7f7"
+    },
+    "gameplay-full-run-zh.mp4": {
+      "bytes": 34586634,
+      "sha256": "0f8402f751750e5c1594a4bb30690e4fc03da97217aec60759f357b394f702cc"
+    }
+  },
+  "platforms": {
+    "linux-x86_64": "BUILT + RUNTIME VERIFIED (Linux 6.12 x86_64, Mesa llvmpipe under Xvfb): 90/90 engine checks inside the package (native_release: engine/normal-route/soak PASS), rendered title + village launches exit 0 with no errors using --audio-driver Dummy (sandbox has no audio device)",
+    "windows-x86_64": "BUILT — RUNTIME NOT VERIFIED",
+    "macos-universal": "BUILT — RUNTIME NOT VERIFIED (ad-hoc signed, not notarized)"
+  },
+  "footage": "gameplay-full-run-zh.mp4 — human-like bot run recorded from the source project at 23cbd51 (gameplay identical to the build; later commits changed only English hint layout and docs)",
+  "not_verified": [
+    "human playtest",
+    "speaker/headphone listening",
+    "physical gamepad incl. vibration",
+    "Windows runtime",
+    "macOS runtime",
+    "real-GPU frame times for 0.6.0",
+    "native-speaker English proofreading"
+  ]
+}

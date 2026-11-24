@@ -1,3 +1,5 @@
+> **Final playtest RC record:** [RC_VERIFICATION.md](RC_VERIFICATION.md) (source `9c363c8`, supersedes the build sections below).
+
 # Evidence — Taoist Wanderer 0.6.0 (release candidate)
 
 Linux, Godot 4.7.2; rendered checks under Xvfb with software GL (llvmpipe). **Automated checks and bots are not human approval of feel, art or audio.**
