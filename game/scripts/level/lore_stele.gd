@@ -50,6 +50,8 @@ func _ready() -> void:
 	_prompt.z_index = 20
 	add_child(_prompt)
 	_refresh_prompt()
+	# keyboard <-> gamepad switches and rebinding must update the key label
+	Game.prompts_changed.connect(_refresh_prompt)
 
 
 func _refresh_prompt() -> void:

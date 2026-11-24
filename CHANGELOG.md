@@ -7,6 +7,7 @@ All versions are pre-release vertical slices. Automated tests and GPU captures a
 Branch `claude/autonomous-v05`. Packages built locally (`build/`), verification in [evidence/v0.6.0](evidence/v0.6.0/README.md). No GitHub Release published (needs the owner's approval). Includes the 0.7-track items below (low graphics mode, perfcap, combat-quiet fixes).
 
 ### Fixed (0.7 track)
+- **Stele prompt on gamepad**: the 读碑 prompt was built once and kept showing keyboard keys after switching to a pad or rebinding; it now follows `Game.prompts_changed` (`W / Up 读碑` ↔ `D-pad ↑ 读碑`). Test `stele_prompt_follows_device` (fails on the previous code).
 - **Quieter combat** (full rendered review of the current build): the temple stele's 读碑 prompt floated over the hero during the nearby husk fight — steles now hide the prompt and refuse to open while the mix state is combat; the boss intro card replayed on every retry and the respawn line landed on top of it — it now plays on the first meeting only (per run, kept in the campfire save). Test `combat_quiet`; `lore_read_and_close` now starts past the village lock, as in real play.
 
 ### Added (0.7 track)

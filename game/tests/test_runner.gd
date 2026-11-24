@@ -600,7 +600,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1898,6 +1898,36 @@ func t_combat_quiet() -> void:
 	dummy.free()
 	_log("combat_quiet", in_combat and not opened and first_t > 3.0 and retry_t <= 0.0,
 		"combat=%s stele_opened=%s intro_first=%.1f intro_retry=%.1f" % [in_combat, opened, first_t, retry_t])
+
+
+func t_stele_prompt_device() -> void:
+	var p := await _fresh_level(700.0)
+	var st = Game.level.lore_steles[0]
+	var kb_text: String = st._prompt.text
+	var pad := InputEventJoypadButton.new()
+	pad.device = 0
+	pad.button_index = JOY_BUTTON_DPAD_UP
+	pad.pressed = true
+	Input.parse_input_event(pad)
+	Input.flush_buffered_events()
+	await _frames(2)
+	var pad_text: String = st._prompt.text
+	var release: InputEventJoypadButton = pad.duplicate()
+	release.pressed = false
+	Input.parse_input_event(release)
+	var key := InputEventKey.new()
+	key.physical_keycode = KEY_W
+	key.pressed = true
+	Input.parse_input_event(key)
+	Input.flush_buffered_events()
+	await _frames(2)
+	var back_text: String = st._prompt.text
+	var key_up: InputEventKey = key.duplicate()
+	key_up.pressed = false
+	Input.parse_input_event(key_up)
+	Input.flush_buffered_events()
+	_log("stele_prompt_follows_device", pad_text != kb_text and back_text == kb_text,
+		"keyboard='%s' pad='%s' back='%s'" % [kb_text, pad_text, back_text])
 
 
 func t_personal_space() -> void:
