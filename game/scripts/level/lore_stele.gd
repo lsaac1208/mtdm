@@ -92,7 +92,9 @@ func _process(delta: float) -> void:
 	# "something here" from a distance without shouting over combat
 	var want := 1.0 if _near else (0.6 if not is_read() else 0.0)
 	_glow = move_toward(_glow, want, delta * 3.0)
-	_prompt.modulate.a = move_toward(_prompt.modulate.a, 1.0 if _near else 0.0, delta * 6.0)
+	# never offer a read mid-fight: it clutters combat and would pause it
+	var calm := Sfx.mix_state != "combat"
+	_prompt.modulate.a = move_toward(_prompt.modulate.a, 1.0 if _near and calm else 0.0, delta * 6.0)
 	_prompt.position.y = -212.0 - 3.0 * sin(_t * 2.4)
 	queue_redraw()
 
@@ -107,7 +109,7 @@ func _physics_process(_delta: float) -> void:
 
 func _can_read(p) -> bool:
 	return p.is_on_floor() and String(p.state) in ["idle", "run", "land"] and not p.controls_locked \
-		and not get_tree().paused
+		and not get_tree().paused and Sfx.mix_state != "combat"
 
 
 func _up_pressed(p) -> bool:

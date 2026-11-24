@@ -600,7 +600,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1540,7 +1540,11 @@ func t_smart_hints() -> void:
 
 
 func t_lore() -> void:
-	var p := await _fresh_level(2200.0)
+	# start past the village lock with it cleared: in real play the stele at
+	# 2300 is only reachable once that fight is over (barrier at 2250)
+	Game.args["skip_cleared"] = "1"
+	var p := await _fresh_level(2260.0)
+	Game.args.erase("skip_cleared")
 	var lv = Game.level
 	_log("lore_steles_placed", lv.lore_steles.size() == LevelData.LORE.size(), "count=%d" % lv.lore_steles.size())
 	# every stele sits outside every encounter lock (reading never pauses a fight)
@@ -1856,6 +1860,44 @@ func t_quality() -> void:
 	Game.quality = old
 	Game.save_settings()
 	_log("graphics_quality_toggle", low_ok and high_ok and persisted, "low=%s high=%s persisted=%s" % [low_ok, high_ok, persisted])
+
+
+func t_combat_quiet() -> void:
+	# 1) a stele can't be opened while a fight is on
+	var p := await _fresh_level(2200.0)
+	p.max_hp = 99999.0
+	p.hp = p.max_hp
+	for n in Game.level.get_node("Actors").get_children():
+		if n is Enemy:
+			n.queue_free()
+	p.global_position.x = 2300.0
+	var g := await spawn("grunt", 2420.0, true)
+	await _wait(0.4)
+	var in_combat := Sfx.mix_state == "combat"
+	await press(p, "move_up")
+	await _frames(3)
+	var opened := get_tree().paused
+	if opened:
+		for n in get_tree().root.get_children():
+			if n.has_method("close"):
+				n.close()
+		await get_tree().create_timer(0.6, true, false, true).timeout
+	g.queue_free()
+	# 2) boss intro card only on the first meeting this run
+	var hud = Game.level.hud
+	Game.whispers_seen.erase("_boss_intro")
+	hud._on_boss(null)
+	var dummy := Node2D.new()
+	hud._on_boss(dummy)
+	var first_t: float = hud.zone_t
+	hud._on_boss(null)
+	hud.zone_t = 0.0
+	hud._on_boss(dummy)
+	var retry_t: float = hud.zone_t
+	hud._on_boss(null)
+	dummy.free()
+	_log("combat_quiet", in_combat and not opened and first_t > 3.0 and retry_t <= 0.0,
+		"combat=%s stele_opened=%s intro_first=%.1f intro_retry=%.1f" % [in_combat, opened, first_t, retry_t])
 
 
 func t_personal_space() -> void:

@@ -4,6 +4,9 @@ All versions are pre-release vertical slices. Automated tests and GPU captures a
 
 ## 0.4.0 — 2026-11-20## 0.6.0-dev — in progress
 
+### Fixed (0.7 track)
+- **Quieter combat** (full rendered review of the current build): the temple stele's 读碑 prompt floated over the hero during the nearby husk fight — steles now hide the prompt and refuse to open while the mix state is combat; the boss intro card replayed on every retry and the respawn line landed on top of it — it now plays on the first meeting only (per run, kept in the campfire save). Test `combat_quiet`; `lore_read_and_close` now starts past the village lock, as in real play.
+
 ### Added (0.7 track)
 - **Low graphics mode** (精简画质 in Options, applied live, persisted; `--quality=0` for QA): skips the full-screen atmosphere pass, ambient motes 220 → 72, transient FX particles halved. New `--test=perfcap` (rendered; wall-clock p50/p95/p99 in village / lowland / burial wave / elite). Software-GL (llvmpipe) result over two runs each: p50 village 13–16 → 11–12 ms, lowland 16–17 → 13 ms, burial wave 20–21 → 17–19 ms, elite 21–26 → 19–20 ms; fight cost is physics 5–7.5 ms (spread across actors, `--ablate=enemies|player|level`) plus software-GL fill-rate of the painted layers — not the character shader (D42). Look preserved (`shots/quality_high_vs_low.jpg`).
 

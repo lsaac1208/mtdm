@@ -288,7 +288,10 @@ func _on_boss(b) -> void:
 	var first := boss == null and b != null
 	boss = b
 	boss_lag = 1.0
-	if first:
+	# the intro card plays on the first meeting only; on retries it would sit
+	# under the respawn line and slow the run-back (rendered review)
+	if first and not Game.whispers_seen.has("_boss_intro"):
+		Game.whispers_seen["_boss_intro"] = true
 		zone_cn.text = "尸将 · 前期精英"
 		zone_en.text = "残甲不毁，重压前行  ·  UNDEAD WARRIOR ELITE"
 		zone_t = 3.2
