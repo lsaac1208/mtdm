@@ -156,7 +156,14 @@ func _ready() -> void:
 	# Top-right difficulty & best-clear seal plaque
 	var badge := PanelContainer.new()
 	badge.add_theme_stylebox_override("panel", InkTheme.scroll_panel(16, 10, 0.78))
-	badge.position = Vector2(936, 26)
+	# anchored to the top-right corner (grows leftward) so 16:10 / 21:9 windows
+	# keep it in the corner instead of mid-screen; same spot as before at 16:9
+	badge.anchor_left = 1.0
+	badge.anchor_right = 1.0
+	badge.offset_left = -344.0
+	badge.offset_right = -28.0
+	badge.offset_top = 26.0
+	badge.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	badge.custom_minimum_size = Vector2(316, 0)
 	add_child(badge)
 	_status_lbl = Label.new()
