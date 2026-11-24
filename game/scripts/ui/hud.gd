@@ -355,12 +355,19 @@ func _on_hint(text: String, dur: float) -> void:
 
 ## Long lines (English especially) wrap to two lines: shrink the type a step
 ## and grow the strip upward so the text never spills out of the plate.
+var _hint_h := 48.0
+
+
 func _fit_hint() -> void:
+	# one line at 20 px if it fits; else 18 px; if it still wraps, the plate
+	# grows to two lines. _process places the plate using _hint_h in both the
+	# bottom layout and the boss-fight (top) layout.
 	var font: Font = hint_label.get_theme_font("font")
 	var avail := 860.0 - 40.0
-	var two_lines := font.get_string_size(hint_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x > avail
-	hint_label.add_theme_font_size_override("font_size", 18 if two_lines else 20)
-	hint_panel.offset_top = -152.0 if two_lines else -132.0
+	var w20 := font.get_string_size(hint_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x
+	var w18 := font.get_string_size(hint_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+	hint_label.add_theme_font_size_override("font_size", 20 if w20 <= avail else 18)
+	_hint_h = 48.0 if w18 <= avail else 70.0
 
 
 func _refresh_prompts() -> void:
@@ -410,11 +417,16 @@ func _process(delta: float) -> void:
 	# instead of covering both fighters' feet.
 	var boss_on: bool = boss != null and is_instance_valid(boss)
 	var anchor := 0.0 if boss_on else 1.0
-	var hy := 238.0 if boss_on else -132.0   # below the boss title card
+	# boss: hangs below the title card (grows down); else sits above the
+	# bottom margin (grows up) - height follows the fitted text
 	hint_panel.anchor_top = anchor
 	hint_panel.anchor_bottom = anchor
-	hint_panel.offset_top = hy
-	hint_panel.offset_bottom = hy + 48.0
+	if boss_on:
+		hint_panel.offset_top = 238.0
+		hint_panel.offset_bottom = 238.0 + _hint_h
+	else:
+		hint_panel.offset_top = -84.0 - _hint_h
+		hint_panel.offset_bottom = -84.0
 	hint_panel.modulate.a = lerpf(hint_panel.modulate.a, 1.0 if hint_t > 0.0 else 0.0, minf(1.0, delta * 8.0))
 	zone_t = maxf(0.0, zone_t - delta)
 	var za := clampf(minf(zone_t, 3.2 - zone_t) / 0.6, 0.0, 1.0)

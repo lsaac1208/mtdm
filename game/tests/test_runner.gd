@@ -162,6 +162,20 @@ func _run() -> void:
 			print("PERF q%d fog=%s %-12s p50=%.2f p95=%.2f p99=%.2f ms  process=%.2f physics=%.2f ms  nodes=%d" % [Game.quality, fog_on, sc[0], times[n / 2], times[int(n * 0.95)], times[int(n * 0.99)], proc / 240.0, phys / 240.0, Performance.get_monitor(Performance.OBJECT_NODE_COUNT)])
 		Game.quit()
 		return
+	if only == "bosshintcap":
+		# boss layout + the longest hint (checks plate fit under the title card)
+		shot_dir = Game.args.get("shots", "user://shots")
+		Game.args["skip_cleared"] = "1"
+		var p := await _fresh_level(9900.0)
+		p.max_hp = 99999.0
+		p.hp = p.max_hp
+		p.global_position.x = 10300.0
+		await _wait(1.2)
+		Game.show_hint(Game.loc(LevelData.SIGNS[-1]), 6.0)
+		await _wait(0.8)
+		await _shot("boss_hint")
+		Game.quit()
+		return
 	if only == "sealcap":
 		shot_dir = Game.args.get("shots", "user://shots")
 		await _fresh_level(1500.0)
@@ -1970,7 +1984,16 @@ func t_language() -> void:
 	Game.prompts_changed.emit()
 	var ok := missing.is_empty() and hint_en.begins_with("J Attack") and stele_en.ends_with("Read") \
 		and ctl_en.begins_with("Move") and ctl_zh.begins_with("移动")
-	_log("english_in_play_text", ok, "missing=%s hint='%s' stele='%s'" % [str(missing), hint_en.left(30), stele_en])
+	# the longest English hint (boss) must fit inside its plate
+	Game.lang = "en"
+	var hud2 = Game.level.hud
+	hud2._on_hint(Game.loc(LevelData.SIGNS[-1]), 3.0)
+	await _frames(2)
+	var lbl_h: float = hud2.hint_label.get_minimum_size().y
+	var fits: bool = lbl_h <= hud2.hint_panel.size.y + 1.0
+	Game.lang = old
+	ok = ok and fits
+	_log("english_in_play_text", ok, "missing=%s hint='%s' stele='%s' long_hint_fits=%s" % [str(missing), hint_en.left(30), stele_en, fits])
 
 
 func _pad(button: int) -> void:
