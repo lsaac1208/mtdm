@@ -19,6 +19,9 @@ ENGINE_GATES = {
     "elite_windup_readable", "elite_sweep_jumpable", "elite_chop_escapable", "elite_sweep_dash_through",
     "respawn_at_checkpoint", "restart_keeps_progress", "new_run_resets_state", "demo_completes",
     "settings_persist", "difficulty_scales", "gamepad_actions_fire", "hud_and_active_sign_bindings",
+    "run_save_and_continue", "rematch_flow", "english_in_play_text", "pad_menu_navigation",
+    "cold_launch_title_progress", "boss_chop_cleave_and_parry", "opening_epigraph_locks_controls",
+    "boss_death_clears_summons",
 }
 
 
@@ -68,7 +71,9 @@ def test_package(archive, out, expected_sha256=None):
             game_flags = [x.replace("{out}", pictures.as_posix()) for x in flags]
             engine_log = root / (name + "-engine.log")
             cmd = [str(app), *godot_flags, "--fixed-fps", "60", "--log-file", str(engine_log),
-                   "--", *game_flags, "--mute", "--qa-settings=" + (root / (name + ".cfg")).as_posix()]
+                   "--", *game_flags, "--mute",
+                   "--qa-settings=" + (root / (name + ".cfg")).as_posix(),
+                   "--qa-run=" + (root / (name + "-run.cfg")).as_posix()]
             if sys.platform == "darwin" and name == "title":
                 cmd = ["open", "-n", "-W", str(bundle), "--args", *cmd[1:]]
             timed_out = False
@@ -101,8 +106,8 @@ def test_package(archive, out, expected_sha256=None):
             if name == "engine":
                 passed = set(re.findall(r"(?m)^TEST\s+(\w+)\s+PASS\b", captured))
                 summary = re.search(r"TESTS DONE pass=(\d+) fail=0\b", captured)
-                if len(passed) < 52 or not summary or len(passed) != int(summary.group(1)):
-                    bad.append(f"Expected at least 52 distinct passing engine checks and a matching total, found {len(passed)}")
+                if len(passed) < 90 or not summary or len(passed) != int(summary.group(1)):
+                    bad.append(f"Expected at least 90 distinct passing engine checks and a matching total, found {len(passed)}")
                 missing = ENGINE_GATES - passed
                 if missing:
                     bad.append("Missing core checks: " + ", ".join(sorted(missing)))

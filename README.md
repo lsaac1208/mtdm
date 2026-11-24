@@ -2,18 +2,18 @@
 
 ## 试玩与开发入口
 
-> **English developer handoff:** [HANDOFF.md](HANDOFF.md) · [CHANGELOG.md](CHANGELOG.md) · latest pre-release **[v0.4.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0)** (branch `codex/demo-v0.4.0`; Apple Silicon macOS native `.app` & Metal GPU verified; Windows/Linux target-OS desktop tests, human playtest, physical controller and speaker audio audition pending).
+> **English developer handoff:** [HANDOFF.md](HANDOFF.md) · [CHANGELOG.md](CHANGELOG.md) · latest pre-release **[v0.6.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.6.1)** (branch `claude/autonomous-v05`; **99/99** engine checks, real Apple Silicon Metal GPU & native `.app` verified, GitHub Actions native CI for Linux / Windows / macOS; human playtest, physical controller and speaker audio audition pending).
 
-**当前可玩工程为 Godot 4.7.2 的 `v0.4.0` 序章商业试玩版（Pre-Commercial Prologue Demo）。** 开局包含三幕可跳过水墨序章，全路线覆盖五区、九场遭遇、十处可破坏道具、六处篝火、全敌人逐帧手绘动画、二阶段狂煞尸将、石坊光门与「行旅录」印章评级。
+**当前可玩工程为 Godot 4.7.2 的 `v0.6.1` 公开试玩稳定版（Public Playtest Pre-release）。** 在 v0.6.0 基础上完成 Gemini 4 Neon × Grok 4.7 双模型交叉验证与全部已核实缺陷修复：修复冷启动隐藏再战尸将、尸将竖劈重劈/弹反判定、开场黑屏操作锁、Boss 二阶段小怪收尾、设置页手柄滚屏与改键体验、篝火存档道力/残器一致性及英文模式全链路打磨。
 
 | 想做什么 | 入口 |
 | --- | --- |
-| 下载 macOS / Windows / Linux 试玩包与源码归档 | [GitHub Release v0.4.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0) |
+| 下载 macOS / Windows / Linux 试玩包与试玩指引 | [GitHub Release v0.6.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.6.1) · [playtest/README.md](playtest/README.md) |
 | 接手开发（英文 / 中文交接与架构决策） | [HANDOFF.md](HANDOFF.md) · [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) · [DECISIONS.md](DECISIONS.md) · [ROADMAP.md](ROADMAP.md) |
 | 用 Godot 4.7.2 运行、跑测或重新导出 | [BUILD_AND_RUN.md](BUILD_AND_RUN.md) · [game/project.godot](game/project.godot) · [tools/qa/smoke.sh](tools/qa/smoke.sh) |
-| 核对 `v0.4.0` 实机截图、五区可读性、性能与原生 `.app` 验收 | [evidence/v0.4.0/README.md](evidence/v0.4.0/README.md) · [CHANGELOG.md](CHANGELOG.md) |
+| 核对 `v0.6.1` 实机截图、性能与原生验收 | [evidence/v0.6.1/README.md](evidence/v0.6.1/README.md) · [CHANGELOG.md](CHANGELOG.md) |
 | 理解主角、道术、尸祟与原设 | [美术与世界观](docs/01_WORLD_AND_ART_BIBLE.md) · [主角设计](docs/02_PROTAGONIST_SPEC.md) · [首批尸祟](docs/03_FIRST_WAVE_ENEMIES_SPEC.md) |
-| 回溯历史里程碑 | [v0.3.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1) · [v0.3.0-rc.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1) · [v0.2.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0) |
+| 回溯历史里程碑 | [v0.6.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.6.0) · [v0.4.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0) · [v0.3.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1) · [v0.3.0-rc.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1) · [v0.2.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0) |
 
 
 > **「末日废土之上，道法不灭，万物异变。」**  

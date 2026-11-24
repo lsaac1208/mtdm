@@ -1,0 +1,42 @@
+{
+  "archive": "TaoistWanderer-v0.6.1-macos-universal.zip",
+  "sha256": "2dbfb320b56f1c348624dd9dc50f4b03cded30d30555342d3290ac4a8506ee77",
+  "os": "macOS-27.2.1-arm64-arm-64bit",
+  "architecture": "arm64",
+  "checks": {
+    "engine": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "normal-route": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": []
+    },
+    "title": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": [
+        "shot_00.png"
+      ],
+      "renderer": "OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6"
+    },
+    "village": {
+      "pass": true,
+      "exit": 0,
+      "timed_out": false,
+      "errors": [],
+      "screens": [
+        "village.png"
+      ],
+      "renderer": "OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M6"
+    }
+  }
+}

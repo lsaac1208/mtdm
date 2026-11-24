@@ -14,13 +14,15 @@ echo "commit: $(git -C "$ROOT" rev-parse HEAD)"
 
 timeout 600 "$G" --headless --path "$ROOT/game" --import > "$OUT/import.log" 2>&1 < /dev/null
 
-timeout 1200 "$G" --headless --path "$ROOT/game" -- --test=all --nohitstop --mute > "$OUT/tests.log" 2>&1 < /dev/null
+timeout 1200 "$G" --headless --fixed-fps 60 --path "$ROOT/game" -- --test=all --nohitstop --mute \
+  --qa-settings="$OUT/qa-settings.cfg" --qa-run="$OUT/qa-run.cfg" > "$OUT/tests.log" 2>&1 < /dev/null
 line=$(grep "TESTS DONE" "$OUT/tests.log" || echo "TESTS DONE missing")
 echo "engine checks: $line"
 grep -Eq "^TESTS DONE pass=[0-9]+ fail=0$" <<< "$line" || fail=1
 grep -q "SCRIPT ERROR" "$OUT/tests.log" && { echo "script errors in tests.log"; fail=1; }
 
-timeout 900 "$G" --headless --fixed-fps 60 --path "$ROOT/game" -- --test=bot --mute > "$OUT/bot.log" 2>&1 < /dev/null
+timeout 900 "$G" --headless --fixed-fps 60 --path "$ROOT/game" -- --test=bot --mute \
+  --qa-settings="$OUT/bot-settings.cfg" --qa-run="$OUT/bot-run.cfg" > "$OUT/bot.log" 2>&1 < /dev/null
 bot=$(grep "DEMO_COMPLETE" "$OUT/bot.log" || echo "bot did not finish")
 echo "bot: $bot"
 grep -q "TESTS DONE pass=1 fail=0" "$OUT/bot.log" || fail=1

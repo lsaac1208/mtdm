@@ -157,7 +157,7 @@ func _ready() -> void:
 func _refresh_prompt() -> void:
 	if _skip_lbl == null:
 		return
-	_skip_lbl.text = Game.t("按 %s / %s 继续　·　按 %s 跳过  |  Skip", "%s / %s Continue  ·  %s Skip") % [
+	_skip_lbl.text = Game.t("按 %s / %s 继续  ·  按 %s 跳过  |  Skip", "%s / %s Continue  ·  %s Skip") % [
 		Game.binding_label("confirm", true),
 		Game.binding_label("jump", true),
 		Game.binding_label("pause", true),

@@ -80,7 +80,7 @@ func _ready() -> void:
 		rank_info = Game.record_clear(not Game.args.has("test"))
 	# Top calligraphic heading & epilogue
 	var head := Label.new()
-	head.text = "尸将再战 · 已镇" if rematch else "第一章 · 序　完"
+	head.text = "尸将再战 · 已镇" if rematch else "第一章 · 序  完"
 	head.add_theme_font_override("font", BRUSH_FONT)
 	head.add_theme_font_size_override("font_size", 66)
 	head.add_theme_color_override("font_color", Color(0.12, 0.09, 0.08))
@@ -99,7 +99,7 @@ func _ready() -> void:
 	sub.text = Game.t("尸将已镇，乱葬岗归于沉寂。前路秽气未散 —— 道行者仍要前行。", "The General is sealed and the Burial Mound falls silent. The taint lingers — the wanderer walks on.")
 	if rematch:
 		var best: float = Game.best_rematch[clampi(Game.difficulty, 0, 2)]
-		sub.text = Game.t("再战用时 %s　·　本难度最佳 %s%s", "Rematch %s  ·  Best on this difficulty %s%s") % [Game.format_time(Game.run_time), Game.format_time(best), Game.t("　★ 新纪录", "  ★ New record") if Game.last_rematch_best else ""]
+		sub.text = Game.t("再战用时 %s  ·  本难度最佳 %s%s", "Rematch %s  ·  Best on this difficulty %s%s") % [Game.format_time(Game.run_time), Game.format_time(best), Game.t("  ★ 新纪录", "  ★ New record") if Game.last_rematch_best else ""]
 	sub.add_theme_font_size_override("font_size", 20)
 	sub.add_theme_color_override("font_color", Color(0.20, 0.14, 0.11))
 	sub.add_theme_color_override("font_outline_color", Color(0.95, 0.89, 0.78, 0.75))
@@ -134,7 +134,8 @@ func _ready() -> void:
 	hbox.add_child(left)
 
 	var ltitle := Label.new()
-	var best_tag := Game.t("　★ 新纪录", "  ★ NEW RECORD") if Game.last_clear_is_best else ""
+	var is_new_best := Game.last_rematch_best if rematch else Game.last_clear_is_best
+	var best_tag := Game.t("  ★ 新纪录", "  ★ NEW RECORD") if is_new_best else ""
 	ltitle.text = "行 旅 录  ·  JOURNEY LEDGER%s" % best_tag
 	ltitle.add_theme_font_size_override("font_size", 17)
 	ltitle.add_theme_color_override("font_color", Color(0.95, 0.80, 0.48))

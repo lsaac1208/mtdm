@@ -5,8 +5,8 @@
 The three ZIPs come from one game-source commit. Run the native smoke suite on the corresponding OS after exporting. It extracts the archive into a temporary directory, starts its executable, runs the engine checks and a Normal route, and captures the actual title and village viewport. On macOS it opens the extracted app bundle through Launch Services for the title check. The suite passes an isolated settings file to each launch.
 
 ```sh
-python3 tools/build/package.py 0.4.0
-python3 tools/qa/native_release.py build/TaoistWanderer-v0.4.0-macos-universal.zip build/qa/native-mac
+python3 tools/build/package.py 0.6.1
+python3 tools/qa/native_release.py build/TaoistWanderer-v0.6.1-macos-universal.zip build/qa/native-mac
 ```
 
 For reproducible visual review, import the project first, then run the following with a display. Choose `village`, `lowland`, or `elite`. Normal gameplay HUD and sound remain enabled in the movies. Compare two recording directories with `tools/qa/review_media.py compare BEFORE AFTER village village.mp4`. The export ZIP contains the same game and test entry points. Pin Godot 4.7.2, FFmpeg with libx264, and Python with Pillow and NumPy for media review.
@@ -32,7 +32,7 @@ To compare against another commit, check it out in a worktree, copy the current 
 ## 2. Play from source
 ```bash
 git clone https://github.com/lsaac1208/mtdm.git
-cd mtdm && git switch codex/demo-v0.4.0
+cd mtdm && git switch claude/autonomous-v05
 godot --path game            # or open game/project.godot in the editor and press F5
 ```
 The first launch imports assets (~10 s).
@@ -55,10 +55,10 @@ The first launch imports assets (~10 s).
 ## 3. Tests (headless, no window)
 ```bash
 G=godot   # path to the 4.7.2 binary
-# Engine-level gameplay checks (~2 min)
-$G --headless --path game -- --test=all --nohitstop --mute
+# Engine-level gameplay checks (~30 s with fixed fps; pass --qa-settings/--qa-run to avoid touching user saves)
+$G --headless --fixed-fps 60 --path game -- --test=all --nohitstop --mute --qa-settings=/tmp/tw-s.cfg --qa-run=/tmp/tw-r.cfg
 # input-driven bot plays the full route to the ending (~30 s with fixed fps)
-$G --headless --fixed-fps 60 --path game -- --test=bot --mute
+$G --headless --fixed-fps 60 --path game -- --test=bot --mute --qa-settings=/tmp/tw-s.cfg --qa-run=/tmp/tw-r.cfg
 ```
 Exit code 0 = all passed. Each check prints `TEST <name> PASS|FAIL <detail>`; the bot prints `BOT ...` progress lines and `DEMO_COMPLETE ...`.
 
@@ -90,7 +90,7 @@ $G --headless --path game --export-release "Windows" ../build/windows/TaoistWand
 ```
 One command does both exports and the zips (with `RELEASE_NOTES.md` as the player README):
 ```bash
-GODOT=$G python3 tools/build/package.py 0.4.0   # -> build/TaoistWanderer-v0.4.0-*.zip
+GODOT=$G python3 tools/build/package.py 0.6.1   # -> build/TaoistWanderer-v0.6.1-*.zip
 ```
 Both presets embed the PCK (single file). Run the Linux build with `./build/linux/TaoistWanderer.x86_64`. The exported binary accepts the same test flags, e.g. `./TaoistWanderer.x86_64 --headless --fixed-fps 60 -- --test=bot --mute`.
 

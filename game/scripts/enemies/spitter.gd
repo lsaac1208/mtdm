@@ -78,7 +78,7 @@ func _ai(delta: float) -> void:
 				if cd <= 0.0:
 					set_state("swipe_wind")
 					play_pose_or_clip("alert", "spitter_detect", 0.05, true)
-					telegraph.flare(Vector2(40, -80), 0.45, Color(0.9, 0.8, 0.3))
+					telegraph.flare(Vector2(40, -80), Game.tele(0.45), Color(0.9, 0.8, 0.3))
 				else:
 					# shuffle away from the player
 					vis.set_pose("spitter_side", 0.1)
@@ -121,7 +121,7 @@ func _ai(delta: float) -> void:
 				set_state("chase")
 		"swipe_wind":
 			velocity.x = 0.0
-			if state_t >= 0.45:
+			if state_t >= Game.tele(0.45):
 				set_state("swipe")
 				attack_hits = {}
 				play_pose_or_clip("swipe", "spitter_swipe", 0.03, true)

@@ -29,6 +29,7 @@ const SPECS := {
 	},
 }
 
+var prop_id := ""
 var prop_type := "urn"
 var broken := false
 var zone_tint := Color(0.92, 0.90, 0.86)
@@ -56,8 +57,14 @@ func _ready() -> void:
 	_shadow.modulate = Color(0.09, 0.07, 0.05, 0.42)
 	add_child(_shadow)
 	_sprite = Sprite2D.new()
-	_apply_tex(String(_spec.intact), float(_spec.h))
-	_sprite.modulate = zone_tint
+	if broken:
+		_apply_tex(String(_spec.broken), float(_spec.broken_h))
+		_sprite.modulate = zone_tint.darkened(0.08)
+		_shadow.scale.x *= 1.18
+		_shadow.modulate.a = 0.30
+	else:
+		_apply_tex(String(_spec.intact), float(_spec.h))
+		_sprite.modulate = zone_tint
 	add_child(_sprite)
 
 
@@ -98,7 +105,7 @@ func take_sword_hit(dir: int) -> bool:
 	if broken:
 		return false
 	broken = true
-	Game.props_broken += 1
+	Game.mark_prop_broken(prop_id)
 	_jolt = 1.0
 	_jolt_dir = dir if dir != 0 else 1
 	_apply_tex(String(_spec.broken), float(_spec.broken_h))

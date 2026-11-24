@@ -21,6 +21,9 @@ var deaths := 0
 var kills := 0
 var parries := 0
 var props_broken := 0
+var broken_props := {}       # destructible id -> true (this run)
+var saved_qi := 40.0
+var run_min_difficulty := -1 # lowest difficulty active during the current run (-1 = outside run)
 var run_time := 0.0
 var running := false
 var level: Node = null     # current level node
@@ -97,9 +100,12 @@ func _ready() -> void:
 			var kv := a.substr(2).split("=", true, 1)
 			args[kv[0]] = kv[1] if kv.size() > 1 else "1"
 	_setup_input()
-	load_settings.call_deferred()
+	# Load progress/gameplay/key settings synchronously so Title._ready() sees
+	# cleared_once, difficulty, language and best records on cold launch.
+	# Audio bus volumes and fullscreen window state stay deferred until Sfx._ready().
+	load_settings(true)
 	if args.has("difficulty"):
-		(func(): difficulty = clampi(int(args.difficulty), 0, 2)).call_deferred()
+		difficulty = clampi(int(args.difficulty), 0, 2)
 	if args.has("shots"):
 		_shots.call_deferred()
 	if args.has("test") and ResourceLoader.exists("res://tests/test_runner.gd"):
@@ -180,6 +186,21 @@ func _run_save_enabled() -> bool:
 	return args.has("qa-run") or not (args.has("test") or args.has("shots"))
 
 
+func mark_prop_broken(prop_id: String) -> void:
+	if prop_id.is_empty():
+		props_broken += 1
+		return
+	if not broken_props.has(prop_id):
+		broken_props[prop_id] = true
+		props_broken = broken_props.size()
+
+
+func set_difficulty(d: int) -> void:
+	difficulty = clampi(d, 0, 2)
+	if running and run_min_difficulty >= 0:
+		run_min_difficulty = mini(run_min_difficulty, difficulty)
+
+
 func save_run() -> void:
 	if not _run_save_enabled() or not running or mode != "story":
 		return
@@ -194,8 +215,13 @@ func save_run() -> void:
 	cf.set_value("run", "kills", kills)
 	cf.set_value("run", "parries", parries)
 	cf.set_value("run", "props", props_broken)
+	cf.set_value("run", "broken_props", broken_props.keys())
+	var cur_qi: float = float(player.qi) if player != null and is_instance_valid(player) else saved_qi
+	saved_qi = clampf(cur_qi, 0.0, 100.0)
+	cf.set_value("run", "qi", saved_qi)
 	cf.set_value("run", "time", run_time)
 	cf.set_value("run", "difficulty", difficulty)
+	cf.set_value("run", "min_difficulty", run_min_difficulty if run_min_difficulty >= 0 else difficulty)
 	cf.save(_run_path())
 
 
@@ -203,18 +229,25 @@ func has_saved_run() -> bool:
 	return FileAccess.file_exists(_run_path())
 
 
-## Summary for the title's Continue entry: {zone_cn, time}; empty if none.
+## Summary for the title's Continue entry: {zone, zone_cn, zone_en, time}; empty if none.
 func saved_run_info() -> Dictionary:
 	var cf := ConfigFile.new()
 	if not has_saved_run() or cf.load(_run_path()) != OK:
 		return {}
 	var cp := clampi(int(cf.get_value("run", "checkpoint", 0)), 0, LevelData.CHECKPOINTS.size() - 1)
 	var cx: float = LevelData.CHECKPOINTS[cp].x
-	var zone := String(LevelData.ZONES[0].cn)
+	var zone_cn := String(LevelData.ZONES[0].cn)
+	var zone_en := String(LevelData.ZONES[0].en)
 	for z in LevelData.ZONES:
 		if cx >= float(z.x):
-			zone = String(z.cn)
-	return {"zone": zone, "time": float(cf.get_value("run", "time", 0.0))}
+			zone_cn = String(z.cn)
+			zone_en = String(z.en)
+	return {
+		"zone": t(zone_cn, zone_en),
+		"zone_cn": zone_cn,
+		"zone_en": zone_en,
+		"time": float(cf.get_value("run", "time", 0.0)),
+	}
 
 
 func clear_saved_run() -> void:
@@ -246,6 +279,9 @@ func start_rematch() -> void:
 	kills = 0
 	parries = 0
 	props_broken = 0
+	broken_props.clear()
+	saved_qi = 40.0
+	run_min_difficulty = clampi(difficulty, 0, 2)
 	run_time = 0.0
 	last_clear_is_best = false
 	last_rematch_best = false
@@ -258,7 +294,7 @@ func start_rematch() -> void:
 
 ## Records a finished rematch; returns true if it beat this difficulty's best.
 func record_rematch(persist := true) -> bool:
-	var d := clampi(difficulty, 0, 2)
+	var d := clampi(mini(difficulty, run_min_difficulty) if run_min_difficulty >= 0 else difficulty, 0, 2)
 	var prev: float = best_rematch[d]
 	last_rematch_best = prev <= 0.0 or run_time < prev
 	if last_rematch_best:
@@ -284,9 +320,12 @@ func continue_run() -> bool:
 	deaths = int(cf.get_value("run", "deaths", 0))
 	kills = int(cf.get_value("run", "kills", 0))
 	parries = int(cf.get_value("run", "parries", 0))
-	props_broken = int(cf.get_value("run", "props", 0))
+	broken_props = _keys_to_set(cf.get_value("run", "broken_props", []))
+	props_broken = maxi(int(cf.get_value("run", "props", 0)), broken_props.size())
+	saved_qi = clampf(float(cf.get_value("run", "qi", 40.0)), 0.0, 100.0)
 	run_time = float(cf.get_value("run", "time", 0.0))
 	difficulty = clampi(int(cf.get_value("run", "difficulty", difficulty)), 0, 2)
+	run_min_difficulty = clampi(int(cf.get_value("run", "min_difficulty", difficulty)), 0, 2)
 	last_clear_is_best = false
 	telemetry = {"damage": {}, "deaths": [], "encounters": {}}
 	running = true
@@ -354,7 +393,7 @@ func rumble(weak: float, strong: float, dur: float) -> void:
 	last_rumble = [weak, strong, dur]
 	if _prompt_pad >= 0:
 		Input.start_joy_vibration(_prompt_pad, clampf(weak, 0.0, 1.0), clampf(strong, 0.0, 1.0), dur)
-const REBINDABLE := ["move_left", "move_right", "move_down", "jump", "attack", "dash", "block", "talisman", "gourd", "beads"]
+const REBINDABLE := ["move_left", "move_right", "move_up", "move_down", "jump", "attack", "dash", "block", "talisman", "gourd", "beads"]
 const BUS_NAMES := ["Master", "Music", "SFX"]
 
 
@@ -381,6 +420,20 @@ func action_keys(action: String) -> Array:
 
 
 func rebind(action: String, keycode: int) -> void:
+	var old_keys := action_keys(action)
+	var old_primary: int = int(old_keys[0]) if not old_keys.is_empty() else 0
+	for other in REBINDABLE:
+		if other == action:
+			continue
+		var removed := false
+		for ev in InputMap.action_get_events(other):
+			if ev is InputEventKey and ev.physical_keycode == keycode:
+				InputMap.action_erase_event(other, ev)
+				removed = true
+		if removed and action_keys(other).is_empty() and old_primary != 0 and old_primary != keycode:
+			var swap := InputEventKey.new()
+			swap.physical_keycode = old_primary
+			InputMap.action_add_event(other, swap)
 	for ev in InputMap.action_get_events(action):
 		if ev is InputEventKey:
 			InputMap.action_erase_event(action, ev)
@@ -477,14 +530,31 @@ func _post_settings() -> void:
 	apply_render_scale()
 
 
-func load_settings() -> void:
+func _apply_audio_video_settings(vol_master: float, vol_music: float, vol_sfx: float, want_fullscreen: bool) -> void:
+	set_bus_volume("Master", vol_master)
+	set_bus_volume("Music", vol_music)
+	set_bus_volume("SFX", vol_sfx)
+	apply_render_scale()
+	if want_fullscreen and DisplayServer.get_name() != "headless":
+		get_window().mode = Window.MODE_FULLSCREEN
+
+
+func load_settings(defer_audio_video := false) -> void:
 	var cf := ConfigFile.new()
 	if cf.load(args.get("qa-settings", SETTINGS_PATH)) != OK:
-		_post_settings()
+		if defer_audio_video:
+			if args.has("quality"):
+				quality = clampi(int(args.quality), 0, 1)
+			if args.has("ui_lang"):
+				lang = "en" if String(args.ui_lang) == "en" else "zh"
+			apply_render_scale.call_deferred()
+		else:
+			_post_settings()
 		return
-	set_bus_volume("Master", cf.get_value("audio", "volume", 1.0))
-	set_bus_volume("Music", cf.get_value("audio", "music", 1.0))
-	set_bus_volume("SFX", cf.get_value("audio", "sfx", 1.0))
+	var vol_master := float(cf.get_value("audio", "volume", 1.0))
+	var vol_music := float(cf.get_value("audio", "music", 1.0))
+	var vol_sfx := float(cf.get_value("audio", "sfx", 1.0))
+	var want_fullscreen := bool(cf.get_value("video", "fullscreen", false))
 	shake_scale = cf.get_value("video", "shake", 1.0)
 	difficulty = clampi(cf.get_value("game", "difficulty", 1), 0, 2)
 	hitstop_on = cf.get_value("video", "hitstop", true)
@@ -493,9 +563,14 @@ func load_settings() -> void:
 	rumble_on = bool(cf.get_value("game", "rumble", true))
 	lang = "en" if String(cf.get_value("game", "lang", "zh")) == "en" else "zh"
 	quality = clampi(int(cf.get_value("video", "quality", 1)), 0, 1)
-	_post_settings()
-	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
-		get_window().mode = Window.MODE_FULLSCREEN
+	if args.has("quality"):
+		quality = clampi(int(args.quality), 0, 1)
+	if args.has("ui_lang"):
+		lang = "en" if String(args.ui_lang) == "en" else "zh"
+	if defer_audio_video:
+		_apply_audio_video_settings.call_deferred(vol_master, vol_music, vol_sfx, want_fullscreen)
+	else:
+		_apply_audio_video_settings(vol_master, vol_music, vol_sfx, want_fullscreen)
 	if cf.has_section("keys"):
 		for action in REBINDABLE:
 			if cf.has_section_key("keys", action):
@@ -606,6 +681,9 @@ func new_run() -> void:
 	kills = 0
 	parries = 0
 	props_broken = 0
+	broken_props.clear()
+	saved_qi = 40.0
+	run_min_difficulty = clampi(difficulty, 0, 2)
 	run_time = 0.0
 	last_clear_is_best = false
 	telemetry = {"damage": {}, "deaths": [], "encounters": {}}
@@ -620,13 +698,20 @@ func start_story_run() -> void:
 	if args.has("test") or args.has("shots") or args.has("autostart") or args.has("skip_prologue") or args.has("startx"):
 		new_run()
 		return
+	mode = "story"
 	checkpoint_id = 0
 	cleared.clear()
 	whispers_seen.clear()
+	hints_learned.clear()
+	lore_read.clear()
+	hint_learn = []
 	deaths = 0
 	kills = 0
 	parries = 0
 	props_broken = 0
+	broken_props.clear()
+	saved_qi = 40.0
+	run_min_difficulty = clampi(difficulty, 0, 2)
 	run_time = 0.0
 	last_clear_is_best = false
 	telemetry = {"damage": {}, "deaths": [], "encounters": {}}
@@ -668,7 +753,8 @@ static func compute_rank(p_deaths: int, p_parries: int, p_time: float, p_diff: i
 
 
 func record_clear(persist := true) -> Dictionary:
-	var info: Dictionary = compute_rank(deaths, parries, run_time, difficulty)
+	var rank_diff := clampi(mini(difficulty, run_min_difficulty) if run_min_difficulty >= 0 else difficulty, 0, 2)
+	var info: Dictionary = compute_rank(deaths, parries, run_time, rank_diff)
 	var grade := String(info.grade)
 	var cur_ord := rank_order(grade)
 	var prev_ord := rank_order(best_rank)
@@ -677,7 +763,7 @@ func record_clear(persist := true) -> Dictionary:
 	if improved:
 		best_rank = grade
 		best_time = run_time
-		best_diff = difficulty
+		best_diff = rank_diff
 	cleared_once = true
 	if persist:
 		save_settings()
@@ -686,6 +772,7 @@ func record_clear(persist := true) -> Dictionary:
 
 func to_title() -> void:
 	running = false
+	run_min_difficulty = -1
 	Engine.time_scale = 1.0
 	get_tree().paused = false
 	get_tree().change_scene_to_file(TITLE_SCENE)

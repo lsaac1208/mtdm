@@ -6,6 +6,7 @@ extends Node2D
 ## is counted once per run in Game.lore_read and shown in the Journey Ledger.
 
 const BRUSH_FONT := preload("res://assets/fonts/MaShanZheng-subset.ttf")
+const SERIF_FONT := preload("res://assets/fonts/NotoSerifSC-Bold-subset.otf")
 const REACH := 70.0
 
 var data: Dictionary = {}
@@ -56,7 +57,13 @@ func _ready() -> void:
 
 func _refresh_prompt() -> void:
 	var read := Game.lore_read.has(String(data.get("id", "")))
+	var use_serif := Game.lang == "en" or Game.using_gamepad
+	_prompt.add_theme_font_override("font", SERIF_FONT if use_serif else BRUSH_FONT)
+	_prompt.add_theme_font_size_override("font_size", 16 if use_serif else 22)
 	_prompt.text = Game.fmt_keys(Game.t("{move_up} 读碑", "{move_up} Read") if not read else Game.t("{move_up} 重读", "{move_up} Read again"))
+	var w := maxf(160.0, float(_prompt.text.length()) * (11.5 if use_serif else 16.0) + 24.0)
+	_prompt.size = Vector2(w, 34.0)
+	_prompt.position.x = -w * 0.5
 
 
 ## Steles tied to an encounter ("after") stay buried until it is cleared,
@@ -123,6 +130,8 @@ func _up_pressed(p) -> bool:
 func open_reader() -> void:
 	var first := not is_read()
 	Game.lore_read[String(data.id)] = true
+	if first and Game.has_saved_run():
+		Game.save_run()
 	_refresh_prompt()
 	var r := LoreReader.new()
 	r.data = data

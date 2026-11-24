@@ -222,6 +222,8 @@ func _ready() -> void:
 		start_x = float(Game.args.startx)
 	player.position = Vector2(start_x, Game.GROUND_Y - 2)
 	$Actors.add_child(player)
+	player.qi = clampf(Game.saved_qi, 0.0, player.MAX_QI)
+	player.qi_changed.emit(player.qi, player.MAX_QI)
 	player.died.connect(_on_player_died)
 	if Game.args.has("startx") and Game.args.has("skip_cleared"):
 		for e in LevelData.ENCOUNTERS:
@@ -403,9 +405,12 @@ func _add_sign(s: Dictionary) -> void:
 
 
 func _build_destructibles() -> void:
-	for d in LevelData.DESTRUCTIBLES:
+	for idx in LevelData.DESTRUCTIBLES.size():
+		var d: Dictionary = LevelData.DESTRUCTIBLES[idx]
 		var pr := Destructible.new()
+		pr.prop_id = "%s_p%d_%d" % [LevelData.CHAPTER, idx, int(d.x)]
 		pr.prop_type = String(d.type)
+		pr.broken = Game.broken_props.has(pr.prop_id)
 		pr.position = Vector2(float(d.x), Game.GROUND_Y)
 		var zi := 0
 		for k in LevelData.ZONES.size():

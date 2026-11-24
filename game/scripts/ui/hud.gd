@@ -3,6 +3,7 @@ extends CanvasLayer
 ## skill readiness, boss bar, tutorial hints, zone title cards, fades.
 
 const BRUSH_FONT := preload("res://assets/fonts/MaShanZheng-subset.ttf")
+const BODY_FONT := preload("res://assets/fonts/NotoSerifSC-Bold-subset.otf")
 
 const COL_INK_PLAQUE := Color(0.085, 0.072, 0.060, 0.91)
 const COL_INK_TRACK := Color(0.042, 0.035, 0.030, 0.95)
@@ -222,7 +223,11 @@ func _load_portrait(path: String) -> Texture2D:
 	return null
 
 
+var _opening_active := false
+
+
 func _opening() -> void:
+	_opening_active = true
 	var l1 := _label(BRUSH_FONT, 46, Color(0.92, 0.85, 0.7))
 	l1.text = "末日废土之上，道法不灭，万物异变。"
 	l1.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -250,6 +255,7 @@ func _opening() -> void:
 	tw.parallel().tween_property(l2, "modulate:a", 0.0, 0.7)
 	tw.tween_property(fade, "color:a", 0.0, 1.0)
 	tw.tween_callback(func():
+		_opening_active = false
 		if player and is_instance_valid(player):
 			player.controls_locked = false
 		zone_t = 3.2
@@ -274,6 +280,8 @@ func _label(font: Font, size: int, col: Color) -> Label:
 
 func bind(p: Player) -> void:
 	player = p
+	if _opening_active:
+		player.controls_locked = true
 	p.died.connect(_on_player_died)
 	p.combo_changed.connect(_on_combo)
 
@@ -516,7 +524,7 @@ func _heartbeat_pulse() -> float:
 
 func _draw_portrait_medallion(ci: Control, center: Vector2, hp_ratio: float, low_pulse: float) -> void:
 	var boss_active := boss != null and is_instance_valid(boss)
-	var boss_p2: bool = boss_active and boss.get("phase2") == true
+	var boss_p2: bool = boss_active and int(boss.get("phase")) >= 2
 	var in_enc: bool = Game.level != null and is_instance_valid(Game.level) and Game.level.active_encounter_id() != ""
 	var is_hurt := player.dead or player.state == "hit" or hp_ratio <= 0.35
 	var is_fierce := boss_p2 or player.combo_hits >= 5
@@ -922,8 +930,11 @@ func _draw_combo(ci: Control) -> void:
 	ci.draw_colored_polygon(ink_bg, Color(0.07, 0.05, 0.05, 0.68 * a))
 	ci.draw_string_outline(BRUSH_FONT, Vector2(cx - 52.0, cy + 12.0), num_txt, HORIZONTAL_ALIGNMENT_RIGHT, 84.0, num_sz, 7, Color(0.06, 0.04, 0.04, 0.92 * a))
 	ci.draw_string(BRUSH_FONT, Vector2(cx - 52.0, cy + 12.0), num_txt, HORIZONTAL_ALIGNMENT_RIGHT, 84.0, num_sz, num_col)
-	ci.draw_string_outline(BRUSH_FONT, Vector2(cx + 36.0, cy + 6.0), "连斩", HORIZONTAL_ALIGNMENT_LEFT, -1, 24, 5, Color(0.06, 0.04, 0.04, 0.88 * a))
-	ci.draw_string(BRUSH_FONT, Vector2(cx + 36.0, cy + 6.0), "连斩", HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(0.96, 0.90, 0.76, a))
+	var combo_font: Font = BODY_FONT if Game.lang == "en" else BRUSH_FONT
+	var combo_lbl := Game.t("连斩", "HITS")
+	var combo_sz := 18 if Game.lang == "en" else 24
+	ci.draw_string_outline(combo_font, Vector2(cx + 36.0, cy + 6.0), combo_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, combo_sz, 5, Color(0.06, 0.04, 0.04, 0.88 * a))
+	ci.draw_string(combo_font, Vector2(cx + 36.0, cy + 6.0), combo_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, combo_sz, Color(0.96, 0.90, 0.76, a))
 	var frac := clampf(player.combo_timer / player.COMBO_WINDOW, 0.0, 1.0)
 	var bar_w := 118.0
 	ci.draw_rect(Rect2(cx - 42.0, cy + 22.0, bar_w, 4.0), Color(0.12, 0.09, 0.08, 0.72 * a))

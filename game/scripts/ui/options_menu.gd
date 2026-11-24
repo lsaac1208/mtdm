@@ -8,7 +8,7 @@ signal closed
 
 const BRUSH_FONT := preload("res://assets/fonts/MaShanZheng-subset.ttf")
 const ACTION_NAMES := {
-	"move_left": "左移 Left", "move_right": "右移 Right", "move_down": "下 (下劈) Down",
+	"move_left": "左移 Left", "move_right": "右移 Right", "move_up": "上 (读碑) Up / Read", "move_down": "下 (下劈) Down",
 	"jump": "跳跃 Jump", "attack": "攻击 Attack", "dash": "冲刺 Dash", "block": "格挡 Block",
 	"talisman": "符箓 Talisman", "gourd": "葫芦 Gourd", "beads": "念珠 Beads",
 }
@@ -16,6 +16,8 @@ const ACTION_NAMES := {
 var _capture := ""            # action waiting for a key
 var _key_buttons := {}
 var _first: Control
+var _diff_opt: OptionButton
+var _lang_opt: OptionButton
 
 
 func _ready() -> void:
@@ -35,6 +37,7 @@ func _ready() -> void:
 	frame.offset_bottom = 342
 	add_child(frame)
 	var scroll := ScrollContainer.new()
+	scroll.follow_focus = true
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	frame.add_child(scroll)
@@ -51,21 +54,25 @@ func _ready() -> void:
 	box.add_child(title)
 	_section(box, "难度 Difficulty")
 	var diff := OptionButton.new()
-	for item in ["故事 Story — 受伤 −45%，尸将破甲更快", "常规 Normal", "修行 Hard — 受伤 +30%，尸将更坚"]:
-		diff.add_item(item)
+	_diff_opt = diff
+	for _i in 3:
+		diff.add_item("")
+	_refresh_diff_labels()
 	diff.selected = Game.difficulty
 	diff.custom_minimum_size = Vector2(520, 36)
-	diff.item_selected.connect(func(i): Game.difficulty = i; Game.save_settings(); InkTheme.play_ui("ui_click", "ui_move", -7.0))
+	diff.item_selected.connect(func(i): Game.set_difficulty(i); Game.save_settings(); InkTheme.play_ui("ui_click", "ui_move", -7.0))
 	InkTheme.wire_hover(diff)
 	box.add_child(diff)
 	_section(box, "语言 Language")
 	var lang_opt := OptionButton.new()
+	_lang_opt = lang_opt
 	lang_opt.add_item("中文")
 	lang_opt.add_item("English (in-game text)")
 	lang_opt.selected = 1 if Game.lang == "en" else 0
 	lang_opt.custom_minimum_size = Vector2(520, 36)
 	lang_opt.item_selected.connect(func(i):
 		Game.lang = "en" if i == 1 else "zh"
+		_refresh_diff_labels()
 		Game.save_settings()
 		Game.prompts_changed.emit()   # relabel open prompts / hints now
 		InkTheme.play_ui("ui_click", "ui_move", -7.0))
@@ -162,6 +169,26 @@ func _check(box: VBoxContainer, text: String, on: bool, cb: Callable) -> void:
 	box.add_child(c)
 
 
+func _refresh_diff_labels() -> void:
+	if _diff_opt == null:
+		return
+	var labels := [
+		"Story — −45% damage taken, faster boss stagger",
+		"Normal — intended prologue balance",
+		"Hard — +30% damage taken, tougher boss",
+	] if Game.lang == "en" else [
+		"故事 Story — 受伤 −45%，尸将破甲更快",
+		"常规 Normal",
+		"修行 Hard — 受伤 +30%，尸将更坚",
+	]
+	for i in 3:
+		_diff_opt.set_item_text(i, labels[i])
+
+
+func _popup_open() -> bool:
+	return (_diff_opt != null and _diff_opt.get_popup().visible) or (_lang_opt != null and _lang_opt.get_popup().visible)
+
+
 func _refresh_keys() -> void:
 	for action in _key_buttons:
 		_key_buttons[action].text = "…按任意键 press a key…" if action == _capture else Game.keyboard_label(action)
@@ -174,13 +201,22 @@ func _begin_capture(action: String) -> void:
 
 
 func _input(e: InputEvent) -> void:
-	if _capture != "" and e is InputEventKey and e.pressed and not e.echo:
-		if e.physical_keycode != KEY_ESCAPE:
-			Game.rebind(_capture, e.physical_keycode)
-			Game.save_settings()
-		_capture = ""
-		_refresh_keys()
-		get_viewport().set_input_as_handled()
+	if _capture != "":
+		if e is InputEventKey and e.pressed and not e.echo:
+			if e.physical_keycode != KEY_ESCAPE:
+				Game.rebind(_capture, e.physical_keycode)
+				Game.save_settings()
+			_capture = ""
+			_refresh_keys()
+			get_viewport().set_input_as_handled()
+			return
+		if e.is_action_pressed("ui_cancel") or e.is_action_pressed("pause"):
+			_capture = ""
+			_refresh_keys()
+			get_viewport().set_input_as_handled()
+			return
+		return
+	if _popup_open():
 		return
 	if e.is_action_pressed("pause") or e.is_action_pressed("ui_cancel"):
 		close()

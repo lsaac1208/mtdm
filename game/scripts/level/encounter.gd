@@ -138,6 +138,17 @@ func _start() -> void:
 
 func _on_died(en: Node) -> void:
 	alive.erase(en)
+	if data.get("boss", false) and en == boss and state == "active":
+		# Banish any remaining summoned/companion grunts when the General falls
+		# so the victory cinematic and encounter clear happen together.
+		pending.clear()
+		for other in alive.duplicate():
+			if is_instance_valid(other) and not other.dead:
+				other.hp = 0.0
+				if other.has_method("_die"):
+					other._die(0)
+		alive.clear()
+		_clear()
 
 
 func _on_summon(count: int) -> void:
@@ -148,6 +159,8 @@ func _on_summon(count: int) -> void:
 
 
 func _clear() -> void:
+	if state == "cleared":
+		return
 	if state == "active":
 		Game.tel_enc(data.id, "time", Game.run_time - _t_start)
 	state = "cleared"

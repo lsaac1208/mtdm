@@ -156,6 +156,7 @@ func _run() -> void:
 				p.invuln = 9999.0
 				if i % 40 == 0:
 					await press(p, "attack")
+					last = Time.get_ticks_usec()
 			times.sort()
 			var n := times.size()
 			var fog_on: bool = Game.level.fog_rect.visible
@@ -619,7 +620,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "pad_menus", "pad_ending", "epitaph_after_boss", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "pad_menus", "pad_ending", "epitaph_after_boss", "cold_title_progress", "boss_chop_order", "opening_lock", "boss_death_summons", "lethal_block", "lore_pause_guard", "options_gamepad_and_rebind", "difficulty_rank_guard", "telegraph_and_en_polish", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1690,8 +1691,10 @@ func t_adaptive_mix() -> void:
 
 
 func t_run_save() -> void:
-	# campfire rest saves the run; Continue restores it at that campfire with
-	# progress intact; finishing the demo deletes the save
+	# campfire rest saves the run (incl. Qi & broken props); Continue restores it
+	# at that campfire with progress intact; finishing the demo deletes the save.
+	var prev_qa_run_has: bool = Game.args.has("qa-run")
+	var prev_qa_run := String(Game.args.get("qa-run", ""))
 	var path := "user://qa_run_test.cfg"
 	Game.args["qa-run"] = path
 	Game.clear_saved_run()
@@ -1701,16 +1704,24 @@ func t_run_save() -> void:
 	Game.deaths = 2
 	Game.kills = 7
 	Game.run_time = 123.0
+	p.qi = 86.0
+	var first_prop: DestructibleProp = Game.level.destructibles[0]
+	first_prop.take_sword_hit(1)
+	var broken_id := first_prop.prop_id
 	Game.running = true
 	p.global_position.x = LevelData.CHECKPOINTS[1].x
 	await _wait(0.6)   # stand at the road campfire -> rest -> save
 	var saved := Game.has_saved_run()
 	var info := Game.saved_run_info()
-	# wipe live state, then continue
+	# wipe live state and clear startx so Continue actually places hero at CP 1
 	Game.cleared.clear()
 	Game.lore_read.clear()
+	Game.broken_props.clear()
+	Game.props_broken = 0
+	Game.saved_qi = 40.0
 	Game.deaths = 0
 	Game.kills = 0
+	Game.args.erase("startx")
 	var old = Game.level
 	Game.continue_run()
 	await _frames(3)
@@ -1718,15 +1729,22 @@ func t_run_save() -> void:
 		await _frames(1)
 	await _frames(5)
 	var np: Player = Game.level.player
-	var at_fire := absf(np.global_position.x - LevelData.CHECKPOINTS[1].x) < 120.0
+	var at_fire := absf(np.global_position.x - (LevelData.CHECKPOINTS[1].x + 60.0)) < 40.0
+	var prop0: DestructibleProp = Game.level.destructibles[0]
+	var prop_kept := prop0.prop_id == broken_id and prop0.broken and not prop0.take_sword_hit(1) and Game.props_broken == 1
+	var restored_qi := np.qi
+	var qi_kept := restored_qi >= 84.0
 	var restored := Game.cleared.has("e1_village") and Game.lore_read.has("well") and Game.deaths == 2 \
-		and Game.kills == 7 and absf(Game.run_time - 123.0) < 2.0
+		and Game.kills == 7 and absf(Game.run_time - 123.0) < 2.0 and prop_kept and qi_kept
 	Game.finish_demo()
 	await _frames(5)
 	var wiped := not Game.has_saved_run()
-	Game.args.erase("qa-run")
+	if prev_qa_run_has:
+		Game.args["qa-run"] = prev_qa_run
+	else:
+		Game.args.erase("qa-run")
 	_log("run_save_and_continue", saved and String(info.get("zone", "")) != "" and at_fire and restored and wiped,
-		"saved=%s info=%s at_fire=%s restored=%s wiped=%s" % [saved, str(info), at_fire, restored, wiped])
+		"saved=%s info=%s at_fire=%s restored=%s prop_kept=%s qi=%.1f wiped=%s" % [saved, str(info), at_fire, restored, prop_kept, restored_qi, wiped])
 	Game.to_title()
 	await _wait(0.5)
 
@@ -2600,6 +2618,8 @@ func t_narrative_flow() -> void:
 	var prev_rank := Game.best_rank
 	var prev_time := Game.best_time
 	var prev_cleared := Game.cleared_once
+	var prev_qa_has: bool = Game.args.has("qa-settings")
+	var prev_qa_val := String(Game.args.get("qa-settings", ""))
 	var tmp_cfg := "user://qa_rank_test.cfg"
 	Game.args["qa-settings"] = tmp_cfg
 	Game.best_rank = ""
@@ -2609,15 +2629,306 @@ func t_narrative_flow() -> void:
 	Game.parries = 4
 	Game.run_time = 155.0
 	Game.difficulty = 1
+	Game.run_min_difficulty = -1
 	Game.record_clear(true)
 	Game.best_rank = ""
 	Game.cleared_once = false
 	Game.load_settings()
 	var persist_ok := Game.cleared_once and Game.best_rank == "甲" and absf(Game.best_time - 155.0) < 0.1
-	Game.args.erase("qa-settings")
+	if prev_qa_has:
+		Game.args["qa-settings"] = prev_qa_val
+	else:
+		Game.args.erase("qa-settings")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(tmp_cfg))
 	Game.best_rank = prev_rank
 	Game.best_time = prev_time
 	Game.cleared_once = prev_cleared
 	_log("rank_and_persist", String(r_a.grade) == "甲" and String(r_b.grade) == "乙" and String(r_c.grade) == "丙" and persist_ok,
 		"grades=%s/%s/%s persist=%s" % [String(r_a.grade), String(r_b.grade), String(r_c.grade), str(persist_ok)])
+
+
+func t_cold_title_progress() -> void:
+	# C-01: synchronous settings load populates cleared_once/difficulty/lang
+	# before Title._ready() runs, so Rematch & status plaque appear on cold start.
+	var prev_qa_has: bool = Game.args.has("qa-settings")
+	var prev_qa_val := String(Game.args.get("qa-settings", ""))
+	var prev_diff := Game.difficulty
+	var prev_lang := Game.lang
+	var prev_cleared := Game.cleared_once
+	var prev_rank := Game.best_rank
+	var prev_time := Game.best_time
+	var prev_rematch := Game.best_rematch.duplicate()
+	var tmp_cfg := "user://qa_cold_title.cfg"
+	Game.args["qa-settings"] = tmp_cfg
+	var cf := ConfigFile.new()
+	cf.set_value("game", "difficulty", 2)
+	cf.set_value("game", "lang", "en")
+	cf.set_value("progress", "cleared_once", true)
+	cf.set_value("progress", "best_rank", "甲")
+	cf.set_value("progress", "best_time", 125.0)
+	cf.set_value("progress", "best_rematch", [0.0, 45.0, 38.0])
+	cf.save(tmp_cfg)
+	Game.difficulty = 1
+	Game.lang = "zh"
+	Game.cleared_once = false
+	Game.best_rank = ""
+	Game.best_time = 0.0
+	Game.best_rematch = [0.0, 0.0, 0.0]
+	Game.load_settings(true)   # exact cold-boot call from Game._ready()
+	var sync_loaded := Game.cleared_once and Game.difficulty == 2 and Game.lang == "en" and Game.best_rank == "甲"
+	Game.to_title()
+	await _wait(0.4)
+	var title := get_tree().current_scene
+	var has_rematch: bool = title != null and title.get("_btn_for") != null and title._btn_for.has("_rematch")
+	var status_txt := String(title._status_lbl.text) if title != null and title.get("_status_lbl") != null else ""
+	var en_plaque := status_txt.contains("Difficulty: Hard") and status_txt.contains("Best Rank: A") and status_txt.contains("Boss Rematch: 00:38")
+	if prev_qa_has:
+		Game.args["qa-settings"] = prev_qa_val
+	else:
+		Game.args.erase("qa-settings")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(tmp_cfg))
+	Game.difficulty = prev_diff
+	Game.lang = prev_lang
+	Game.cleared_once = prev_cleared
+	Game.best_rank = prev_rank
+	Game.best_time = prev_time
+	Game.best_rematch = prev_rematch
+	Game.prompts_changed.emit()
+	_log("cold_launch_title_progress", sync_loaded and has_rematch and en_plaque,
+		"sync=%s rematch=%s en_plaque=%s" % [sync_loaded, has_rematch, en_plaque])
+
+
+func t_boss_chop_order() -> void:
+	# C-02: grounded hero under boss chop takes full 30-dmg cleave (not 8-dmg shock)
+	# and can parry the overhead chop on the ground cleanly without shock damage.
+	var p := await _fresh_level(1500.0)
+	var e := await spawn("elite", p.global_position.x + 120.0)
+	e.cd = 99.0
+	e.facing = -1
+	p.facing = 1
+	await _frames(2)
+	var hp0 := p.hp
+	e._start("windup_chop")
+	await _wait(1.05)
+	var dmg_taken := hp0 - p.hp
+	e.queue_free()
+	await _frames(3)
+	# Now test timed ground parry against boss overhead chop
+	p = await _fresh_level(1500.0)
+	e = await spawn("elite", p.global_position.x + 120.0)
+	e.cd = 99.0
+	e.facing = -1
+	p.facing = 1
+	await _frames(2)
+	var hp1 := p.hp
+	var par0 := Game.parries
+	e._start("windup_chop")
+	await _wait(0.74)
+	hold(p, {"block": true})
+	await _wait(0.35)
+	hold(p, {})
+	var parried := Game.parries > par0 and is_equal_approx(p.hp, hp1) and e.state in ["recoil", "stagger", "chase"]
+	e.queue_free()
+	_log("boss_chop_cleave_and_parry", dmg_taken >= 29.0 and parried,
+		"grounded_dmg=%.1f parried=%s hp_after_parry=%.1f/%.1f" % [dmg_taken, parried, p.hp, hp1])
+
+
+func t_opening_lock() -> void:
+	# C-03: fresh story start without startx locks controls during _opening()
+	# even though add_child(hud) runs before hud.bind(player).
+	Game.args.erase("startx")
+	Game.new_run()
+	await _frames(3)
+	while Game.level == null or not is_instance_valid(Game.level) or Game.level.player == null:
+		await _frames(1)
+	await _frames(2)
+	var locked: bool = Game.level.player.controls_locked
+	Game.level.player.controls_locked = false
+	_log("opening_epigraph_locks_controls", locked, "controls_locked=%s" % locked)
+
+
+func t_boss_death_summons() -> void:
+	# C-04: killing the General while Phase-2 summoned grunts are alive banishes
+	# the adds and clears e8_elite immediately so boss can never respawn.
+	Game.args["skip_cleared"] = "1"
+	var p := await _fresh_level(10380.0)
+	Game.args.erase("skip_cleared")
+	p.max_hp = 99999.0
+	p.hp = p.max_hp
+	await _wait(1.2)
+	var enc: Encounter = Game.level.encounters[Game.level.encounters.size() - 1]
+	var boss: Node = enc.boss
+	var summons_spawned := false
+	if is_instance_valid(boss):
+		boss.hp = boss.max_hp * 0.45
+		boss._roar()
+		await _frames(4)
+		summons_spawned = enc.alive.size() >= 3
+		boss.hp = 1.0
+		boss._die(1)
+	await _frames(4)
+	var cleared_now := Game.cleared.has("e8_elite") and enc.state == "cleared" and enc.alive.is_empty() and enc.pending.is_empty()
+	_log("boss_death_clears_summons", summons_spawned and cleared_now,
+		"summons=%s cleared=%s alive=%d" % [summons_spawned, cleared_now, enc.alive.size()])
+
+
+func t_lethal_block() -> void:
+	# N-05 + G-12: lethal heavy block keeps dead state, respawn clears knock_v,
+	# and non-lethal heavy block grants brief invuln during guard-break stun.
+	var p := await _fresh_level(700.0)
+	p.facing = 1
+	p.set_state("block")
+	p.block_t = 0.5   # past parry window -> normal block
+	p.hp = 100.0
+	var hs := {}
+	Combat.strike({"owner": null, "team": Combat.TEAM_ENEMY, "rect": p.get_hurtbox(),
+		"damage": 30.0, "poise": 0.0, "knock": 200.0, "dir": -1, "kind": "melee", "heavy": true, "tag": "test"}, hs)
+	var heavy_invuln := p.state == "hit" and p.invuln >= 0.4
+	# Lethal heavy block
+	p.invuln = 0.0
+	p.set_state("block")
+	p.block_t = 0.5
+	p.hp = 5.0
+	hs = {}
+	Combat.strike({"owner": null, "team": Combat.TEAM_ENEMY, "rect": p.get_hurtbox(),
+		"damage": 30.0, "poise": 0.0, "knock": 200.0, "dir": -1, "kind": "melee", "heavy": true, "tag": "test"}, hs)
+	var stayed_dead := p.dead and p.state == "dead"
+	p.knock_v = 320.0
+	p.respawn_at(p.global_position)
+	var knock_cleared := is_zero_approx(p.knock_v)
+	_log("lethal_block_no_corrupt_or_leak", heavy_invuln and stayed_dead and knock_cleared,
+		"heavy_invuln=%s stayed_dead=%s knock_cleared=%s" % [heavy_invuln, stayed_dead, knock_cleared])
+
+
+func t_lore_pause_guard() -> void:
+	# N-06: pressing pause within 0.3s of opening LoreReader must not open
+	# PauseMenu behind it or unpause gameplay while PauseMenu is visible.
+	var p := await _fresh_level(1100.0)
+	await _wait(0.2)
+	var st: LoreStele = Game.level.lore_steles[0]
+	st.open_reader()
+	await _frames(2)
+	var ev := InputEventKey.new()
+	ev.physical_keycode = KEY_ESCAPE
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	await _frames(3)
+	var pm := Game.level.get_node_or_null("Pause")
+	var pause_hidden: bool = pm == null or not pm.root.visible
+	for n in get_tree().root.get_children():
+		if n.has_method("close") and n.get_script() != null and String(n.get_script().resource_path).ends_with("lore_reader.gd"):
+			n.close()
+	await get_tree().create_timer(0.5, true, false, true).timeout
+	var resumed := not get_tree().paused
+	_log("lore_guard_blocks_pause_leak", pause_hidden and resumed,
+		"pause_hidden=%s resumed=%s" % [pause_hidden, resumed])
+
+
+func t_options_gamepad_and_rebind() -> void:
+	# G-06 + N-07 + G-09: OptionsMenu scroll follows focus, move_up is rebindable,
+	# duplicate key rebind swaps cleanly, and pad B during capture does not close Options.
+	var prev_qa_has: bool = Game.args.has("qa-settings")
+	var prev_qa_val := String(Game.args.get("qa-settings", ""))
+	Game.args["qa-settings"] = "user://qa_opt_pad_test.cfg"
+	Game.to_title()
+	await _wait(0.3)
+	var o := OptionsMenu.new()
+	get_tree().current_scene.add_child(o)
+	await _frames(2)
+	var scroll_ok := false
+	for ch in o.get_children():
+		if ch is PanelContainer:
+			for sub in ch.get_children():
+				if sub is ScrollContainer:
+					scroll_ok = sub.follow_focus
+	var has_up := Game.REBINDABLE.has("move_up") and o._key_buttons.has("move_up")
+	# Duplicate rebind: bind attack to KEY_L (dash's default) -> dash must not keep KEY_L
+	Game.rebind("attack", KEY_L)
+	var no_dup := Game.action_keys("attack").has(KEY_L) and not Game.action_keys("dash").has(KEY_L)
+	Game.reset_bindings()
+	# Pad B during capture cancels capture without closing OptionsMenu
+	o._begin_capture("attack")
+	var jb := InputEventJoypadButton.new()
+	jb.button_index = JOY_BUTTON_B
+	jb.pressed = true
+	Input.parse_input_event(jb)
+	await _frames(2)
+	var still_open := is_instance_valid(o) and not o.is_queued_for_deletion() and o._capture == ""
+	if is_instance_valid(o):
+		o.close()
+	await _frames(2)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://qa_opt_pad_test.cfg"))
+	if prev_qa_has:
+		Game.args["qa-settings"] = prev_qa_val
+	else:
+		Game.args.erase("qa-settings")
+	_log("options_scroll_and_pad_cancel", scroll_ok and has_up and no_dup and still_open,
+		"scroll=%s has_up=%s no_dup=%s pad_b_stays_open=%s" % [scroll_ok, has_up, no_dup, still_open])
+
+
+func t_difficulty_rank_guard() -> void:
+	# G-08: raising difficulty from Story to Hard mid-run must not grant a Hard rank.
+	var prev_diff := Game.difficulty
+	Game.difficulty = 0
+	var _p := await _fresh_level(700.0)
+	Game.set_difficulty(2)   # attempt mid-run switch Story -> Hard
+	Game.deaths = 5
+	Game.parries = 0
+	Game.run_time = 700.0
+	var info := Game.record_clear(false)
+	var no_hard_cheat := String(info.grade) == "丙"
+	Game.difficulty = prev_diff
+	Game.run_min_difficulty = -1
+	_log("difficulty_rank_no_exploit", no_hard_cheat,
+		"grade=%s (expected 丙, not Hard 乙)" % String(info.grade))
+
+
+func t_telegraph_and_en_polish() -> void:
+	# G-07 + N-08 + G-05 + G-10 + pause summary refresh
+	var prev_diff := Game.difficulty
+	var prev_lang := Game.lang
+	# Husk + Spitter swipe scale across difficulties via Game.tele
+	Game.difficulty = 0
+	var story_t := Game.tele(0.55)
+	Game.difficulty = 2
+	var hard_t := Game.tele(0.55)
+	var tele_ok := story_t > 0.70 and hard_t < 0.50
+	# Brush font has Noto Serif fallback for '·' and '↑'
+	var brush := preload("res://assets/fonts/MaShanZheng-subset.ttf")
+	var fb_ok := not brush.fallbacks.is_empty()
+	# Pause menu refreshes _summary when language/difficulty changes
+	Game.difficulty = 1
+	Game.lang = "zh"
+	var _p := await _fresh_level(700.0)
+	var pm := Game.level.get_node("Pause")
+	pm._open()
+	var zh_sum := String(pm._summary.text)
+	Game.lang = "en"
+	Game.set_difficulty(2)
+	pm._refresh_summary()
+	var en_sum := String(pm._summary.text)
+	pm._resume()
+	var sum_ok := zh_sum.contains("常规") and en_sum.contains("Hard") and en_sum.contains("Time")
+	# Down slash label consistency
+	var ctl_en := String(preload("res://scripts/ui/pause_menu.gd").CONTROLS_EN)
+	var copy_ok := ctl_en.contains("Down slash") and not ctl_en.contains("Overhead")
+	# Ending rematch header star uses last_rematch_best
+	Game.mode = "rematch"
+	Game.last_clear_is_best = false
+	Game.last_rematch_best = true
+	Game.run_time = 35.0
+	Game.best_rematch[2] = 35.0
+	Game.finish_demo()
+	await _frames(5)
+	var end_scene := get_tree().current_scene
+	var star_on_ledger := false
+	for ch in end_scene.get_children():
+		if ch is PanelContainer:
+			for l in ch.find_children("*", "Label", true, false):
+				if String(l.text).contains("JOURNEY LEDGER") and String(l.text).contains("★"):
+					star_on_ledger = true
+	Game.difficulty = prev_diff
+	Game.lang = prev_lang
+	Game.prompts_changed.emit()
+	_log("husk_spitter_telegraph_and_en_ui", tele_ok and fb_ok and sum_ok and copy_ok and star_on_ledger,
+		"tele=%s fb=%s sum=%s copy=%s rematch_star=%s" % [tele_ok, fb_ok, sum_ok, copy_ok, star_on_ledger])

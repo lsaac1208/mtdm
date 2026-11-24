@@ -54,12 +54,12 @@ const CHECKPOINTS := [
 ]
 
 const SIGNS := [
-	{"x": 470.0, "art": "waymark", "learn": ["jump"], "text_en": "{move_left} / {move_right} Move  ·  {jump} Jump (hold to jump higher)", "text": "{move_left} / {move_right} 移动　·　{jump} 跳跃（按住跳更高）"},
+	{"x": 470.0, "art": "waymark", "learn": ["jump"], "text_en": "{move_left} / {move_right} Move  ·  {jump} Jump (hold to jump higher)", "text": "{move_left} / {move_right} 移动  ·  {jump} 跳跃（按住跳更高）"},
 	{"x": 760.0, "art": "post", "learn": ["attack"], "need": 3, "text_en": "{attack} Attack — press three times: sweep → overhead → thrust", "text": "{attack} 攻击 —— 连按三段：横斩 → 下劈 → 突刺"},
 	{"x": 1130.0, "art": "tablet", "learn": ["block"], "text_en": "Hold {block} to guard; raise it just as a foe strikes = Parry (restores Qi, leaves them open)", "text": "按住 {block} 格挡；在敌人出手瞬间举剑 = 弹反（回道力，敌人露出破绽）"},
-	{"x": 2580.0, "art": "post", "learn": ["dash"], "text_en": "{dash} Dash (brief invulnerability)  ·  {attack} during a dash = Dash Slash (low)", "text": "{dash} 冲刺（短暂无敌）　·　冲刺中按 {attack} = 冲刺斩（低段）"},
+	{"x": 2580.0, "art": "post", "learn": ["dash"], "text_en": "{dash} Dash (brief invulnerability)  ·  {attack} during a dash = Dash Slash (low)", "text": "{dash} 冲刺（短暂无敌）  ·  冲刺中按 {attack} = 冲刺斩（低段）"},
 	{"x": 2900.0, "art": "tablet", "text_en": "Crawlers hug the ground — a standing sweep passes over them. Use {move_down}+{attack}, a dash slash or a jump attack", "text": "伏爬者贴地而行，横斩会从它头顶掠过 —— 用 {move_down}+{attack} 下劈、冲刺斩或跳劈"},
-	{"x": 4560.0, "art": "chime", "learn": ["talisman"], "text_en": "{talisman} Talisman (20 Qi): homes in on distant foes and interrupts a Spitter's wind-up  ·  avoid taint pools", "text": "{talisman} 符箓（耗 20 道力）：追踪远敌，可打断瘴吐者蓄力　·　莫踏毒潭"},
+	{"x": 4560.0, "art": "chime", "learn": ["talisman"], "text_en": "{talisman} Talisman (20 Qi): homes in on distant foes and interrupts a Spitter's wind-up  ·  avoid taint pools", "text": "{talisman} 符箓（耗 20 道力）：追踪远敌，可打断瘴吐者蓄力  ·  莫踏毒潭"},
 	{"x": 6800.0, "art": "waymark", "learn": ["gourd"], "text_en": "{gourd} Yin-Yang Gourd: heals and blasts foes back (refilled at campfires)", "text": "{gourd} 阴阳葫芦：饮下回血并震开周身（篝火处补满）"},
 	{"x": 7280.0, "art": "post", "text_en": "Sealed Husk: greedy combos trigger a Seal Burst — when its chest talisman glows, back off!", "text": "封印残尸：连续贪刀会引发「符力溃散」—— 见胸前符光，立刻退开！"},
 	{"x": 8240.0, "art": "tablet", "learn": ["beads"], "text_en": "{beads} Prayer Beads (50 Qi): charge, then burst in a ring — your way out of a crowd", "text": "{beads} 念珠施法（耗 50 道力）：聚气后环阵爆发，解围利器"},

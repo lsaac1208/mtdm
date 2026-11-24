@@ -15,6 +15,7 @@ var cd := 1.0
 var phase := 1
 var since_hit := 0.0
 var chain := ""
+var _chop_shocked := false
 # Replay can supply a fixed move order at the normal AI decision point.
 var heavy_selector: Callable
 var summoned := false
@@ -78,7 +79,7 @@ func on_hurt(atk: Dictionary) -> void:
 
 func on_parried() -> void:
 	poise -= 45.0
-	Fx.float_text(global_position + Vector2(0, -hurt_size.y - 30), "破绽", Color(1, 0.85, 0.5), 26)
+	Fx.float_text(global_position + Vector2(0, -hurt_size.y - 30), Game.t("破绽", "STAGGER"), Color(1, 0.85, 0.5), 26)
 	if poise <= 0.0:
 		_break()
 	else:
@@ -105,7 +106,7 @@ func _break(reset_state := true) -> void:
 	vis.lean = 18.0
 	vis.squash = Vector2(1.04, 0.86)
 	Sfx.play("armor_break", 0.0)
-	Fx.float_text(global_position + Vector2(0, -hurt_size.y - 40), "破甲", Color(1, 0.6, 0.4), 32)
+	Fx.float_text(global_position + Vector2(0, -hurt_size.y - 40), Game.t("破甲", "ARMOR BREAK"), Color(1, 0.6, 0.4), 32)
 	Fx.particles(global_position + Vector2(0, -120), 24, Color(0.4, 0.22, 0.16), 300.0, 120.0, Vector2.UP, 900.0, 0.8, 6.0)
 	Fx.shake(6.0, 0.25)
 	Game.hitstop(0.12)
@@ -191,6 +192,8 @@ func _ai(delta: float) -> void:
 			velocity.x = move_toward(velocity.x, 0.0, 1600.0 * delta)
 			if state_t < 0.12:
 				melee(Rect2(18, -196, 156, 196), 30.0, 380.0, {"heavy": true})
+				if state != "chop":
+					return
 				if phase == 2 and randf() < delta * 55.0:
 					var arc_k: float = clampf(state_t / 0.12, 0.0, 1.0)
 					var bp := global_position + Vector2(lerpf(42.0, 136.0, arc_k) * facing, lerpf(-185.0, -24.0, arc_k))
@@ -286,6 +289,7 @@ func _start(s: String) -> void:
 
 func _chop() -> void:
 	set_state("chop")
+	_chop_shocked = false
 	play_pose_or_clip("chop", "elite_attack", 0.02, true)
 	vis.lean = 16.0
 	vis.squash = Vector2(1.08, 0.9)
@@ -300,6 +304,15 @@ func _chop() -> void:
 	if phase == 2:
 		Fx.particles(global_position + Vector2(96.0 * facing, -92.0), 16, Color(0.98, 0.34, 0.10, 0.95),
 			320.0, 85.0, Vector2(facing, 0.35).normalized(), 520.0, 0.48, 5.0, 13)
+	# Blade cleave resolves BEFORE the ground shockwave on the same tick so
+	# grounded hits take full 30-dmg cleave and timed ground parries cancel shock.
+	melee(Rect2(18, -196, 156, 196), 30.0, 380.0, {"heavy": true})
+	if state == "chop":
+		_chop_shock()
+
+
+func _chop_shock() -> void:
+	_chop_shocked = true
 	# ground shock (震地): low band around the impact point; jump over it
 	var impact := global_position + Vector2(120 * facing, 0)
 	Fx.ground_slam(impact, facing, 1.35)

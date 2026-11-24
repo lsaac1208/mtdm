@@ -6,7 +6,7 @@ import os, subprocess, sys, zipfile
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 godot = os.environ.get("GODOT", "godot")
-ver = sys.argv[1] if len(sys.argv) > 1 else "0.3.0"
+ver = sys.argv[1] if len(sys.argv) > 1 else "0.6.1"
 targets = [("Linux", "linux", "TaoistWanderer.x86_64", "linux-x86_64"),
            ("Windows", "windows", "TaoistWanderer.exe", "windows-x86_64"),
            ("macOS", "macos", "TaoistWanderer.zip", "macos-universal")]
@@ -39,6 +39,14 @@ for preset, sub, binary, tag in targets:
             zi.compress_type = zipfile.ZIP_DEFLATED
             with open(out, "rb") as fh:
                 z.writestr(zi, fh.read())
-        for doc, name in [("RELEASE_NOTES.md", "README.md"), ("game/ASSETS_AND_CREDITS.md", "ASSETS_AND_CREDITS.md")]:
-            z.write(os.path.join(root, doc), name)
+        for doc, name in [
+            ("RELEASE_NOTES.md", "README.md"),
+            ("game/ASSETS_AND_CREDITS.md", "ASSETS_AND_CREDITS.md"),
+            ("playtest/README.md", "PLAYTEST_GUIDE.md"),
+            ("playtest/KNOWN_ISSUES.md", "KNOWN_ISSUES.md"),
+            ("playtest/FEEDBACK_TEMPLATE.md", "FEEDBACK_TEMPLATE.md"),
+        ]:
+            src_doc = os.path.join(root, doc)
+            if os.path.exists(src_doc):
+                z.write(src_doc, name)
     print(zpath, os.path.getsize(zpath) // 1048576, "MB")

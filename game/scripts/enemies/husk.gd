@@ -79,8 +79,9 @@ func _burst_prep() -> void:
 	set_state("burst_prep")
 	velocity.x = 0.0
 	play_pose_or_clip("awaken", "husk_awaken", 0.04, true)
-	telegraph.flare(Vector2(4, -100), 0.5, Color(1, 0.2, 0.1))
-	telegraph.danger(Rect2(-120, -40, 240, 40), 0.5, Color(0.85, 0.55, 0.1, 0.25))
+	var prep_t := Game.tele(0.5)
+	telegraph.flare(Vector2(4, -100), prep_t, Color(1, 0.2, 0.1))
+	telegraph.danger(Rect2(-120, -40, 240, 40), prep_t, Color(0.85, 0.55, 0.1, 0.25))
 	Sfx.play("seal_charge", 0.0)
 
 
@@ -104,7 +105,7 @@ func _ai(delta: float) -> void:
 		if randf() < delta * 30.0:
 			Fx.particles(global_position + Vector2(randf_range(-30, 30), -randf_range(40, 130)), 1,
 				Color(0.95, 0.75, 0.3), 60.0, 180.0, Vector2.UP, 0.0, 0.4, 5.0)
-		if state_t >= 0.5:
+		if state_t >= Game.tele(0.5):
 			_burst()
 		return
 	if state == "burst":
@@ -145,12 +146,12 @@ func _ai(delta: float) -> void:
 				if cd <= 0.0:
 					set_state("windup")
 					play_pose_or_clip("windup", "husk_side", 0.06, true)
-					telegraph.flare(Vector2(40, -110), 0.55)
+					telegraph.flare(Vector2(40, -110), Game.tele(0.55))
 					Sfx.play("husk_groan", -4.0)
 		"windup":
 			velocity.x = 0.0
 			vis.lean = lerpf(vis.lean, -9.0, delta * 6.0)
-			if state_t >= 0.55:
+			if state_t >= Game.tele(0.55):
 				set_state("attack")
 				attack_hits = {}
 				play_pose_or_clip("attack", "husk_strike", 0.03, true)

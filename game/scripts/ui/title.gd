@@ -101,7 +101,7 @@ func _ready() -> void:
 	var saved := Game.saved_run_info()
 	if not saved.is_empty():
 		# an unfinished journey: offer to resume at its last campfire, first
-		entries.insert(0, ["继续 · %s  %s" % [saved.zone, Game.format_time(float(saved.time))], "_continue"])
+		entries.insert(0, [Game.t("继续 · %s  %s", "Continue · %s  %s") % [saved.zone, Game.format_time(float(saved.time))], "_continue"])
 		entries[1][0] = "新的旅程  ·  New Game"
 	if Game.cleared_once:
 		# post-clear challenge: fight the General again from the last campfire
@@ -175,7 +175,7 @@ func _ready() -> void:
 	badge.add_child(_status_lbl)
 	_refresh_status()
 	var foot := Label.new()
-	foot.text = "第一章 · 序章试玩版 v%s　|　Prologue Demo" % ProjectSettings.get_setting("application/config/version")
+	foot.text = "第一章 · 序章试玩版 v%s  |  Prologue Demo" % ProjectSettings.get_setting("application/config/version")
 	foot.add_theme_font_size_override("font_size", 14)
 	foot.add_theme_color_override("font_color", Color(0.25, 0.2, 0.16))
 	foot.position = Vector2(130, 680)
@@ -272,19 +272,34 @@ func _start() -> void:
 func _refresh_status() -> void:
 	if _status_lbl == null:
 		return
-	var diffs := ["故事 Story", "常规 Normal", "修行 Hard"]
+	var diffs := ["Story", "Normal", "Hard"] if Game.lang == "en" else ["故事 Story", "常规 Normal", "修行 Hard"]
 	var dtxt: String = diffs[clampi(Game.difficulty, 0, 2)]
+	var rank_en: String = String({"甲": "A", "乙": "B", "丙": "C"}.get(Game.best_rank, Game.best_rank))
 	if Game.cleared_once and not Game.best_rank.is_empty():
-		_status_lbl.text = "当前难度：%s\n最佳评价：%s · %s" % [dtxt, Game.best_rank, Game.format_time(Game.best_time)]
-		var br: float = Game.best_rematch[clampi(Game.difficulty, 0, 2)]
-		if br > 0.0:
-			_status_lbl.text += "\n再战尸将：%s" % Game.format_time(br)
+		if Game.lang == "en":
+			_status_lbl.text = "Difficulty: %s\nBest Rank: %s · %s" % [dtxt, rank_en, Game.format_time(Game.best_time)]
+			var br: float = Game.best_rematch[clampi(Game.difficulty, 0, 2)]
+			if br > 0.0:
+				_status_lbl.text += "\nBoss Rematch: %s" % Game.format_time(br)
+		else:
+			_status_lbl.text = "当前难度：%s\n最佳评价：%s · %s" % [dtxt, Game.best_rank, Game.format_time(Game.best_time)]
+			var br: float = Game.best_rematch[clampi(Game.difficulty, 0, 2)]
+			if br > 0.0:
+				_status_lbl.text += "\n再战尸将：%s" % Game.format_time(br)
 	else:
-		_status_lbl.text = "当前难度：%s\n序章五区 · 尸将待镇" % dtxt
+		if Game.lang == "en":
+			_status_lbl.text = "Difficulty: %s\nPrologue · 5 Zones · General awaits" % dtxt
+		else:
+			_status_lbl.text = "当前难度：%s\n序章五区 · 尸将待镇" % dtxt
+	if _btn_for.has("_continue"):
+		var saved := Game.saved_run_info()
+		if not saved.is_empty():
+			(_btn_for["_continue"] as Button).text = Game.t("继续 · %s  %s", "Continue · %s  %s") % [saved.zone, Game.format_time(float(saved.time))]
 
 
 func _refresh_help() -> void:
 	help.text = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").controls_text())
+	_refresh_status()
 
 
 func _help() -> void:

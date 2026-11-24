@@ -462,7 +462,7 @@ func _st_attack(delta: float) -> void:
 		if _wants("gourd") and gourd > 0:
 			_start_skill("gourd")
 			return
-	if can_cancel and _held("block") and t >= st + ac + 0.08:
+	if can_cancel and _held("block") and is_on_floor() and t >= st + ac + 0.08:
 		set_state("block")
 		block_t = 0.0
 		return
@@ -472,7 +472,7 @@ func _st_attack(delta: float) -> void:
 		else:
 			_set_combat_frame(clip, 3, "hero_strike_settle")
 	if t >= total:
-		set_state("idle")
+		set_state("idle" if is_on_floor() else "air")
 
 
 func _on_melee_connect(hits: Array) -> void:
@@ -569,7 +569,7 @@ func _st_dash_attack(delta: float) -> void:
 		_start_attack("slash2")
 		return
 	if state_t >= 0.42:
-		set_state("idle")
+		set_state("idle" if is_on_floor() else "air")
 
 
 # ---------------------------------------------------------------- air attack
@@ -611,6 +611,9 @@ func _st_block(delta: float) -> void:
 	var ax := _axis()
 	if ax != 0.0 and block_t < 0.05:
 		facing = int(signf(ax))
+	if not is_on_floor():
+		set_state("air")
+		return
 	if not _held("block"):
 		set_state("idle")
 		return
@@ -688,7 +691,7 @@ func _st_skill(delta: float) -> void:
 					register_hit(hits.size())
 					Fx.shake(3.0, 0.15)
 			if state_t >= 0.58:
-				set_state("idle")
+				set_state("idle" if is_on_floor() else "air")
 		"beads_a":
 			if state_t >= 0.42:
 				set_state("beads_b")
@@ -713,7 +716,7 @@ func _st_skill(delta: float) -> void:
 				get_tree().call_group("taint_puddle", "purify_near", global_position, 240.0)
 		"beads_b":
 			if state_t >= 0.4:
-				set_state("idle")
+				set_state("idle" if is_on_floor() else "air")
 
 
 # ---------------------------------------------------------------- damage
@@ -753,6 +756,8 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 		var heavy: bool = atk.get("heavy", false)
 		var dmg: float = atk.damage * (0.45 if heavy else 0.15)
 		_take(dmg, false)
+		if dead:
+			return {"blocked": true}
 		knock_v = -facing * (420.0 if heavy else 200.0)
 		Sfx.play("block", -2.0)
 		_block_recoil = -0.35 if heavy else -0.2
@@ -761,6 +766,7 @@ func receive_hit(atk: Dictionary) -> Dictionary:
 		if heavy:
 			set_state("hit")
 			_hit_stun = 0.45
+			invuln = maxf(invuln, 0.45)
 			vis.play_clip("hit", 0.03, true)
 		return {"blocked": true}
 	if state in ["beads_a", "beads_b"]:
@@ -816,7 +822,7 @@ func _parry(atk: Dictionary) -> void:
 	Sfx.play("parry", 0.0, 0.03)
 	var ppos := global_position + Vector2(36 * facing, -96)
 	Fx.parry_burst(ppos, facing)
-	Fx.float_text(global_position + Vector2(0, -175), "弹反", Color(1, 0.88, 0.5), 30)
+	Fx.float_text(global_position + Vector2(0, -175), Game.t("弹反", "PARRY"), Color(1, 0.88, 0.5), 30)
 	Game.hitstop(0.16, 0.02)
 	Fx.shake(5.0, 0.16)
 	Fx.kick(Vector2(-facing * 6.5, -1.5), 0.11)
@@ -856,6 +862,8 @@ func respawn_at(pos: Vector2) -> void:
 	dead = false
 	global_position = pos
 	velocity = Vector2.ZERO
+	knock_v = 0.0
+	_block_recoil = 0.0
 	hp = max_hp
 	qi = maxf(qi, 40.0)
 	gourd = GOURD_MAX

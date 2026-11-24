@@ -58,7 +58,10 @@ func _process(delta: float) -> void:
 			var first := not lit or Game.checkpoint_id != cp_id
 			lit = true
 			embers.amount = 28
-			Game.set_checkpoint(cp_id)
+			var fresh_spawn_fire := cp_id == 0 and Game.checkpoint_id == 0 and Game.run_time < 1.0 \
+				and Game.cleared.is_empty() and Game.lore_read.is_empty() and Game.props_broken == 0
+			if not fresh_spawn_fire:
+				Game.set_checkpoint(cp_id)
 			var needed: bool = p.hp < p.max_hp or p.gourd < p.GOURD_MAX
 			p.rest()
 			if first or needed:

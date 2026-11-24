@@ -82,11 +82,19 @@ static func _plate(bg: Color, edge: Color, edge_w: int, shadow := 0) -> StyleBox
 	return s
 
 
+const BRUSH_FONT := preload("res://assets/fonts/MaShanZheng-subset.ttf")
+const SERIF_FONT := preload("res://assets/fonts/NotoSerifSC-Bold-subset.otf")
+
 static var _shared: Theme
 
 
 static func shared() -> Theme:
 	if _shared == null:
+		# Ensure glyphs omitted from the brush subset (e.g. '·', '↑') fall back
+		# deterministically to the bundled Noto Serif subset on every OS.
+		var bf: FontFile = BRUSH_FONT
+		if bf.fallbacks.is_empty():
+			bf.fallbacks = [SERIF_FONT]
 		_shared = build()
 	return _shared
 

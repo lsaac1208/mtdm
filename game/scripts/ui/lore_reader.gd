@@ -86,7 +86,7 @@ func _ready() -> void:
 
 	var foot := Label.new()
 	var n := Game.lore_read.size()
-	foot.text = Game.t(("新得碑文　" if first else "") + "残碑 %d / %d　·　%s" % [n, LevelData.LORE.size(), Game.fmt_keys("{attack} 合上")],
+	foot.text = Game.t(("新得碑文  " if first else "") + "残碑 %d / %d  ·  %s" % [n, LevelData.LORE.size(), Game.fmt_keys("{attack} 合上")],
 		("New inscription   " if first else "") + "Steles %d / %d  ·  %s" % [n, LevelData.LORE.size(), Game.fmt_keys("{attack} Close")])
 	foot.add_theme_font_size_override("font_size", 14)
 	foot.add_theme_color_override("font_color", Color(0.86, 0.68, 0.36))
@@ -100,14 +100,28 @@ func _process(delta: float) -> void:
 	if _closing:
 		_root.modulate.a = move_toward(_root.modulate.a, 0.0, delta * 6.0)
 		if _root.modulate.a <= 0.0:
-			get_tree().paused = _was_paused
+			var pause_open := false
+			if Game.level and is_instance_valid(Game.level):
+				var pm := Game.level.get_node_or_null("Pause")
+				if pm != null and pm.get("root") != null and pm.root.visible:
+					pause_open = true
+			if not pause_open:
+				get_tree().paused = _was_paused
 			queue_free()
 		return
 	_root.modulate.a = move_toward(_root.modulate.a, 1.0, delta * 5.0)
 
 
 func _input(e: InputEvent) -> void:
-	if _closing or _t < 0.3:
+	if _closing:
+		return
+	if _t < 0.3:
+		# Swallow button presses during the open-guard window so PauseMenu
+		# behind us cannot open on Esc/Start while LoreReader is visible.
+		for a in ["confirm", "attack", "jump", "move_up", "pause", "ui_cancel"]:
+			if e.is_action_pressed(a):
+				get_viewport().set_input_as_handled()
+				return
 		return
 	for a in ["confirm", "attack", "jump", "move_up", "pause", "ui_cancel"]:
 		if e.is_action_pressed(a):

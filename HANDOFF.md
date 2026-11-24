@@ -1,21 +1,20 @@
-# Developer Handoff — Taoist Wanderer (道行者) v0.4.0
+# Developer Handoff — Taoist Wanderer (道行者) v0.6.1
 
-> **Feature freeze (2026-11-24):** the owner paused feature work; only stabilization, verification and packaging. Playtest package docs live in `playtest/`.
+> **Feature freeze (2026-11-24):** feature work is frozen; stabilization, verification and packaging only. Playtest package docs live in `playtest/`.
 >
-> **Active development:** branch `claude/autonomous-v05` — **0.6.0 release candidate** (built on `bd25e07`, not published). See CHANGELOG, RELEASE_NOTES and [evidence/v0.6.0/README.md](evidence/v0.6.0/README.md); 84 engine checks. Capture/QA modes added: `lorecap`, `defeatcap`, `perfcap` (`--ablate=`, `--quality=`), `ending_shot --mode=rematch`; save isolation via `--qa-run=` / `--qa-settings=`. Route data lives in `game/scripts/level/chapters/` behind the `LevelData` facade (D41).
+> **Current release & branch:** branch `claude/autonomous-v05` — **0.6.1 public playtest pre-release** (post-cross-validation stabilization over `v0.6.0`). See [CHANGELOG.md](CHANGELOG.md), [RELEASE_NOTES.md](RELEASE_NOTES.md), and [evidence/v0.6.1/README.md](evidence/v0.6.1/README.md); **99 engine checks**. Capture/QA modes added since 0.4.0: `lorecap`, `defeatcap`, `perfcap` (`--ablate=`, `--quality=`), `bosshintcap`, `ending_shot --mode=rematch`; save isolation via `--qa-run=` / `--qa-settings=`. Route data lives in `game/scripts/level/chapters/` behind the `LevelData` facade (D41).
 
 This is the English entry point for a developer taking over the project. The design documents in `docs/` and most status notes are in Chinese; this file summarises what you need to build, test and continue the game.
 
 | | |
 | --- | --- |
-| Version | **0.4.0** — pre-commercial prologue demo candidate |
-| Source branch | `codex/demo-v0.4.0` (branched from `origin/claude/post-codex-continuation` @ `8eb690d`) |
-| Release | [v0.4.0 pre-release](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0) |
-| Previous release | [v0.3.1 pre-release](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1) |
-| Based on | `claude/post-codex-continuation` @ `8eb690d` (`v0.3.1`), which built on `codex/visual-polish-v03` @ `451d4d3`. |
+| Version | **0.6.1** — public playtest pre-release (cross-validation stabilization) |
+| Source branch | `claude/autonomous-v05` (built on `v0.6.0` @ `9c363c8` / `codex/demo-v0.4.0` @ `bd25e07`) |
+| Release | [v0.6.1 pre-release](https://github.com/lsaac1208/mtdm/releases/tag/v0.6.1) |
+| Previous release | [v0.6.0 pre-release](https://github.com/lsaac1208/mtdm/releases/tag/v0.6.0) |
 | Engine | Godot **4.7.2.stable.official.ed1daf0bf** (standard, non-.NET) |
 | Change log | [CHANGELOG.md](CHANGELOG.md) |
-| Evidence for 0.4.0 | [evidence/v0.4.0/README.md](evidence/v0.4.0/README.md) (Metal GPU captures, 5-zone readability, real-GPU perf & native macOS `.app` verification) |
+| Evidence for 0.6.1 | [evidence/v0.6.1/README.md](evidence/v0.6.1/README.md) & [evidence/v0.6.0/RC_VERIFICATION.md](evidence/v0.6.0/RC_VERIFICATION.md) |
 
 `main` remains the lightweight design-pack homepage branch (its `README.md` top banner points here; game binaries/assets are not merged into `main`). The branches `claude/post-codex-continuation`, `codex/visual-polish-v03`, and `dev/vertical-slice-20261118`, and tags `v0.2.0`, `v0.3.0-rc.1`, and `v0.3.1`, are preserved intact.
 
@@ -67,20 +66,20 @@ Install the export templates into `~/.local/share/godot/export_templates/4.7.2.s
 
 ```bash
 git clone https://github.com/lsaac1208/mtdm.git && cd mtdm
-git switch codex/demo-v0.4.0
+git switch claude/autonomous-v05
 export GODOT=/path/to/godot   # Godot 4.7.2.stable
 
 $GODOT --headless --path game --import         # first time only
 $GODOT --path game                              # play
 
-tools/qa/smoke.sh                               # import + 63 checks + bot run (+ rendered title shot if xvfb-run exists)
-$GODOT --headless --path game -- --test=all --nohitstop --mute                 # 63 engine checks
-$GODOT --headless --fixed-fps 60 --path game -- --test=soak --nohitstop --mute # 2-run Normal clear + leak check
-$GODOT --headless --fixed-fps 60 --path game -- --test=bot --mute              # input-only bot plays the whole route
-$GODOT --headless --fixed-fps 60 --path game -- --test=bot --bot_skill=human --mute   # bot with reaction delay
+tools/qa/smoke.sh                               # import + 99 checks + bot run (isolated QA saves)
+$GODOT --headless --fixed-fps 60 --path game -- --test=all --nohitstop --mute --qa-settings=/tmp/tw-s.cfg --qa-run=/tmp/tw-r.cfg
+$GODOT --headless --fixed-fps 60 --path game -- --test=soak --nohitstop --mute --qa-settings=/tmp/tw-s.cfg --qa-run=/tmp/tw-r.cfg
+$GODOT --headless --fixed-fps 60 --path game -- --test=bot --mute --qa-settings=/tmp/tw-s.cfg --qa-run=/tmp/tw-r.cfg
+$GODOT --headless --fixed-fps 60 --path game -- --test=bot --bot_skill=human --mute --qa-settings=/tmp/tw-s.cfg --qa-run=/tmp/tw-r.cfg
 python3 tools/audio/audio_review.py game/assets/audio /tmp/audio_review        # 75-file audio loudness/seam gate
-GODOT=$GODOT python3 tools/build/package.py 0.4.0                              # build/TaoistWanderer-v0.4.0-*.zip
-python3 tools/qa/native_release.py build/TaoistWanderer-v0.4.0-macos-universal.zip build/qa/native-mac
+GODOT=$GODOT python3 tools/build/package.py 0.6.1                              # build/TaoistWanderer-v0.6.1-*.zip
+python3 tools/qa/native_release.py build/TaoistWanderer-v0.6.1-macos-universal.zip build/qa/native-mac
 ```
 
 The rendered screenshot modes need a display or `xvfb-run`. Launch the game with `--rendering-driver opengl3 --resolution 1280x720 --fixed-fps 60`, then add `-- --test=<mode> --shots=<dir> --mute`. The available modes are `titlecap`, `showcase`, `gatecap`, `sealcap`, `platcap`, `combocap`, `elitecap`, `runcap`, `pausecap`, `optcap` and `ending_shot`. To record a full playthrough, add `--write-movie out.avi -- --test=bot`.

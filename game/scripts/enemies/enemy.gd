@@ -402,7 +402,7 @@ func update_stagger(delta: float) -> bool:
 func on_parried() -> void:
 	poise = max_poise
 	stagger(0.9, -facing, 140.0)
-	Fx.float_text(global_position + Vector2(0, -hurt_size.y - 30), "破绽", Color(1, 0.85, 0.5), 24)
+	Fx.float_text(global_position + Vector2(0, -hurt_size.y - 30), Game.t("破绽", "STAGGER"), Color(1, 0.85, 0.5), 24)
 
 
 func ignite(dur: float) -> void:

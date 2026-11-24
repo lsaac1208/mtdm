@@ -2,9 +2,24 @@
 
 All versions are pre-release vertical slices. Automated tests and GPU captures are not a substitute for human playtest approval.
 
-## 0.4.0 — 2026-11-20## 0.6.0 — 2026-11-24 (release candidate, not published)
+## 0.6.1 — 2026-11-24 (public playtest pre-release · cross-validation stabilization)
 
-Branch `claude/autonomous-v05`. Packages built locally (`build/`), verification in [evidence/v0.6.0](evidence/v0.6.0/README.md). No GitHub Release published (needs the owner's approval). Includes the 0.7-track items below (low graphics mode, perfcap, combat-quiet fixes).
+Branch `claude/autonomous-v05` (built on `v0.6.0` @ `9c363c8`). Full real-GPU Apple Silicon verification & updated evidence in [evidence/v0.6.1/README.md](evidence/v0.6.1/README.md).
+
+### Fixed (Gemini 4 Neon × Grok 4.7 cross-validation)
+- **Cold-launch title progress & Boss Rematch visibility**: `Game._ready()` now loads gameplay/key/progress settings synchronously (`load_settings(true)`) while deferring only audio bus volumes and fullscreen window setup until `Sfx._ready()`, so cold boots immediately display「再战尸将 · Rematch」and saved rank/difficulty/rematch records.
+- **Boss overhead chop hit & parry ordering**: `elite._chop()` now resolves the 30-dmg parryable blade cleave before the unblockable 8-dmg `ground_shock` (which fires 0.04 s later only if the chop was not parried), restoring full cleave damage on grounded hits and ground parryability.
+- **Opening epigraph input lock**: `Hud._opening()` sets `_opening_active` and `Hud.bind(player)` applies `controls_locked = true` immediately so player input stays locked during the opening epigraph fade regardless of `add_child`/`bind` order.
+- **Boss death with Phase-2 summons alive**: killing the General in `e8_elite` now banishes remaining summoned/companion grunts and clears the encounter immediately in sync with the victory cinematic, preventing stuck boss bars or posthumous boss respawns.
+- **Lethal block chip-damage & heavy-block guard break**: lethal blocked hits return early without overwriting `"dead"` or leaking `knock_v` onto campfire respawn (`respawn_at` also zeroes `knock_v`); non-lethal heavy-block guard breaks grant 0.45 s `invuln`.
+- **LoreReader 0.3 s open-guard**: input actions are consumed during the 0.3 s guard so Esc/Start cannot open `PauseMenu` behind `LoreReader`, and closing guards against unpausing while `PauseMenu` is visible.
+- **OptionsMenu gamepad usability & key rebinding**: enabled `ScrollContainer.follow_focus`, added `move_up` to `REBINDABLE`, prevented duplicate key bindings via swap/clear, and scoped `ui_cancel`/pad `B` to dismiss key capture or open dropdown popups before closing Options.
+- **Save/Continue fidelity & difficulty rank integrity**: `run.cfg` now persists `qi`, `broken_props`, and `min_difficulty` (blocking mid-run Story → Hard rank exploits); already-broken props spawn shattered; campfire 0 skips silent frame-1 auto-save before any progress; reading a stele updates an existing story save.
+- **Localization, fonts & QA hygiene**: localized Title status plaque / Continue zone / Options difficulty descriptions / combat floaters / HUD combo stamp; attached bundled Noto Serif fallback to `MaShanZheng-subset.ttf` and removed missing `U+3000` characters; fixed Pause `_summary` live refresh, `Down slash` copy, Boss Phase-2 fierce portrait property (`phase >= 2`), Rematch ledger header `★`, Husk/Spitter-swipe `Game.tele()` scaling, `perfcap` p99 measurement reset, `test_runner.gd` `--qa-settings`/`--qa-run` restoration, `native_release.py` `--qa-run` isolation, and ZIP packaging docs (`package.py` + `RELEASE_NOTES.md`). Added 9 regression checks (99 total).
+
+## 0.6.0 — 2026-11-24 (public playtest pre-release)
+
+Branch `claude/autonomous-v05`, tag `v0.6.0` @ `9c363c8`. Verification in [evidence/v0.6.0/RC_VERIFICATION.md](evidence/v0.6.0/RC_VERIFICATION.md). Includes the 0.7-track items below (low graphics mode, perfcap, combat-quiet fixes).
 
 ### Fixed (0.7 track)
 - **Long English hints overflowed their plate** (found in the English/Low full-run review): the HUD re-placed the hint plate every frame at a fixed 48 px, overriding the fitted height, so the two-line boss hint spilled out and, in the boss layout, over the intro subtitle. The plate height now follows the fitted text in both layouts. `english_in_play_text` asserts the longest hint fits; capture mode `bosshintcap`; `evidence/v0.6.0/boss_hint_en_zh.png`.
@@ -52,7 +67,7 @@ Branch `claude/autonomous-v05`, built on `v0.4.0` (`codex/demo-v0.4.0` @ `bd25e0
 - **UI**: Journey Ledger button row follows the ledger's laid-out height (lore row no longer overlaps buttons); controls card lists 读碑.
 - QA: `lorecap` capture mode; 11 new engine checks (74 total).
 
- (Pre-Commercial Prologue Demo)
+## 0.4.0 — 2026-11-20 (Pre-Commercial Prologue Demo)
 
 Branch `codex/demo-v0.4.0`, built on `v0.3.2` (branched from `origin/claude/post-codex-continuation` @ `8eb690d`).
 
