@@ -65,7 +65,9 @@ func _ready() -> void:
 	v.add_child(rule)
 
 	var body := Label.new()
-	body.text = String(data.get("text", ""))
+	# English: the translation becomes the main body, the original sits below
+	var en_mode := Game.lang == "en"
+	body.text = String(data.get("en_text", "")) if en_mode else String(data.get("text", ""))
 	body.add_theme_font_override("font", SERIF)
 	body.add_theme_font_size_override("font_size", 21)
 	body.add_theme_color_override("font_color", Color(0.94, 0.89, 0.79))
@@ -75,7 +77,7 @@ func _ready() -> void:
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(body)
 	var en_body := Label.new()
-	en_body.text = String(data.get("en_text", ""))
+	en_body.text = String(data.get("text", "")).replace("\n", " ") if en_mode else String(data.get("en_text", ""))
 	en_body.add_theme_font_size_override("font_size", 13)
 	en_body.add_theme_color_override("font_color", Color(0.62, 0.56, 0.47))
 	en_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -84,7 +86,8 @@ func _ready() -> void:
 
 	var foot := Label.new()
 	var n := Game.lore_read.size()
-	foot.text = ("新得碑文　" if first else "") + "残碑 %d / %d　·　%s" % [n, LevelData.LORE.size(), Game.fmt_keys("{attack} 合上")]
+	foot.text = Game.t(("新得碑文　" if first else "") + "残碑 %d / %d　·　%s" % [n, LevelData.LORE.size(), Game.fmt_keys("{attack} 合上")],
+		("New inscription   " if first else "") + "Steles %d / %d  ·  %s" % [n, LevelData.LORE.size(), Game.fmt_keys("{attack} Close")])
 	foot.add_theme_font_size_override("font_size", 14)
 	foot.add_theme_color_override("font_color", Color(0.86, 0.68, 0.36))
 	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -120,10 +123,10 @@ func close() -> void:
 	_closing = true
 	# first read: the wanderer reacts in a non-blocking whisper once play resumes
 	var r = data.get("react", [])
-	if first and r is Array and r.size() == 2:
+	if first and r is Array and r.size() >= 2:
 		var id := "lore_" + String(data.get("id", ""))
 		var mood := String(r[0])
-		var text := String(r[1])
+		var text := String(r[2]) if Game.lang == "en" and r.size() >= 3 else String(r[1])
 		get_tree().create_timer(0.6, true, false, true).timeout.connect(
-			func(): Game.show_whisper(id, mood, "道行者 · 默语", text, 4.4))
+			func(): Game.show_whisper(id, mood, Game.t("道行者 · 默语", "Wanderer · inner voice"), text, 4.4))
 	InkTheme.play_ui("ui_back", "ui_move", -9.0)

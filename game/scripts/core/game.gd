@@ -301,6 +301,20 @@ var flash_scale := 1.0
 var tutorial_hints := true
 ## Gamepad vibration (only ever sent to the pad the player is using).
 var rumble_on := true
+## UI language for in-play text: "zh" (default) or "en". Big calligraphy
+## titles stay Chinese (brush font, art); everything you must read switches.
+var lang := "zh"
+
+
+func t(zh: String, en: String) -> String:
+	return en if lang == "en" else zh
+
+
+## Localised field of a data entry: d[key + "_en"] in English when present.
+func loc(d: Dictionary, key := "text") -> String:
+	if lang == "en" and d.has(key + "_en"):
+		return String(d[key + "_en"])
+	return String(d.get(key, ""))
 ## Graphics quality: 1 = full, 0 = low (integrated GPUs / software GL):
 ## no full-screen atmosphere pass, a third of the ambient motes, half the
 ## transient FX particles. Applied when a level is built.
@@ -444,6 +458,8 @@ func fmt_keys(text: String) -> String:
 func _post_settings() -> void:
 	if args.has("quality"):   # QA / perf override wins over the saved value
 		quality = clampi(int(args.quality), 0, 1)
+	if args.has("ui_lang"):
+		lang = "en" if String(args.ui_lang) == "en" else "zh"
 	apply_render_scale()
 
 
@@ -461,6 +477,7 @@ func load_settings() -> void:
 	flash_scale = clampf(float(cf.get_value("video", "flash", 1.0)), 0.0, 1.0)
 	tutorial_hints = bool(cf.get_value("game", "hints", true))
 	rumble_on = bool(cf.get_value("game", "rumble", true))
+	lang = "en" if String(cf.get_value("game", "lang", "zh")) == "en" else "zh"
 	quality = clampi(int(cf.get_value("video", "quality", 1)), 0, 1)
 	_post_settings()
 	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
@@ -499,6 +516,7 @@ func save_settings() -> void:
 	cf.set_value("video", "flash", flash_scale)
 	cf.set_value("game", "hints", tutorial_hints)
 	cf.set_value("game", "rumble", rumble_on)
+	cf.set_value("game", "lang", lang)
 	cf.set_value("video", "quality", quality)
 	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
 	for action in REBINDABLE:

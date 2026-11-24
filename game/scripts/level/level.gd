@@ -573,7 +573,7 @@ func _update_signs() -> void:
 			_sign_shown[s.x] = true
 			# a hint whose move the player has already performed isn't repeated
 			if not Game.hints_learned.has(s.text) and Game.tutorial_hints:
-				Game.show_hint(s.text, 6.0, s.get("learn", []), int(s.get("need", 1)), s.text)
+				Game.show_hint(Game.loc(s), 6.0, s.get("learn", []), int(s.get("need", 1)), s.text)
 		elif not near and absf(player.global_position.x - s.x) > 400.0:
 			_sign_shown[s.x] = false
 
@@ -585,9 +585,9 @@ func _trigger_zone_whisper(zid: String, first: bool) -> void:
 	if first and not Game.args.has("test") and not Game.args.has("startx"):
 		get_tree().create_timer(4.8).timeout.connect(func():
 			if is_instance_valid(self) and Game.running:
-				Game.show_whisper("zone_" + zid, String(w.mood), String(w.speaker), String(w.text), float(w.dur)))
+				Game.show_whisper("zone_" + zid, String(w.mood), Game.t(String(w.speaker), "Wanderer · inner voice"), Game.loc(w), float(w.dur)))
 	elif not first:
-		Game.show_whisper("zone_" + zid, String(w.mood), String(w.speaker), String(w.text), float(w.dur))
+		Game.show_whisper("zone_" + zid, String(w.mood), Game.t(String(w.speaker), "Wanderer · inner voice"), Game.loc(w), float(w.dur))
 
 
 func resume_zone_music() -> void:
@@ -643,7 +643,7 @@ func _on_player_died() -> void:
 	cam.global_position = Vector2(_cam_x, _cam_y)
 	cam.reset_physics_interpolation()
 	await hud.fade_in(0.6)
-	Game.show_hint("篝火余温尚在……再来。", 3.0)
+	Game.show_hint(Game.t("篝火余温尚在……再来。", "The campfire is still warm… once more."), 3.0)
 	_respawning = false
 
 

@@ -8,6 +8,15 @@ const CONTROLS := """移动  {move_left} / {move_right}　　跳跃  {jump}　�
 格挡  按住 {block}（出手瞬间格挡 = 弹反）
 符箓  {talisman}（20 道力）　　阴阳葫芦  {gourd}（回血 + 震开）　　念珠  {beads}（50 道力）
 读碑  靠近残碑按 {move_up}　　暂停  {pause}　　F11 全屏"""
+const CONTROLS_EN := """Move  {move_left} / {move_right}    Jump  {jump}    Dash  {dash}
+Attack  {attack} (3-hit combo)    Overhead  {move_down} + {attack}    Dash slash  {attack} while dashing    Jump attack  {attack} in the air
+Guard  hold {block} (block as it lands = Parry)
+Talisman  {talisman} (20 Qi)    Gourd  {gourd} (heal + blast)    Beads  {beads} (50 Qi)
+Read stele  {move_up} beside it    Pause  {pause}    F11 Fullscreen"""
+
+
+static func controls_text() -> String:
+	return CONTROLS_EN if Game.lang == "en" else CONTROLS
 
 var root: Control
 var _ctl: Label
@@ -62,7 +71,7 @@ func _ready() -> void:
 	ctl.add_theme_color_override("font_color", Color(0.90, 0.84, 0.71))
 	ctl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ctl_card.add_child(ctl)
-	for b in [["继续", "_resume"], ["设置 Options", "_options"], ["回到篝火（重开本段）", "_restart"], ["返回标题", "_title"]]:
+	for b in [["继续 · Resume", "_resume"], ["设置 · Options", "_options"], ["回到篝火 · Restart at campfire", "_restart"], ["返回标题 · Title", "_title"]]:
 		var btn := Button.new()
 		btn.text = b[0]
 		btn.custom_minimum_size = Vector2(320, 46)
@@ -86,7 +95,7 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 func _refresh_controls() -> void:
-	_ctl.text = Game.fmt_keys(CONTROLS)
+	_ctl.text = Game.fmt_keys(controls_text())
 
 
 func _open() -> void:
@@ -98,6 +107,9 @@ func _open() -> void:
 		zname = String(LevelData.ZONES[zidx].cn)
 	var diff_cn: String = ["故事", "常规", "修行"][clampi(Game.difficulty, 0, 2)]
 	_summary.text = "%s　·　%s　·　用时 %s　·　斩祟 %d　·　弹反 %d" % [zname, diff_cn, Game.format_time(Game.run_time), Game.kills, Game.parries]
+	if Game.lang == "en":
+		var zi: int = clampi(int(Game.level.zone_idx), 0, LevelData.ZONES.size() - 1) if Game.level and is_instance_valid(Game.level) else 0
+		_summary.text = "%s  ·  %s  ·  Time %s  ·  Kills %d  ·  Parries %d" % [String(LevelData.ZONES[zi].en), ["Story", "Normal", "Hard"][clampi(Game.difficulty, 0, 2)], Game.format_time(Game.run_time), Game.kills, Game.parries]
 	root.visible = true
 	get_tree().paused = true
 	_set_hud(false)

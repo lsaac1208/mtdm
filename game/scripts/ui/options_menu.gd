@@ -58,6 +58,19 @@ func _ready() -> void:
 	diff.item_selected.connect(func(i): Game.difficulty = i; Game.save_settings(); InkTheme.play_ui("ui_click", "ui_move", -7.0))
 	InkTheme.wire_hover(diff)
 	box.add_child(diff)
+	_section(box, "语言 Language")
+	var lang_opt := OptionButton.new()
+	lang_opt.add_item("中文")
+	lang_opt.add_item("English (in-game text)")
+	lang_opt.selected = 1 if Game.lang == "en" else 0
+	lang_opt.custom_minimum_size = Vector2(520, 36)
+	lang_opt.item_selected.connect(func(i):
+		Game.lang = "en" if i == 1 else "zh"
+		Game.save_settings()
+		Game.prompts_changed.emit()   # relabel open prompts / hints now
+		InkTheme.play_ui("ui_click", "ui_move", -7.0))
+	InkTheme.wire_hover(lang_opt)
+	box.add_child(lang_opt)
 	_section(box, "声音 Audio")
 	_first = _slider(box, "总音量 Master", Game.bus_volume("Master"), func(v): Game.set_bus_volume("Master", v))
 	_slider(box, "音乐 Music", Game.bus_volume("Music"), func(v): Game.set_bus_volume("Music", v))

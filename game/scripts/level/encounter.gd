@@ -164,7 +164,7 @@ func _clear() -> void:
 			var w: Dictionary = LevelData.WHISPERS["boss_sealed"]
 			get_tree().create_timer(3.6).timeout.connect(func():
 				if is_instance_valid(self) and Game.running:
-					Game.show_whisper("boss_sealed", String(w.mood), String(w.speaker), String(w.text), float(w.dur)))
+					Game.show_whisper("boss_sealed", String(w.mood), Game.t(String(w.speaker), "Wanderer · inner voice"), Game.loc(w), float(w.dur)))
 		Sfx.play("stinger_victory", 0.0, 0.0)
 		Sfx.stop_music()
 		# The level owns this delay. Leaving for the ending or title cancels it.

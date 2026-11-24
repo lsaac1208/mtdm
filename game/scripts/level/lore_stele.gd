@@ -56,7 +56,7 @@ func _ready() -> void:
 
 func _refresh_prompt() -> void:
 	var read := Game.lore_read.has(String(data.get("id", "")))
-	_prompt.text = Game.fmt_keys("{move_up} 读碑") if not read else Game.fmt_keys("{move_up} 重读")
+	_prompt.text = Game.fmt_keys(Game.t("{move_up} 读碑", "{move_up} Read") if not read else Game.t("{move_up} 重读", "{move_up} Read again"))
 
 
 ## Steles tied to an encounter ("after") stay buried until it is cleared,

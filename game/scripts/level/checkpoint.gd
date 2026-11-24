@@ -66,7 +66,7 @@ func _process(delta: float) -> void:
 				if first:
 					Sfx.play("hearth_ignite", -2.0)
 				Sfx.play("rest", -4.5 if first else -2.0)
-				Game.show_hint("篝火调息 —— 气血已复，葫芦已满，此处记为重生点", 3.5)
+				Game.show_hint(Game.t("篝火调息 —— 气血已复，葫芦已满，此处记为重生点", "Rest at the campfire — health and gourd restored, progress saved here"), 3.5)
 				Fx.particles(global_position + Vector2(0, -30), 26 if first else 18, Color(1, 0.85, 0.45), 190.0, 45.0, Vector2.UP, -85.0, 1.15, 5.4)
 				var ring := Fx.ring(global_position + Vector2(0, -24), 16.0, 145.0 if first else 95.0, Color(1.0, 0.82, 0.36), 0.52, 5.0, 0.72)
 				ring.glyphs = 8 if first else 0

@@ -54,17 +54,17 @@ const CHECKPOINTS := [
 ]
 
 const SIGNS := [
-	{"x": 470.0, "art": "waymark", "learn": ["jump"], "text": "{move_left} / {move_right} 移动　·　{jump} 跳跃（按住跳更高）"},
-	{"x": 760.0, "art": "post", "learn": ["attack"], "need": 3, "text": "{attack} 攻击 —— 连按三段：横斩 → 下劈 → 突刺"},
-	{"x": 1130.0, "art": "tablet", "learn": ["block"], "text": "按住 {block} 格挡；在敌人出手瞬间举剑 = 弹反（回道力，敌人露出破绽）"},
-	{"x": 2580.0, "art": "post", "learn": ["dash"], "text": "{dash} 冲刺（短暂无敌）　·　冲刺中按 {attack} = 冲刺斩（低段）"},
-	{"x": 2900.0, "art": "tablet", "text": "伏爬者贴地而行，横斩会从它头顶掠过 —— 用 {move_down}+{attack} 下劈、冲刺斩或跳劈"},
-	{"x": 4560.0, "art": "chime", "learn": ["talisman"], "text": "{talisman} 符箓（耗 20 道力）：追踪远敌，可打断瘴吐者蓄力　·　莫踏毒潭"},
-	{"x": 6800.0, "art": "waymark", "learn": ["gourd"], "text": "{gourd} 阴阳葫芦：饮下回血并震开周身（篝火处补满）"},
-	{"x": 7280.0, "art": "post", "text": "封印残尸：连续贪刀会引发「符力溃散」—— 见胸前符光，立刻退开！"},
-	{"x": 8240.0, "art": "tablet", "learn": ["beads"], "text": "{beads} 念珠施法（耗 50 道力）：聚气后环阵爆发，解围利器"},
-	{"x": 8860.0, "art": "tablet", "text": "乱葬岗尸潮将起 —— 被围时以念珠解围，留意贴地而来的伏爬者"},
-	{"x": 9840.0, "art": "chime", "text": "尸将：读它的举刀前摇 —— 竖劈要跳开震地，横扫可冲刺穿过；收招时反击"},
+	{"x": 470.0, "art": "waymark", "learn": ["jump"], "text_en": "{move_left} / {move_right} Move  ·  {jump} Jump (hold to jump higher)", "text": "{move_left} / {move_right} 移动　·　{jump} 跳跃（按住跳更高）"},
+	{"x": 760.0, "art": "post", "learn": ["attack"], "need": 3, "text_en": "{attack} Attack — press three times: sweep → overhead → thrust", "text": "{attack} 攻击 —— 连按三段：横斩 → 下劈 → 突刺"},
+	{"x": 1130.0, "art": "tablet", "learn": ["block"], "text_en": "Hold {block} to guard; raise it just as a foe strikes = Parry (restores Qi, leaves them open)", "text": "按住 {block} 格挡；在敌人出手瞬间举剑 = 弹反（回道力，敌人露出破绽）"},
+	{"x": 2580.0, "art": "post", "learn": ["dash"], "text_en": "{dash} Dash (brief invulnerability)  ·  {attack} during a dash = Dash Slash (low)", "text": "{dash} 冲刺（短暂无敌）　·　冲刺中按 {attack} = 冲刺斩（低段）"},
+	{"x": 2900.0, "art": "tablet", "text_en": "Crawlers hug the ground — a standing sweep passes over them. Use {move_down}+{attack}, a dash slash or a jump attack", "text": "伏爬者贴地而行，横斩会从它头顶掠过 —— 用 {move_down}+{attack} 下劈、冲刺斩或跳劈"},
+	{"x": 4560.0, "art": "chime", "learn": ["talisman"], "text_en": "{talisman} Talisman (20 Qi): homes in on distant foes and interrupts a Spitter's wind-up  ·  avoid taint pools", "text": "{talisman} 符箓（耗 20 道力）：追踪远敌，可打断瘴吐者蓄力　·　莫踏毒潭"},
+	{"x": 6800.0, "art": "waymark", "learn": ["gourd"], "text_en": "{gourd} Yin-Yang Gourd: heals and blasts foes back (refilled at campfires)", "text": "{gourd} 阴阳葫芦：饮下回血并震开周身（篝火处补满）"},
+	{"x": 7280.0, "art": "post", "text_en": "Sealed Husk: greedy combos trigger a Seal Burst — when its chest talisman glows, back off!", "text": "封印残尸：连续贪刀会引发「符力溃散」—— 见胸前符光，立刻退开！"},
+	{"x": 8240.0, "art": "tablet", "learn": ["beads"], "text_en": "{beads} Prayer Beads (50 Qi): charge, then burst in a ring — your way out of a crowd", "text": "{beads} 念珠施法（耗 50 道力）：聚气后环阵爆发，解围利器"},
+	{"x": 8860.0, "art": "tablet", "text_en": "The dead stir at the Burial Mound — break a surround with the beads, watch for crawlers along the ground", "text": "乱葬岗尸潮将起 —— 被围时以念珠解围，留意贴地而来的伏爬者"},
+	{"x": 9840.0, "art": "chime", "text_en": "Undead General: read the raised blade — jump the overhead chop's shockwave, dash through the sweep, punish the recovery", "text": "尸将：读它的举刀前摇 —— 竖劈要跳开震地，横扫可冲刺穿过；收招时反击"},
 ]
 
 # Readable lore steles (残碑): one per zone, off the encounter locks. Walk up
@@ -72,19 +72,19 @@ const SIGNS := [
 # last one rises in the elite's arena only once it is sealed ("after") and
 # recasts the fight that just ended.
 const LORE := [
-	{"id": "well", "react": ["alert", "井中叩壁声……封井的人，可曾想过井里是谁？"], "x": 2300.0, "title": "村口残碑", "en": "Village Stele",
+	{"id": "well", "react": ["alert", "井中叩壁声……封井的人，可曾想过井里是谁？", "Knocking from inside the well… did those who sealed it ever ask who was down there?"], "x": 2300.0, "title": "村口残碑", "en": "Village Stele",
 		"text": "某年三月，秽雨七日不绝。\n里正率众以石封井，自此井中夜夜有人叩壁。\n\n碑脚另有一行新刻，字迹潦草：\n「勿开井。」",
 		"en_text": "Tainted rain fell seven days. The headman sealed the well with stone; every night since, something knocks from inside. Scratched below: \"Do not open the well.\""},
-	{"id": "road", "react": ["fierce", "逃者勿往，往者勿回。——我偏要往。"], "x": 2480.0, "title": "驿道里程碑", "en": "Waymarker",
+	{"id": "road", "react": ["fierce", "逃者勿往，往者勿回。——我偏要往。", "Those who flee, do not go; those who go, do not return. — Then I go."], "x": 2480.0, "title": "驿道里程碑", "en": "Waymarker",
 		"text": "此去青云观六十里。\n\n旁有刀刻小字：\n「观中已无灯火。逃者勿往，往者勿回。」",
 		"en_text": "Qingyun Temple, sixty li. Knife-cut beside it: \"No lamps burn at the temple. Those who flee, do not go; those who go, do not return.\""},
-	{"id": "ward", "react": ["wistful", "镇物尚在，镇人已无。道统，便是这样一处处断的。"], "x": 5420.0, "title": "镇水碑", "en": "Water-Ward Stele",
+	{"id": "ward", "react": ["wistful", "镇物尚在，镇人已无。道统，便是这样一处处断的。", "The ward remains, its keepers gone. This is how a lineage breaks, one shrine at a time."], "x": 5420.0, "title": "镇水碑", "en": "Water-Ward Stele",
 		"text": "镇水以符，镇符以血。\n\n碑上黄符早已化作青黑浆水，顺着字口流下，碑底爬满秽苔。\n镇物尚在，镇人已无。",
 		"en_text": "Ward the water with talismans; ward the talismans with blood. The seals have rotted to black sludge. The ward remains; its keepers do not."},
-	{"id": "temple", "react": ["wistful", "师兄……那枚镇尸铃，你带去了哪里？"], "x": 7540.0, "title": "青云观功德碑", "en": "Temple Merit Stele",
+	{"id": "temple", "react": ["wistful", "师兄……那枚镇尸铃，你带去了哪里？", "Elder brother… where did you take the corpse-binding bell?"], "x": 7540.0, "title": "青云观功德碑", "en": "Temple Merit Stele",
 		"text": "功德主姓名尽数被凿去，唯余末行未损：\n「师兄弃观而去，携镇尸铃一枚，不知所终。」\n\n道行者以指抚过凿痕，良久无言。",
 		"en_text": "Every donor's name has been chiselled away save the last line: \"Elder brother abandoned the temple, taking the corpse-binding bell. Whereabouts unknown.\""},
-	{"id": "general", "react": ["wistful", "守关之誓，至死不渝。愿你此后，再不必守。"], "x": 10760.0, "after": "e8_elite", "title": "尸将墓志", "en": "The General's Epitaph",
+	{"id": "general", "react": ["wistful", "守关之誓，至死不渝。愿你此后，再不必守。", "An oath to hold the pass, kept even past death. May you never have to stand guard again."], "x": 10760.0, "after": "e8_elite", "title": "尸将墓志", "en": "The General's Epitaph",
 		"text": "镇关校尉，殉于大疫。\n生前誓守此关，死后不渝。\n\n——原来那具铁甲，守的从来不是乱葬岗，而是这道关。\n道行者合掌：「关已无人可守。安息吧。」",
 		"en_text": "A garrison captain, fallen in the great plague, sworn to hold this pass in life and after. The armour never guarded the graves - it guarded the gate. \"There is no one left to guard. Rest now.\""},
 ]
@@ -138,12 +138,12 @@ const END_X := 11080.0
 
 # Non-blocking inner-monologue whisper cards triggered once per zone / climax.
 const WHISPERS := {
-	"village": {"mood": "wistful", "speaker": "道行者 · 默语", "text": "荒村灶冷，连镇宅符都化了灰……先探探前路。", "dur": 4.4},
-	"road": {"mood": "alert", "speaker": "道行者 · 默语", "text": "官道尸迹未干，荒冢之祟已开始成群结队。", "dur": 4.4},
-	"lowland": {"mood": "wistful", "speaker": "道行者 · 默语", "text": "瘴气沉谷，毒泥蚀骨——落脚须慎，莫贪进击。", "dur": 4.6},
-	"temple": {"mood": "alert", "speaker": "道行者 · 默语", "text": "破庙香火虽断，残符犹在。此处煞气极重。", "dur": 4.4},
-	"burial": {"mood": "fierce", "speaker": "道行者 · 默语", "text": "铁甲煞气冲霄……前方便是镇守乱葬岗的尸将。", "dur": 4.6},
-	"boss_sealed": {"mood": "calm", "speaker": "道行者 · 默语", "text": "尸将已伏，前路石坊洞开。此行尚未终结。", "dur": 4.8},
+	"village": {"mood": "wistful", "speaker": "道行者 · 默语", "text_en": "The village hearths are cold, even the house wards burnt to ash… scout ahead first.", "text": "荒村灶冷，连镇宅符都化了灰……先探探前路。", "dur": 4.4},
+	"road": {"mood": "alert", "speaker": "道行者 · 默语", "text_en": "The corpse trail on the old road is fresh — the dead have begun to gather in packs.", "text": "官道尸迹未干，荒冢之祟已开始成群结队。", "dur": 4.4},
+	"lowland": {"mood": "wistful", "speaker": "道行者 · 默语", "text_en": "Miasma pools in the hollow and the mud eats bone — step carefully, don't overreach.", "text": "瘴气沉谷，毒泥蚀骨——落脚须慎，莫贪进击。", "dur": 4.6},
+	"temple": {"mood": "alert", "speaker": "道行者 · 默语", "text_en": "The incense is long gone, but the seals remain. The evil here is heavy.", "text": "破庙香火虽断，残符犹在。此处煞气极重。", "dur": 4.4},
+	"burial": {"mood": "fierce", "speaker": "道行者 · 默语", "text_en": "Iron and killing air… the General who guards the Burial Mound lies ahead.", "text": "铁甲煞气冲霄……前方便是镇守乱葬岗的尸将。", "dur": 4.6},
+	"boss_sealed": {"mood": "calm", "speaker": "道行者 · 默语", "text_en": "The General is sealed; the stone gate stands open. The road is not over.", "text": "尸将已伏，前路石坊洞开。此行尚未终结。", "dur": 4.8},
 }
 
 

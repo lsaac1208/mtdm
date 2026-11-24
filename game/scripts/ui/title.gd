@@ -275,7 +275,7 @@ func _refresh_status() -> void:
 
 
 func _refresh_help() -> void:
-	help.text = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").CONTROLS)
+	help.text = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").controls_text())
 
 
 func _help() -> void:

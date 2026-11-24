@@ -605,7 +605,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1939,6 +1939,38 @@ func t_stele_prompt_device() -> void:
 	Input.flush_buffered_events()
 	_log("stele_prompt_follows_device", pad_text != kb_text and back_text == kb_text,
 		"keyboard='%s' pad='%s' back='%s'" % [kb_text, pad_text, back_text])
+
+
+func t_language() -> void:
+	# English mode: tutorial hint, stele prompt, respawn line and controls card
+	# switch; every in-play data entry has an English line
+	var old := Game.lang
+	var missing := []
+	for s in LevelData.SIGNS:
+		if not s.has("text_en"):
+			missing.append("sign@%d" % int(s.x))
+	for k in LevelData.WHISPERS:
+		if not LevelData.WHISPERS[k].has("text_en"):
+			missing.append("whisper:" + k)
+	for d in LevelData.LORE:
+		if d.get("react", []).size() < 3 or not d.has("en_text"):
+			missing.append("lore:" + d.id)
+	Game.lang = "en"
+	Game.prompts_changed.emit()
+	var p := await _fresh_level(300.0)
+	var hud = Game.level.hud
+	p.global_position.x = 760.0
+	await _frames(4)
+	var hint_en: String = hud.hint_label.text
+	var stele_en: String = Game.level.lore_steles[0]._prompt.text
+	var ctl_en: String = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").controls_text())
+	Game.lang = "zh"
+	var ctl_zh: String = Game.fmt_keys(preload("res://scripts/ui/pause_menu.gd").controls_text())
+	Game.lang = old
+	Game.prompts_changed.emit()
+	var ok := missing.is_empty() and hint_en.begins_with("J Attack") and stele_en.ends_with("Read") \
+		and ctl_en.begins_with("Move") and ctl_zh.begins_with("移动")
+	_log("english_in_play_text", ok, "missing=%s hint='%s' stele='%s'" % [str(missing), hint_en.left(30), stele_en])
 
 
 func t_personal_space() -> void:

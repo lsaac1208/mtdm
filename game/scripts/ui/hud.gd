@@ -293,13 +293,13 @@ func _on_boss(b) -> void:
 	if first and not Game.whispers_seen.has("_boss_intro"):
 		Game.whispers_seen["_boss_intro"] = true
 		zone_cn.text = "尸将 · 前期精英"
-		zone_en.text = "残甲不毁，重压前行  ·  UNDEAD WARRIOR ELITE"
+		zone_en.text = Game.t("残甲不毁，重压前行  ·  UNDEAD WARRIOR ELITE", "UNDEAD WARRIOR ELITE  ·  ARMOUR UNBROKEN, CRUSHING FORWARD")
 		zone_t = 3.2
 
 
 func _on_player_died() -> void:
 	zone_cn.text = "身 陨"
-	zone_en.text = "道心未灭 —— 篝火处再起"
+	zone_en.text = Game.t("道心未灭 —— 篝火处再起", "YOUR TAO ENDURES — RISE AGAIN AT THE CAMPFIRE")
 	zone_t = 2.6
 
 
@@ -349,11 +349,23 @@ func _on_hint(text: String, dur: float) -> void:
 	hint_label.add_theme_color_override("font_color", Color(0.95, 0.88, 0.7))
 	hint_template = text
 	hint_label.text = Game.fmt_keys(hint_template)
+	_fit_hint()
 	hint_t = dur
+
+
+## Long lines (English especially) wrap to two lines: shrink the type a step
+## and grow the strip upward so the text never spills out of the plate.
+func _fit_hint() -> void:
+	var font: Font = hint_label.get_theme_font("font")
+	var avail := 860.0 - 40.0
+	var two_lines := font.get_string_size(hint_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x > avail
+	hint_label.add_theme_font_size_override("font_size", 18 if two_lines else 20)
+	hint_panel.offset_top = -152.0 if two_lines else -132.0
 
 
 func _refresh_prompts() -> void:
 	hint_label.text = Game.fmt_keys(hint_template)
+	_fit_hint()
 	for action in ["gourd", "talisman", "beads"]:
 		skill_keys[action] = Game.binding_label(action, true)
 	draw_root.queue_redraw()
