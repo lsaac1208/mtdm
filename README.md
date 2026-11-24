@@ -2,21 +2,23 @@
 
 ## 下载试玩与开发工程
 
-目前最新可玩与交接基线为 **`v0.4.0` 序章商业试玩版（Pre-Commercial Prologue Demo）**（分支 `codex/demo-v0.4.0` · Godot 4.7.2）。包含三幕可跳过水墨开场序章、五区九场遭遇、全角色逐帧手绘动画 + 2.5D 法线光照、10 处可斩碎道力道具、二阶段狂煞尸将、石坊光门、六情非阻塞默语、44.1 kHz 立体声音景与「行旅录」甲/乙/丙印章评级。
+目前最新可玩与交接基线为 **`v0.6.1` 公开试玩稳定版（Public Playtest Pre-release）**（分支 `claude/autonomous-v05` · Godot 4.7.2）。包含三幕可跳过水墨开场序章、五区九场遭遇、五块可读残碑与道行者心声、篝火存档与继续、通关后「再战尸将」、全游戏英文模式、完整手柄菜单导航与无障碍选项、全角色逐帧手绘动画 + 2.5D 法线光照、10 处可斩碎道力道具、二阶段狂煞尸将、石坊光门、44.1 kHz 立体声音景与「行旅录」甲/乙/丙印章评级，并已完成 **Gemini 4 Neon × Grok 4.7** 交叉验证稳定化修复。
+
+![道行者 v0.6.1 Apple Silicon Metal 实机画面总览](https://raw.githubusercontent.com/lsaac1208/mtdm/v0.6.1/evidence/v0.6.1/showcase.jpg)
 
 | 入口 | 说明 |
 | --- | --- |
-| **[下载 v0.4.0 预发布包（macOS / Windows / Linux + 源码归档）](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0)** | 含 SHA-256 校验值与 `MANIFEST.json`；macOS 通用包已在 Apple Silicon 真机验证 |
-| **[当前开发分支 `codex/demo-v0.4.0`](https://github.com/lsaac1208/mtdm/tree/codex/demo-v0.4.0)** | 完整 Godot 4.7.2 工程、美术/音频生成脚本与自动化测试（`63/63 PASS`） |
-| **[英文交接总览 `HANDOFF.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/HANDOFF.md)** · **[中文状态 `DEVELOPMENT_STATUS.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/DEVELOPMENT_STATUS.md)** | 架构说明、渲染层级、已验证/待办清单与后续接手步骤 |
-| **[运行构建 `BUILD_AND_RUN.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/BUILD_AND_RUN.md)** · **[变更日志 `CHANGELOG.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/CHANGELOG.md)** · **[路线图 `ROADMAP.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/ROADMAP.md)** · **[架构决策 `DECISIONS.md`](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/DECISIONS.md)** | 本地跑测、导出打包与 D1–D31 设计取舍记录 |
-| **[v0.4.0 实机截图、可读性与性能验收报告](https://github.com/lsaac1208/mtdm/blob/codex/demo-v0.4.0/evidence/v0.4.0/README.md)** | Metal 真机截图总览、15/15 五区可读性、帧时与原生 `.app` 验收日志 |
-| 历史里程碑回溯 | [v0.3.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1)（`claude/post-codex-continuation`）· [v0.3.0-rc.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1)（`codex/visual-polish-v03`）· [v0.2.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0)（`dev/vertical-slice-20261118`） |
+| **[下载 v0.6.1 预发布包（macOS / Windows / Linux）](https://github.com/lsaac1208/mtdm/releases/tag/v0.6.1)** | 内置试玩指南/已知问题/反馈表与 SHA-256 校验值；macOS 通用包已在 Apple Silicon 真机验证（`99/99 PASS`） |
+| **[当前开发分支 `claude/autonomous-v05`](https://github.com/lsaac1208/mtdm/tree/claude/autonomous-v05)** | 完整 Godot 4.7.2 工程、美术/音频生成脚本与自动化测试（`99/99 PASS`） |
+| **[英文交接总览 `HANDOFF.md`](https://github.com/lsaac1208/mtdm/blob/claude/autonomous-v05/HANDOFF.md)** · **[中文状态 `DEVELOPMENT_STATUS.md`](https://github.com/lsaac1208/mtdm/blob/claude/autonomous-v05/DEVELOPMENT_STATUS.md)** | 架构说明、渲染层级、已验证/待办清单与后续接手步骤 |
+| **[运行构建 `BUILD_AND_RUN.md`](https://github.com/lsaac1208/mtdm/blob/claude/autonomous-v05/BUILD_AND_RUN.md)** · **[变更日志 `CHANGELOG.md`](https://github.com/lsaac1208/mtdm/blob/claude/autonomous-v05/CHANGELOG.md)** · **[路线图 `ROADMAP.md`](https://github.com/lsaac1208/mtdm/blob/claude/autonomous-v05/ROADMAP.md)** · **[架构决策 `DECISIONS.md`](https://github.com/lsaac1208/mtdm/blob/claude/autonomous-v05/DECISIONS.md)** | 本地跑测、导出打包与 D1–D44 设计取舍记录 |
+| **[v0.6.1 实机截图、性能与原生验收报告](https://github.com/lsaac1208/mtdm/blob/claude/autonomous-v05/evidence/v0.6.1/README.md)** · **[试玩指南 `playtest/README.md`](https://github.com/lsaac1208/mtdm/blob/claude/autonomous-v05/playtest/README.md)** | Apple Silicon Metal 实机截屏、帧时与原生 `.app` 验收日志 |
+| 历史里程碑回溯 | [v0.6.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.6.0) · [v0.4.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.4.0)（`codex/demo-v0.4.0`）· [v0.3.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.1) · [v0.3.0-rc.1](https://github.com/lsaac1208/mtdm/releases/tag/v0.3.0-rc.1) · [v0.2.0](https://github.com/lsaac1208/mtdm/releases/tag/v0.2.0) |
 
 ```bash
-# 开发人员快速拉取最新工程（main 分支保持轻量设计总库，游戏工程在 codex/demo-v0.4.0）
+# 开发人员快速拉取最新工程（main 分支保持轻量设计总库，游戏工程在 claude/autonomous-v05）
 git clone https://github.com/lsaac1208/mtdm.git && cd mtdm
-git switch codex/demo-v0.4.0
+git switch claude/autonomous-v05
 godot --headless --path game --import && godot --path game
 ```
 
