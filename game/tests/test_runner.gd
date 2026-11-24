@@ -429,6 +429,11 @@ func _run() -> void:
 		await press(p, "move_up")
 		await get_tree().create_timer(0.6, true, false, true).timeout
 		await _shot("lore_card")
+		for n in get_tree().root.get_children():
+			if n.has_method("close") and n.get_script() != null and String(n.get_script().resource_path).ends_with("lore_reader.gd"):
+				n.close()
+		await _wait(1.6)
+		await _shot("lore_react")
 		Game.quit()
 		return
 	if only == "pausecap":
@@ -1572,6 +1577,8 @@ func t_lore() -> void:
 		reader.close()
 		await get_tree().create_timer(0.5, true, false, true).timeout
 	var resumed := not get_tree().paused and (reader == null or not is_instance_valid(reader))
+	await _wait(0.8)
+	var reacted := Game.whispers_seen.has("lore_well")
 	# far from a stele, up does nothing
 	p.global_position.x = 2600.0
 	await _frames(4)
@@ -1589,8 +1596,8 @@ func t_lore() -> void:
 	var risen: bool = gen.is_available() and gen.visible
 	Game.cleared.erase("e8_elite")
 	_log("lore_gated_by_boss", hidden_before and risen, "hidden_before=%s risen=%s" % [hidden_before, risen])
-	_log("lore_read_and_close", opened and paused and counted and resumed and not stray,
-		"opened=%s paused=%s counted=%s resumed=%s stray=%s" % [opened, paused, counted, resumed, stray])
+	_log("lore_read_and_close", opened and paused and counted and resumed and not stray and reacted,
+		"opened=%s paused=%s counted=%s resumed=%s stray=%s reacted=%s" % [opened, paused, counted, resumed, stray, reacted])
 
 
 func t_held_frames() -> void:

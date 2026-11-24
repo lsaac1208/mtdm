@@ -118,4 +118,12 @@ func close() -> void:
 	if _closing:
 		return
 	_closing = true
+	# first read: the wanderer reacts in a non-blocking whisper once play resumes
+	var r = data.get("react", [])
+	if first and r is Array and r.size() == 2:
+		var id := "lore_" + String(data.get("id", ""))
+		var mood := String(r[0])
+		var text := String(r[1])
+		get_tree().create_timer(0.6, true, false, true).timeout.connect(
+			func(): Game.show_whisper(id, mood, "道行者 · 默语", text, 4.4))
 	InkTheme.play_ui("ui_back", "ui_move", -9.0)
