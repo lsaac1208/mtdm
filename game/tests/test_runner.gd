@@ -605,7 +605,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "pad_menus", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "pad_menus", "pad_ending", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -2043,6 +2043,26 @@ func t_pad_menus() -> void:
 	_log("pad_pause_menu", pause_ok, "start_opens=%s A_resumes=%s B_resumes=%s" % [paused_a and paused_b, resumed_a, resumed_b])
 	_log("pad_menu_navigation", moved and opened and not still_open and back_on_options,
 		"dpad_moves=%s A_opens=%s B_closes=%s focus_back_on_options=%s (entries=%d)" % [moved, opened, not still_open, back_on_options, entries])
+
+
+func t_pad_ending() -> void:
+	# ending screen by pad: focus starts on Title; D-pad left + A = Play Again
+	await _fresh_level(700.0)
+	Game.finish_demo()
+	await _wait(3.0)
+	var vp := get_viewport()
+	var start_focus = vp.gui_get_focus_owner()
+	await _pad(JOY_BUTTON_DPAD_LEFT)
+	var left_focus = vp.gui_get_focus_owner()
+	var moved: bool = left_focus != null and left_focus != start_focus
+	var start_txt: String = start_focus.text if start_focus is Button else "none"
+	var left_txt: String = left_focus.text if left_focus is Button else "none"
+	var start_is_btn: bool = start_focus is Button
+	await _pad(JOY_BUTTON_A)
+	await _wait(1.0)
+	var in_level: bool = Game.level != null and is_instance_valid(Game.level) and get_tree().current_scene == Game.level
+	_log("pad_ending_play_again", start_is_btn and moved and in_level,
+		"focus=%s -> %s, new_run=%s" % [start_txt, left_txt, in_level])
 
 
 func t_personal_space() -> void:

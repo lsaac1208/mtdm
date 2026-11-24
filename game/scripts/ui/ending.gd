@@ -377,5 +377,10 @@ func _go_title() -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
+	# fallback only while no button is focused: otherwise the focused button
+	# owns Enter / A (its release would lose to this press - Play Again with
+	# Enter or A used to go to the title instead)
+	if get_viewport().gui_get_focus_owner() is BaseButton:
+		return
 	if t > 1.5 and (e.is_action_pressed("confirm") or e.is_action_pressed("attack")):
 		_go_title()
