@@ -2,7 +2,9 @@
 
 All versions are pre-release vertical slices. Automated tests and GPU captures are not a substitute for human playtest approval.
 
-## 0.4.0 — 2026-11-20## 0.6.0-dev — in progress
+## 0.4.0 — 2026-11-20## 0.6.0 — 2026-11-24 (release candidate, not published)
+
+Branch `claude/autonomous-v05`. Packages built locally (`build/`), verification in [evidence/v0.6.0](evidence/v0.6.0/README.md). No GitHub Release published (needs the owner's approval). Includes the 0.7-track items below (low graphics mode, perfcap, combat-quiet fixes).
 
 ### Fixed (0.7 track)
 - **Quieter combat** (full rendered review of the current build): the temple stele's 读碑 prompt floated over the hero during the nearby husk fight — steles now hide the prompt and refuse to open while the mix state is combat; the boss intro card replayed on every retry and the respawn line landed on top of it — it now plays on the first meeting only (per run, kept in the campfire save). Test `combat_quiet`; `lore_read_and_close` now starts past the village lock, as in real play.

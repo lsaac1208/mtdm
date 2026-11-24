@@ -1,6 +1,6 @@
 # Developer Handoff — Taoist Wanderer (道行者) v0.4.0
 
-> **Active development:** branch `claude/autonomous-v05` — **0.5.0 release candidate** (built on `bd25e07`, not published). See CHANGELOG "0.5.0", RELEASE_NOTES and [evidence/v0.5.0/README.md](evidence/v0.5.0/README.md); 77 engine checks. New capture modes: `lorecap`, `defeatcap`.
+> **Active development:** branch `claude/autonomous-v05` — **0.6.0 release candidate** (built on `bd25e07`, not published). See CHANGELOG, RELEASE_NOTES and [evidence/v0.6.0/README.md](evidence/v0.6.0/README.md); 84 engine checks. Capture/QA modes added: `lorecap`, `defeatcap`, `perfcap` (`--ablate=`, `--quality=`), `ending_shot --mode=rematch`; save isolation via `--qa-run=` / `--qa-settings=`. Route data lives in `game/scripts/level/chapters/` behind the `LevelData` facade (D41).
 
 This is the English entry point for a developer taking over the project. The design documents in `docs/` and most status notes are in Chinese; this file summarises what you need to build, test and continue the game.
 
