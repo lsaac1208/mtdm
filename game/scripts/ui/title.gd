@@ -27,6 +27,7 @@ var menu: VBoxContainer
 var help: Label
 var help_panel: PanelContainer
 var _status_lbl: Label
+var _btn_for := {}   # menu action name -> Button (indices shift with Continue/Rematch)
 var _started := false
 
 
@@ -132,6 +133,7 @@ func _ready() -> void:
 		btn.pressed.connect(Callable(self, b[1]))
 		InkTheme.wire_hover(btn)
 		menu.add_child(btn)
+		_btn_for[String(b[1])] = btn
 	# Framed ink-and-brass controls card (toggled via Controls button)
 	help_panel = PanelContainer.new()
 	help_panel.add_theme_stylebox_override("panel", InkTheme.scroll_panel(22, 16, 0.88))
@@ -294,7 +296,7 @@ func _options() -> void:
 	InkTheme.play_ui("ui_click", "ui_move", -6.0)
 	var o := OptionsMenu.new()
 	add_child(o)
-	o.closed.connect(func(): _refresh_status(); (menu.get_child(2) as Button).grab_focus())
+	o.closed.connect(func(): _refresh_status(); (_btn_for.get("_options", menu.get_child(0)) as Button).grab_focus())
 
 
 func _quit() -> void:

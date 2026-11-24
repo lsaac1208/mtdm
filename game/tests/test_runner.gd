@@ -605,7 +605,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "combat_quiet", "stele_prompt_device", "language", "pad_menus", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1971,6 +1971,78 @@ func t_language() -> void:
 	var ok := missing.is_empty() and hint_en.begins_with("J Attack") and stele_en.ends_with("Read") \
 		and ctl_en.begins_with("Move") and ctl_zh.begins_with("移动")
 	_log("english_in_play_text", ok, "missing=%s hint='%s' stele='%s'" % [str(missing), hint_en.left(30), stele_en])
+
+
+func _pad(button: int) -> void:
+	var e := InputEventJoypadButton.new()
+	e.device = 0
+	e.button_index = button
+	e.pressed = true
+	Input.parse_input_event(e)
+	Input.flush_buffered_events()
+	await _frames(2)
+	var r: InputEventJoypadButton = e.duplicate()
+	r.pressed = false
+	Input.parse_input_event(r)
+	Input.flush_buffered_events()
+	await _frames(2)
+
+
+func t_pad_menus() -> void:
+	# Steam Deck: the six-entry title must be fully navigable by pad alone,
+	# and backing out of Options must land on the Options entry again
+	var path := "user://qa_pad_run.cfg"
+	Game.args["qa-run"] = path
+	await _fresh_level(2300.0)
+	Game.running = true
+	Game.mode = "story"
+	Game.save_run()
+	var old_cleared := Game.cleared_once
+	Game.cleared_once = true
+	Game.to_title()
+	await _wait(1.0)
+	var title = get_tree().current_scene
+	var vp := get_viewport()
+	var first = vp.gui_get_focus_owner()
+	await _pad(JOY_BUTTON_DPAD_DOWN)
+	var moved: bool = vp.gui_get_focus_owner() != first and vp.gui_get_focus_owner() is Button
+	var opt_btn: Button = title._btn_for["_options"]
+	opt_btn.grab_focus()
+	await _frames(2)
+	await _pad(JOY_BUTTON_A)
+	await _wait(0.3)
+	var opened := false
+	for n in title.get_children():
+		if n is OptionsMenu:
+			opened = true
+	await _pad(JOY_BUTTON_B)
+	await _wait(0.4)
+	var still_open := false
+	for n in title.get_children():
+		if n is OptionsMenu and is_instance_valid(n) and not n.is_queued_for_deletion():
+			still_open = true
+	var back_on_options: bool = vp.gui_get_focus_owner() == opt_btn
+	var entries: int = title.menu.get_child_count()
+	Game.cleared_once = old_cleared
+	Game.clear_saved_run()
+	Game.args.erase("qa-run")
+	# in-game pause by pad: Start opens, A on Resume closes, Start again + B closes
+	await _fresh_level(700.0)
+	await _wait(0.5)
+	await _pad(JOY_BUTTON_START)
+	var paused_a := get_tree().paused
+	await _pad(JOY_BUTTON_A)
+	await _wait(0.2)
+	var resumed_a := not get_tree().paused
+	await _pad(JOY_BUTTON_START)
+	var paused_b := get_tree().paused
+	await _pad(JOY_BUTTON_B)
+	await _wait(0.2)
+	var resumed_b := not get_tree().paused
+	var pause_ok := paused_a and resumed_a and paused_b and resumed_b
+	_log("pad_pause_menu", pause_ok, "start_opens=%s A_resumes=%s B_resumes=%s" % [paused_a and paused_b, resumed_a, resumed_b])
+	_log("pad_menu_navigation", moved and opened and not still_open and back_on_options,
+		"dpad_moves=%s A_opens=%s B_closes=%s focus_back_on_options=%s (entries=%d)" % [moved, opened, not still_open, back_on_options, entries])
 
 
 func t_personal_space() -> void:

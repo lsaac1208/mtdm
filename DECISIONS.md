@@ -167,3 +167,6 @@ Significant technical and production decisions, newest last. Each entry: decisio
 
 ## D43 · Lightweight in-game localisation (0.7.0)
 - No Godot TranslationServer/CSV pipeline: in-play strings are few and live in route data, so entries carry `*_en` fields (`Game.loc(d)`) and code strings use `Game.t(zh, en)`. `Game.lang` persists in `settings.cfg`; QA override is `--ui_lang` (not `--lang`, which the capture wrapper always passes). Learned-hint keys stay on the Chinese text so a language switch never re-shows learned hints. Brush-font titles stay Chinese (the subset has no Latin glyphs; calligraphy is part of the art).
+
+## D44 · Pad buttons on the engine UI actions (0.7.0)
+- Godot 4.7.2's default `ui_accept` = Enter/KP Enter/Space and `ui_cancel` = Escape only (verified by printing `InputMap.action_get_events`). `Game._add_ui_pad` appends `JOY_BUTTON_A` to `ui_accept` and `JOY_BUTTON_B` to `ui_cancel` at startup (idempotent). B is also Dash in gameplay; every `ui_cancel` consumer is gated on its menu being open, and hidden menus release focus, so gameplay input is unaffected (bot clears unchanged). Title buttons are tracked by action (`_btn_for`) because Continue/Rematch shift indices.

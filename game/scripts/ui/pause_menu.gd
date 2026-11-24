@@ -86,6 +86,11 @@ func _ready() -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
+	# B / Esc backs out of an open pause menu (pad players have no Escape)
+	if root.visible and e.is_action_pressed("ui_cancel") and not _options_open():
+		_resume()
+		get_viewport().set_input_as_handled()
+		return
 	if e.is_action_pressed("pause") and not _options_open():
 		if root.visible:
 			_resume()

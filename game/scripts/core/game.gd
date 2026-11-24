@@ -128,6 +128,20 @@ func _setup_input() -> void:
 	_add_axis("move_up", JOY_AXIS_LEFT_Y, -1.0)
 	_add_axis("gourd", JOY_AXIS_TRIGGER_LEFT, 1.0)
 	_add_axis("beads", JOY_AXIS_TRIGGER_RIGHT, 1.0)
+	# Godot's default ui_accept / ui_cancel carry no pad buttons, so focused
+	# menu buttons could not be pressed on a controller / Steam Deck at all.
+	# A (south) accepts and B (east) backs out in every menu.
+	_add_ui_pad("ui_accept", JOY_BUTTON_A)
+	_add_ui_pad("ui_cancel", JOY_BUTTON_B)
+
+
+func _add_ui_pad(action: String, button: int) -> void:
+	for e in InputMap.action_get_events(action):
+		if e is InputEventJoypadButton and e.button_index == button:
+			return
+	var jb := InputEventJoypadButton.new()
+	jb.button_index = button
+	InputMap.action_add_event(action, jb)
 
 
 func _add_axis(action: String, axis: int, v: float) -> void:
