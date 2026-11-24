@@ -302,7 +302,7 @@ static func particles(pos: Vector2, amount: int, color: Color, speed := 220.0, s
 		dir := Vector2.UP, gravity := 600.0, life := 0.5, size := 4.0, z := 8) -> void:
 	var p := CPUParticles2D.new()
 	p.position = pos
-	p.amount = maxi(amount, 1)
+	p.amount = Game.fx_amount(maxi(amount, 1))
 	p.one_shot = true
 	p.explosiveness = 0.95
 	p.lifetime = life
@@ -362,7 +362,7 @@ static func _rect_tex(w: int, h: int, col: Color, edge: Color) -> Texture2D:
 static func debris(pos: Vector2, n: int, tex: Texture2D, speed: float, gravity: float, life: float, dir := Vector2.UP, spread := 80.0, scale := 1.0) -> void:
 	var p := CPUParticles2D.new()
 	p.position = pos
-	p.amount = n
+	p.amount = Game.fx_amount(n)
 	p.one_shot = true
 	p.explosiveness = 0.9
 	p.lifetime = life

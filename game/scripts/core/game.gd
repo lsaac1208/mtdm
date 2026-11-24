@@ -301,6 +301,14 @@ var flash_scale := 1.0
 var tutorial_hints := true
 ## Gamepad vibration (only ever sent to the pad the player is using).
 var rumble_on := true
+## Graphics quality: 1 = full, 0 = low (integrated GPUs / software GL):
+## no full-screen atmosphere pass, a third of the ambient motes, half the
+## transient FX particles. Applied when a level is built.
+var quality := 1
+
+
+func fx_amount(n: int) -> int:
+	return n if quality >= 1 else maxi(1, n / 2)
 var last_rumble := []   # [weak, strong, duration] of the last request (QA)
 
 
@@ -436,6 +444,9 @@ func load_settings() -> void:
 	flash_scale = clampf(float(cf.get_value("video", "flash", 1.0)), 0.0, 1.0)
 	tutorial_hints = bool(cf.get_value("game", "hints", true))
 	rumble_on = bool(cf.get_value("game", "rumble", true))
+	quality = clampi(int(cf.get_value("video", "quality", 1)), 0, 1)
+	if args.has("quality"):   # QA / perf override wins over the saved value
+		quality = clampi(int(args.quality), 0, 1)
 	if cf.get_value("video", "fullscreen", false) and DisplayServer.get_name() != "headless":
 		get_window().mode = Window.MODE_FULLSCREEN
 	if cf.has_section("keys"):
@@ -472,6 +483,7 @@ func save_settings() -> void:
 	cf.set_value("video", "flash", flash_scale)
 	cf.set_value("game", "hints", tutorial_hints)
 	cf.set_value("game", "rumble", rumble_on)
+	cf.set_value("video", "quality", quality)
 	cf.set_value("video", "fullscreen", get_window().mode == Window.MODE_FULLSCREEN)
 	for action in REBINDABLE:
 		cf.set_value("keys", action, action_keys(action))

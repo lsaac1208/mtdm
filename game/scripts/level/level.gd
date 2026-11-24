@@ -260,7 +260,7 @@ var motes: CPUParticles2D
 
 func _build_motes() -> void:
 	motes = CPUParticles2D.new()
-	motes.amount = 220
+	motes.amount = 220 if Game.quality >= 1 else 72
 	motes.lifetime = 7.0
 	motes.preprocess = 7.0
 	motes.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
@@ -314,6 +314,17 @@ func _build_overlay() -> void:
 	m.shader = load("res://shaders/atmosphere.gdshader")
 	fog_rect.material = m
 	cl.add_child(fog_rect)
+	# low quality skips the full-screen atmosphere pass (per-pixel fog, grain,
+	# vignette); zone colour still comes from the painted backdrops
+	fog_rect.visible = Game.quality >= 1
+
+
+## Re-apply the graphics quality live (Options toggle mid-run).
+func apply_quality() -> void:
+	if fog_rect:
+		fog_rect.visible = Game.quality >= 1
+	if motes:
+		motes.amount = 220 if Game.quality >= 1 else 72
 
 
 func _build_ground() -> void:

@@ -122,6 +122,33 @@ func _run() -> void:
 			await _shot("defeat_%02d" % i)
 		Game.quit()
 		return
+	if only == "perfcap":
+		# real (wall-clock) frame times in representative scenes; run rendered
+		# (not headless). Prints PERF <scene> p50/p95/p99 ms.
+		var scenes := [["village", 700.0, ""], ["lowland", 5000.0, ""], ["burial_wave", 9100.0, "wave"], ["elite", 10300.0, "boss"]]
+		for sc in scenes:
+			var p := await _fresh_level(float(sc[1]))
+			p.max_hp = 999999.0
+			p.hp = p.max_hp
+			p.invuln = 9999.0
+			await _wait(1.5)
+			var times := []
+			var last := Time.get_ticks_usec()
+			for i in 240:
+				await get_tree().process_frame
+				var now := Time.get_ticks_usec()
+				times.append((now - last) / 1000.0)
+				last = now
+				p.hp = p.max_hp
+				p.invuln = 9999.0
+				if i % 40 == 0:
+					await press(p, "attack")
+			times.sort()
+			var n := times.size()
+			var fog_on: bool = Game.level.fog_rect.visible
+			print("PERF q%d fog=%s %-12s p50=%.2f p95=%.2f p99=%.2f ms  nodes=%d" % [Game.quality, fog_on, sc[0], times[n / 2], times[int(n * 0.95)], times[int(n * 0.99)], Performance.get_monitor(Performance.OBJECT_NODE_COUNT)])
+		Game.quit()
+		return
 	if only == "sealcap":
 		shot_dir = Game.args.get("shots", "user://shots")
 		await _fresh_level(1500.0)
@@ -560,7 +587,7 @@ func _run() -> void:
 		Game.quit()
 		return
 	var tests := ["movement", "crawler_bands", "grunt_hit_and_stagger", "parry", "husk_backlash", "spitter_puddle",
-		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "bot", "soak"]
+		"elite_telegraph", "death_respawn", "encounter_lock", "full_route", "flow", "spawn_surface", "gamepad_map", "anim_continuity", "guard_stance", "personal_space", "enemy_ledge", "spec", "settings", "options", "elite_fairness", "boss_music", "difficulty", "destructibles", "diegetic_ui", "enemy_frame_anims", "narrative_flow", "input_feel", "pack_spread", "pounce_retreat", "boss_body", "smart_hints", "lore", "held_frames", "telegraphs", "adaptive_mix", "run_save", "accessibility", "rematch", "rumble", "chapters", "quality", "bot", "soak"]
 	for t in tests:
 		if only != t and not (only == "all" and t != "bot" and t != "soak"):
 			continue
@@ -1798,6 +1825,24 @@ func t_chapters() -> void:
 	_log("chapter_facade", same and unknown_rejected and reapplied,
 		"active=%s zones=%d unknown_rejected=%s" % [LevelData.CHAPTER, LevelData.ZONES.size(), unknown_rejected])
 	await _frames(1)
+
+
+func t_quality() -> void:
+	var p := await _fresh_level(700.0)
+	var old := Game.quality
+	Game.quality = 0
+	Game.level.apply_quality()
+	var low_ok: bool = not Game.level.fog_rect.visible and Game.level.motes.amount < 100 and Game.fx_amount(20) == 10
+	Game.save_settings()
+	Game.quality = 1
+	Game.load_settings()
+	var persisted := Game.quality == 0
+	Game.quality = 1
+	Game.level.apply_quality()
+	var high_ok: bool = Game.level.fog_rect.visible and Game.level.motes.amount == 220 and Game.fx_amount(20) == 20
+	Game.quality = old
+	Game.save_settings()
+	_log("graphics_quality_toggle", low_ok and high_ok and persisted, "low=%s high=%s persisted=%s" % [low_ok, high_ok, persisted])
 
 
 func t_personal_space() -> void:

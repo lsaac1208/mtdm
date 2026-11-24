@@ -4,6 +4,9 @@ All versions are pre-release vertical slices. Automated tests and GPU captures a
 
 ## 0.4.0 — 2026-11-20## 0.6.0-dev — in progress
 
+### Added (0.7 track)
+- **Low graphics mode** (精简画质 in Options, applied live, persisted; `--quality=0` for QA): skips the full-screen atmosphere pass, ambient motes 220 → 72, transient FX particles halved. New `--test=perfcap` (rendered; wall-clock p50/p95/p99 in village / lowland / burial wave / elite). Software-GL (llvmpipe) result over two runs each: p50 village 13–16 → 11–12 ms, lowland 16–17 → 13 ms, burial wave 20–21 → 17–19 ms, elite 21–26 → 19–20 ms; fight p95 remains dominated by the lit character shader. Look preserved (`shots/quality_high_vs_low.jpg`).
+
 ### Changed
 - **Chapter-ready route data**: chapter 1's route data moved verbatim to `scripts/level/chapters/chapter1.gd`; `LevelData` is now an active-chapter facade (typed static vars with the same names, `LevelData.use_chapter(id)`), so all 76 existing call sites are unchanged. The run save records the chapter and Continue restores it. Test `chapter_facade`; 82/82 in source and inside the exported Linux build, soak clean.
 

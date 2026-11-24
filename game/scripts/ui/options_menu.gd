@@ -68,6 +68,10 @@ func _ready() -> void:
 	_slider(box, "闪屏强度 Screen flashes", Game.flash_scale, func(v): Game.flash_scale = v)
 	_check(box, "教学提示 Tutorial hints", Game.tutorial_hints, func(on): Game.tutorial_hints = on)
 	_check(box, "手柄震动 Controller vibration", Game.rumble_on, func(on): Game.rumble_on = on)
+	_check(box, "精简画质 Low graphics (faster)", Game.quality == 0, func(on):
+		Game.quality = 0 if on else 1
+		if Game.level and is_instance_valid(Game.level) and Game.level.has_method("apply_quality"):
+			Game.level.apply_quality())
 	_check(box, "全屏 Fullscreen (F11)", get_window().mode == Window.MODE_FULLSCREEN,
 		func(on): get_window().mode = Window.MODE_FULLSCREEN if on else Window.MODE_WINDOWED)
 	_section(box, "按键 Keyboard (点击后按新键 · click, then press a key)")
