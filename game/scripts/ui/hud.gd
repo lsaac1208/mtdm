@@ -721,7 +721,7 @@ func _draw_boss_bar(ci: Control, font: Font) -> void:
 		Color(0.74, 0.64, 0.48, 0.92)
 	)
 	if boss_phase >= 2:
-		var phase_txt := "二相 · 狂煞"
+		var phase_txt := Game.t("二相 · 狂煞", "PHASE II · FRENZY")
 		ci.draw_string_outline(font, Vector2(x0, y0 - 13.0), phase_txt, HORIZONTAL_ALIGNMENT_RIGHT, w, 14, 3, COL_OUTLINE)
 		ci.draw_string(font, Vector2(x0, y0 - 13.0), phase_txt, HORIZONTAL_ALIGNMENT_RIGHT, w, 14, Color(0.96, 0.42, 0.24))
 
@@ -739,7 +739,7 @@ func _draw_boss_bar(ci: Control, font: Font) -> void:
 
 	# Poise gauge directly beneath HP bar with clear 破甲 / 甲 badge
 	var poise_y := y0 + 23.0
-	var poise_label := "破甲" if is_staggered else "甲"
+	var poise_label := (Game.t("破甲", "BRK") if is_staggered else Game.t("甲", "ARM"))
 	var label_w := 34.0
 	var poise_bar_x := x0 + label_w
 	var poise_bar_w := w - label_w
@@ -766,9 +766,9 @@ func _draw_hud() -> void:
 	var low_pulse: float = _heartbeat_pulse() if low_hp else 0.0
 
 	var skills: Array = [
-		["gourd", "葫芦", player.gourd > 0, 0.0],
-		["talisman", "符箓", player.qi >= player.TALISMAN_COST, player.TALISMAN_COST],
-		["beads", "念珠", player.qi >= player.BEADS_COST, player.BEADS_COST],
+		["gourd", Game.t("葫芦", "Gourd"), player.gourd > 0, 0.0],
+		["talisman", Game.t("符箓", "Talisman"), player.qi >= player.TALISMAN_COST, player.TALISMAN_COST],
+		["beads", Game.t("念珠", "Beads"), player.qi >= player.BEADS_COST, player.BEADS_COST],
 	]
 	# Measure skill row dynamically so long rebound key labels expand the plaque cleanly.
 	var plaque_x := 18.0
@@ -803,10 +803,12 @@ func _draw_hud() -> void:
 
 	# 气血 (HP) & 道力 (Qi) labels and bars
 	var lbl_x := plaque_x + 82.0
-	ci.draw_string_outline(f, Vector2(lbl_x, plaque_y + 29.0), "气血", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 3, COL_OUTLINE)
-	ci.draw_string(f, Vector2(lbl_x, plaque_y + 29.0), "气血", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, COL_PAPER)
-	ci.draw_string_outline(f, Vector2(lbl_x, plaque_y + 55.0), "道力", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 3, COL_OUTLINE)
-	ci.draw_string(f, Vector2(lbl_x, plaque_y + 55.0), "道力", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, COL_PAPER)
+	var hp_lbl := Game.t("气血", "HP")
+	var qi_lbl := Game.t("道力", "Qi")
+	ci.draw_string_outline(f, Vector2(lbl_x, plaque_y + 29.0), hp_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 3, COL_OUTLINE)
+	ci.draw_string(f, Vector2(lbl_x, plaque_y + 29.0), hp_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, COL_PAPER)
+	ci.draw_string_outline(f, Vector2(lbl_x, plaque_y + 55.0), qi_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 3, COL_OUTLINE)
+	ci.draw_string(f, Vector2(lbl_x, plaque_y + 55.0), qi_lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, COL_PAPER)
 
 	var hp_col := COL_HP_FILL.lerp(COL_HP_LOW, low_pulse * 0.78)
 	var hp_pos := Vector2(bar_x, plaque_y + 15.0)

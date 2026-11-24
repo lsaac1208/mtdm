@@ -157,7 +157,7 @@ func _ready() -> void:
 func _refresh_prompt() -> void:
 	if _skip_lbl == null:
 		return
-	_skip_lbl.text = "按 %s / %s 继续　·　按 %s 跳过  |  Skip" % [
+	_skip_lbl.text = Game.t("按 %s / %s 继续　·　按 %s 跳过  |  Skip", "%s / %s Continue  ·  %s Skip") % [
 		Game.binding_label("confirm", true),
 		Game.binding_label("jump", true),
 		Game.binding_label("pause", true),
@@ -184,9 +184,10 @@ func _show_slide(idx: int) -> void:
 	var bias := float(s.get("y_bias", 0.5))
 	_art_base_pos = Vector2(-(w - clip_sz.x) * 0.5, -excess_y * bias)
 	_art_rect.position = _art_base_pos
-	_heading.text = String(s.heading)
-	_body.text = String(s.body)
-	_en.text = String(s.en)
+	_heading.text = String(s.heading)   # calligraphy stays Chinese
+	# English mode: the translation is the body, the original the small line
+	_body.text = String(s.en) if Game.lang == "en" else String(s.body)
+	_en.text = String(s.body) if Game.lang == "en" else String(s.en)
 	_art_rect.modulate.a = 0.0
 	_text_box.modulate.a = 0.0
 	var tw := create_tween()

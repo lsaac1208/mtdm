@@ -96,10 +96,10 @@ func _ready() -> void:
 	htw.tween_property(head, "modulate:a", 1.0, 0.8)
 
 	var sub := Label.new()
-	sub.text = "尸将已镇，乱葬岗归于沉寂。前路秽气未散 —— 道行者仍要前行。"
+	sub.text = Game.t("尸将已镇，乱葬岗归于沉寂。前路秽气未散 —— 道行者仍要前行。", "The General is sealed and the Burial Mound falls silent. The taint lingers — the wanderer walks on.")
 	if rematch:
 		var best: float = Game.best_rematch[clampi(Game.difficulty, 0, 2)]
-		sub.text = "再战用时 %s　·　本难度最佳 %s%s" % [Game.format_time(Game.run_time), Game.format_time(best), "　★ 新纪录" if Game.last_rematch_best else ""]
+		sub.text = Game.t("再战用时 %s　·　本难度最佳 %s%s", "Rematch %s  ·  Best on this difficulty %s%s") % [Game.format_time(Game.run_time), Game.format_time(best), Game.t("　★ 新纪录", "  ★ New record") if Game.last_rematch_best else ""]
 	sub.add_theme_font_size_override("font_size", 20)
 	sub.add_theme_color_override("font_color", Color(0.20, 0.14, 0.11))
 	sub.add_theme_color_override("font_outline_color", Color(0.95, 0.89, 0.78, 0.75))
@@ -134,7 +134,7 @@ func _ready() -> void:
 	hbox.add_child(left)
 
 	var ltitle := Label.new()
-	var best_tag := "　★ 新纪录" if Game.last_clear_is_best else ""
+	var best_tag := Game.t("　★ 新纪录", "  ★ NEW RECORD") if Game.last_clear_is_best else ""
 	ltitle.text = "行 旅 录  ·  JOURNEY LEDGER%s" % best_tag
 	ltitle.add_theme_font_size_override("font_size", 17)
 	ltitle.add_theme_color_override("font_color", Color(0.95, 0.80, 0.48))
@@ -147,13 +147,13 @@ func _ready() -> void:
 
 	var diff_str: String = ["故事 · Story", "常规 · Normal", "修行 · Hard"][clampi(Game.difficulty, 0, 2)]
 	var stats_rows := [
-		["修行难度", diff_str],
-		["行旅用时", Game.format_time(Game.run_time)],
-		["战死次数", "%d 次" % Game.deaths],
-		["斩除妖祟", "%d" % Game.kills],
-		["精准弹反", "%d" % Game.parries],
-		["破除残器", "%d" % Game.props_broken],
-		["拓得碑文", "%d / %d" % [Game.lore_read.size(), LevelData.LORE.size()]],
+		[Game.t("修行难度", "Difficulty"), diff_str],
+		[Game.t("行旅用时", "Time"), Game.format_time(Game.run_time)],
+		[Game.t("战死次数", "Deaths"), Game.t("%d 次", "%d") % Game.deaths],
+		[Game.t("斩除妖祟", "Kills"), "%d" % Game.kills],
+		[Game.t("精准弹反", "Parries"), "%d" % Game.parries],
+		[Game.t("破除残器", "Relics broken"), "%d" % Game.props_broken],
+		[Game.t("拓得碑文", "Steles read"), "%d / %d" % [Game.lore_read.size(), LevelData.LORE.size()]],
 	]
 	if rematch:
 		# props and steles along the route aren't part of the boss challenge
